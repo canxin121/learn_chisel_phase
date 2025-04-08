@@ -127,7 +127,9 @@ class TopModule extends Module {
         }
         is(1.U) { // 当 topSel2 === 1.U
           // 内层 Mux，由 topSel3 控制
-          switchResult := Mux(io.topSel3, io.dataIn4, io.dataIn3)
+          val temp = Wire(Bool())
+          temp := io.topSel3
+          switchResult := Mux(temp === false.B, io.dataIn4, io.dataIn3)
         }
         is(2.U) { // 当 topSel2 === 2.U
           // 另一个 Mux 嵌套 Mux 的例子

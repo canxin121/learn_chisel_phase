@@ -52,7 +52,8 @@ module TopModule(
                io_dataIn6,
   output [7:0] io_finalOut,
   output       _mux_cond_topInst__I__local__I___io_finalOut_T,
-               _mux_cond_topInst__I__local__I___io_finalOut_switchResult_T_1,
+               _mux_cond_topInst__I__local__I___io_finalOut_switchResult_T,
+               _mux_cond_topInst__I__local__I___io_finalOut_switchResult_T_2,
                _mux_cond_topInst__I__local__I__io__S__topSel3,
                _mux_cond_topInst__I__mid__I__inner__I__local__I__io__S__sel,
                _mux_cond_topInst__I__mid__I__local__I__io__S__midSel1,
@@ -60,10 +61,12 @@ module TopModule(
 );
 
   wire [7:0]      _mid_io_midOut;
+  wire            _io_finalOut_T_1 = io_topSel2 == 2'h0;
+  wire            _io_finalOut_T_4 = io_topSel2 == 2'h1;
   wire [3:0][7:0] _GEN =
     {{8'h0},
      {io_topSel3 ? (io_topSel1[0] ? io_dataIn6 : io_dataIn5) : io_dataIn1},
-     {io_topSel3 ? io_dataIn4 : io_dataIn3},
+     {io_topSel3 ? io_dataIn3 : io_dataIn4},
      {io_topSel3 ? io_dataIn2 : io_dataIn1}};
   MidLevelModule mid (
     .io_midSel1                                                   (io_topSel1[0]),
@@ -82,8 +85,10 @@ module TopModule(
   );
   assign io_finalOut = io_topSel1[1] ? _mid_io_midOut : _GEN[io_topSel2];
   assign _mux_cond_topInst__I__local__I___io_finalOut_T = io_topSel1[1];
-  assign _mux_cond_topInst__I__local__I___io_finalOut_switchResult_T_1 =
-    ~(io_topSel2 == 2'h0 | io_topSel2 == 2'h1) & io_topSel2 == 2'h2 & io_topSel1[0];
+  assign _mux_cond_topInst__I__local__I___io_finalOut_switchResult_T =
+    ~_io_finalOut_T_1 & _io_finalOut_T_4 & ~io_topSel3;
+  assign _mux_cond_topInst__I__local__I___io_finalOut_switchResult_T_2 =
+    ~(_io_finalOut_T_1 | _io_finalOut_T_4) & io_topSel2 == 2'h2 & io_topSel1[0];
   assign _mux_cond_topInst__I__local__I__io__S__topSel3 = io_topSel3;
 endmodule
 

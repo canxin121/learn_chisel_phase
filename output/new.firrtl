@@ -4,31 +4,31 @@ circuit TopModule :
     input clock : Clock @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 6:7]
     input reset : Reset @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 6:7]
     output io : { flip inA : UInt<32>, flip inB : UInt<32>, flip sel : UInt<1>, out : UInt<32>} @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 7:14]
-    output _mux_cond : { topInst__I__midMod__I__lowMod1__I__local__I__io__S__sel : UInt<1>} @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 6:7]
+    output _mux_cond : { TopModule__I__midMod__I__lowMod1__I__local__I__io__S__sel : UInt<1>} @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 6:7]
 
     node internalMux = mux(io.sel, io.inA, io.inB) @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 15:24]
     node _processed_T = add(internalMux, UInt<1>(0h1)) @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 18:31]
     node processed = tail(_processed_T, 1) @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 18:31]
     connect io.out, processed @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 20:10]
-    connect _mux_cond.topInst__I__midMod__I__lowMod1__I__local__I__io__S__sel, io.sel
+    connect _mux_cond.TopModule__I__midMod__I__lowMod1__I__local__I__io__S__sel, io.sel
 
   module LowModule_1 : @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 6:7]
     input clock : Clock @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 6:7]
     input reset : Reset @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 6:7]
     output io : { flip inA : UInt<32>, flip inB : UInt<32>, flip sel : UInt<1>, out : UInt<32>} @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 7:14]
-    output _mux_cond : { topInst__I__midMod__I__lowMod2__I__local__I__io__S__sel : UInt<1>} @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 6:7]
+    output _mux_cond : { TopModule__I__midMod__I__lowMod2__I__local__I__io__S__sel : UInt<1>} @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 6:7]
 
     node internalMux = mux(io.sel, io.inA, io.inB) @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 15:24]
     node _processed_T = add(internalMux, UInt<1>(0h1)) @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 18:31]
     node processed = tail(_processed_T, 1) @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 18:31]
     connect io.out, processed @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 20:10]
-    connect _mux_cond.topInst__I__midMod__I__lowMod2__I__local__I__io__S__sel, io.sel
+    connect _mux_cond.TopModule__I__midMod__I__lowMod2__I__local__I__io__S__sel, io.sel
 
   module MidModule : @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 24:7]
     input clock : Clock @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 24:7]
     input reset : Reset @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 24:7]
     output io : { flip inA : UInt<32>, flip inB : UInt<32>, flip inC : UInt<32>, flip inD : UInt<32>, flip sel1 : UInt<1>, flip sel2 : UInt<1>, out : UInt<32>} @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 25:14]
-    output _mux_cond : { topInst__I__midMod__I__local__I__io__S__sel1 : UInt<1>, topInst__I__midMod__I__local__I__io__S__sel2 : UInt<1>, topInst__I__midMod__I__lowMod1__I__local__I__io__S__sel : UInt<1>, topInst__I__midMod__I__lowMod2__I__local__I__io__S__sel : UInt<1>} @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 24:7]
+    output _mux_cond : { TopModule__I__midMod__I__local__I__io__S__sel1 : UInt<1>, TopModule__I__midMod__I__local__I__io__S__sel2 : UInt<1>, TopModule__I__midMod__I__lowMod1__I__local__I__io__S__sel : UInt<1>, TopModule__I__midMod__I__lowMod2__I__local__I__io__S__sel : UInt<1>} @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 24:7]
 
     inst lowMod1 of LowModule @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 36:23]
     connect lowMod1.clock, clock
@@ -46,16 +46,16 @@ circuit TopModule :
     connect lowMod2.io.sel, io.sel1 @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 50:18]
     node _io_out_T = mux(io.sel2, lowMod1.io.out, lowMod2.io.out) @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 53:16]
     connect io.out, _io_out_T @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 53:10]
-    connect _mux_cond.topInst__I__midMod__I__local__I__io__S__sel1, io.sel1
-    connect _mux_cond.topInst__I__midMod__I__local__I__io__S__sel2, io.sel2
-    connect _mux_cond.topInst__I__midMod__I__lowMod1__I__local__I__io__S__sel, lowMod1._mux_cond.topInst__I__midMod__I__lowMod1__I__local__I__io__S__sel
-    connect _mux_cond.topInst__I__midMod__I__lowMod2__I__local__I__io__S__sel, lowMod2._mux_cond.topInst__I__midMod__I__lowMod2__I__local__I__io__S__sel
+    connect _mux_cond.TopModule__I__midMod__I__local__I__io__S__sel1, io.sel1
+    connect _mux_cond.TopModule__I__midMod__I__local__I__io__S__sel2, io.sel2
+    connect _mux_cond.TopModule__I__midMod__I__lowMod1__I__local__I__io__S__sel, lowMod1._mux_cond.TopModule__I__midMod__I__lowMod1__I__local__I__io__S__sel
+    connect _mux_cond.TopModule__I__midMod__I__lowMod2__I__local__I__io__S__sel, lowMod2._mux_cond.TopModule__I__midMod__I__lowMod2__I__local__I__io__S__sel
 
   module TopModule : @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 57:7]
     input clock : Clock @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 57:7]
     input reset : UInt<1> @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 57:7]
     output io : { flip inA : UInt<32>, flip inB : UInt<32>, flip inC : UInt<32>, flip inD : UInt<32>, flip inE : UInt<32>, flip inF : UInt<32>, flip sel1 : UInt<1>, flip sel2 : UInt<1>, flip sel3 : UInt<1>, out : UInt<32>} @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 58:14]
-    output _mux_cond : { topInst__I__local__I__io__S__sel1 : UInt<1>, topInst__I__local__I__io__S__sel2 : UInt<1>, topInst__I__local__I__io__S__sel3 : UInt<1>, topInst__I__midMod__I__local__I__io__S__sel1 : UInt<1>, topInst__I__midMod__I__local__I__io__S__sel2 : UInt<1>, topInst__I__midMod__I__lowMod1__I__local__I__io__S__sel : UInt<1>, topInst__I__midMod__I__lowMod2__I__local__I__io__S__sel : UInt<1>} @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 57:7]
+    output _mux_cond : { TopModule__I__local__I__io__S__sel1 : UInt<1>, TopModule__I__local__I__io__S__sel2 : UInt<1>, TopModule__I__local__I__io__S__sel3 : UInt<1>, TopModule__I__midMod__I__local__I__io__S__sel1 : UInt<1>, TopModule__I__midMod__I__local__I__io__S__sel2 : UInt<1>, TopModule__I__midMod__I__lowMod1__I__local__I__io__S__sel : UInt<1>, TopModule__I__midMod__I__lowMod2__I__local__I__io__S__sel : UInt<1>} @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 57:7]
 
     inst midMod of MidModule @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 72:22]
     connect midMod.clock, clock
@@ -71,10 +71,10 @@ circuit TopModule :
     connect midMod.io.sel2, io.sel3 @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 85:18]
     node _io_out_T = mux(io.sel3, midMod.io.out, topMux3) @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 88:16]
     connect io.out, _io_out_T @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule1.scala 88:10]
-    connect _mux_cond.topInst__I__local__I__io__S__sel1, io.sel1
-    connect _mux_cond.topInst__I__local__I__io__S__sel2, io.sel2
-    connect _mux_cond.topInst__I__local__I__io__S__sel3, io.sel3
-    connect _mux_cond.topInst__I__midMod__I__local__I__io__S__sel1, midMod._mux_cond.topInst__I__midMod__I__local__I__io__S__sel1
-    connect _mux_cond.topInst__I__midMod__I__local__I__io__S__sel2, midMod._mux_cond.topInst__I__midMod__I__local__I__io__S__sel2
-    connect _mux_cond.topInst__I__midMod__I__lowMod1__I__local__I__io__S__sel, midMod._mux_cond.topInst__I__midMod__I__lowMod1__I__local__I__io__S__sel
-    connect _mux_cond.topInst__I__midMod__I__lowMod2__I__local__I__io__S__sel, midMod._mux_cond.topInst__I__midMod__I__lowMod2__I__local__I__io__S__sel
+    connect _mux_cond.TopModule__I__local__I__io__S__sel1, io.sel1
+    connect _mux_cond.TopModule__I__local__I__io__S__sel2, io.sel2
+    connect _mux_cond.TopModule__I__local__I__io__S__sel3, io.sel3
+    connect _mux_cond.TopModule__I__midMod__I__local__I__io__S__sel1, midMod._mux_cond.TopModule__I__midMod__I__local__I__io__S__sel1
+    connect _mux_cond.TopModule__I__midMod__I__local__I__io__S__sel2, midMod._mux_cond.TopModule__I__midMod__I__local__I__io__S__sel2
+    connect _mux_cond.TopModule__I__midMod__I__lowMod1__I__local__I__io__S__sel, midMod._mux_cond.TopModule__I__midMod__I__lowMod1__I__local__I__io__S__sel
+    connect _mux_cond.TopModule__I__midMod__I__lowMod2__I__local__I__io__S__sel, midMod._mux_cond.TopModule__I__midMod__I__lowMod2__I__local__I__io__S__sel

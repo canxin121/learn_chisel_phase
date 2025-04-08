@@ -48,7 +48,7 @@ module TopModule(
   wire [3:0][7:0] _GEN =
     {{8'h0},
      {io_topSel3 ? (io_topSel1[0] ? io_dataIn6 : io_dataIn5) : io_dataIn1},
-     {io_topSel3 ? io_dataIn4 : io_dataIn3},
+     {io_topSel3 ? io_dataIn3 : io_dataIn4},
      {io_topSel3 ? io_dataIn2 : io_dataIn1}};
   MidLevelModule mid (
     .io_midSel1 (io_topSel1[0]),

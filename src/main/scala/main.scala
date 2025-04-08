@@ -23,12 +23,12 @@ class CustomTransform extends firrtl.options.Phase {
     val circuit = circuitAnno.circuit
 
     FileUtil.writeToFile(
-      "output/old.firrtl",
+      "output2/old.firrtl",
       Serializer.serialize(circuit)
     )
     val new_circuit = MuxCondPropagator.transform(circuit)
     FileUtil.writeToFile(
-      "output/new.firrtl",
+      "output2/new.firrtl",
       Serializer.serialize(new_circuit)
     )
 
@@ -40,26 +40,26 @@ class CustomTransform extends firrtl.options.Phase {
 
 object ExampleMain extends App {
   val old_sv = ChiselStage.emitSystemVerilog(
-    new example_module1.TopModule(32),
+    // new example_module1.TopModule(32),
     // new example_module2.WaveformGenerator,
-    // new example_module3.TopModule,
+    new example_module3.TopModule,
     firtoolOpts = Array("-disable-all-randomization", "-strip-debug-info")
   )
 
   FileUtil.writeToFile(
-    "output/old.sv",
+    "output2/old.sv",
     old_sv
   )
 
   val new_sv = CustomStage.emitSystemVerilog(
-    new example_module1.TopModule(32),
+    // new example_module1.TopModule(32),
     // new example_module2.WaveformGenerator,
-    // new example_module3.TopModule,
+    new example_module3.TopModule,
     firtoolOpts = Array("-disable-all-randomization", "-strip-debug-info")
   )
 
   FileUtil.writeToFile(
-    "output/new.sv",
+    "output2/new.sv",
     new_sv
   )
 }
