@@ -4,7 +4,17 @@ circuit WaveformGenerator :
     input clock : Clock @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule2.scala 12:7]
     input reset : UInt<1> @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule2.scala 12:7]
     output io : { flip waveType : UInt<2>, flip freqCtrl : UInt<16>, flip phaseOffset : UInt<16>, output : SInt<8>} @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule2.scala 15:14]
+    output _mux_cond : { WaveformGenerator__I__local__I___io_output_T_4 : UInt<1>} @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule2.scala 12:7]
+    output _cond_pred : { WaveformGenerator__I__local__I___T : UInt<1>, WaveformGenerator__I__local__I___T_1 : UInt<1>, WaveformGenerator__I__local__I___T_2 : UInt<1>, WaveformGenerator__I__local__I___T_3 : UInt<1>} @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule2.scala 12:7]
 
+    wire _cond_pred_prop_wire_WaveformGenerator__I__local__I___T_2 : UInt<1>
+    wire _cond_pred_prop_wire_WaveformGenerator__I__local__I___T_3 : UInt<1>
+    wire _cond_pred_prop_wire_WaveformGenerator__I__local__I___T_1 : UInt<1>
+    connect _cond_pred_prop_wire_WaveformGenerator__I__local__I___T_2, UInt<1>(0h0)
+    connect _cond_pred_prop_wire_WaveformGenerator__I__local__I___T_3, UInt<1>(0h0)
+    connect _cond_pred_prop_wire_WaveformGenerator__I__local__I___T_1, UInt<1>(0h0)
+    wire _mux_cond_prop_wire_WaveformGenerator__I__local__I___io_output_T_4 : UInt<1>
+    connect _mux_cond_prop_wire_WaveformGenerator__I__local__I___io_output_T_4, UInt<1>(0h0)
     regreset phaseAcc : UInt<16>, clock, reset, UInt<16>(0h0) @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule2.scala 27:25]
     node _phaseAcc_T = add(phaseAcc, io.freqCtrl) @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule2.scala 28:24]
     node _phaseAcc_T_1 = tail(_phaseAcc_T, 1) @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule2.scala 28:24]
@@ -789,19 +799,27 @@ circuit WaveformGenerator :
       connect io.output, sinTable[_io_output_T] @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule2.scala 62:17]
     else :
       node _T_1 = eq(UInt<1>(0h1), io.waveType) @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule2.scala 60:23]
+      connect _cond_pred_prop_wire_WaveformGenerator__I__local__I___T_1, _T_1 @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule2.scala 60:23]
       when _T_1 : @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule2.scala 60:23]
         node _io_output_T_1 = bits(phase, 15, 8) @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule2.scala 65:34]
         connect io.output, triTable[_io_output_T_1] @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule2.scala 65:17]
       else :
         node _T_2 = eq(UInt<2>(0h2), io.waveType) @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule2.scala 60:23]
+        connect _cond_pred_prop_wire_WaveformGenerator__I__local__I___T_2, _T_2 @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule2.scala 60:23]
         when _T_2 : @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule2.scala 60:23]
           node _io_output_T_2 = bits(phase, 15, 8) @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule2.scala 68:34]
           connect io.output, sawTable[_io_output_T_2] @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule2.scala 68:17]
         else :
           node _T_3 = eq(UInt<2>(0h3), io.waveType) @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule2.scala 60:23]
+          connect _cond_pred_prop_wire_WaveformGenerator__I__local__I___T_3, _T_3 @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule2.scala 60:23]
           when _T_3 : @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule2.scala 60:23]
             node _io_output_T_3 = bits(phase, 15, 15) @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule2.scala 71:29]
             node _io_output_T_4 = eq(_io_output_T_3, UInt<1>(0h1)) @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule2.scala 71:46]
+            connect _mux_cond_prop_wire_WaveformGenerator__I__local__I___io_output_T_4, _io_output_T_4 @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule2.scala 71:46]
             node _io_output_T_5 = mux(_io_output_T_4, asSInt(UInt<8>(0h81)), asSInt(UInt<8>(0h7f))) @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule2.scala 71:23]
             connect io.output, _io_output_T_5 @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\ExampleModule2.scala 71:17]
-
+    connect _mux_cond.WaveformGenerator__I__local__I___io_output_T_4, _mux_cond_prop_wire_WaveformGenerator__I__local__I___io_output_T_4
+    connect _cond_pred.WaveformGenerator__I__local__I___T, _T
+    connect _cond_pred.WaveformGenerator__I__local__I___T_1, _cond_pred_prop_wire_WaveformGenerator__I__local__I___T_1
+    connect _cond_pred.WaveformGenerator__I__local__I___T_2, _cond_pred_prop_wire_WaveformGenerator__I__local__I___T_2
+    connect _cond_pred.WaveformGenerator__I__local__I___T_3, _cond_pred_prop_wire_WaveformGenerator__I__local__I___T_3

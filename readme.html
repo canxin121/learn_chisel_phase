@@ -1008,194 +1008,200 @@ Visual Studio-like style based on original C# coloring by Jason Diamond <jason@d
 
     </head>
     <body class="vscode-body vscode-light">
-        <h2 data-line="0" class="code-line" dir="auto" id="完成的工作" tabindex="-1">完成的工作</h2>
-<p data-line="2" class="code-line" dir="auto">完成了 MuxCondPropagator</p>
-<h3 data-line="4" class="code-line" dir="auto" id="muxcondpropagator-作用" tabindex="-1">MuxCondPropagator 作用</h3>
-<p data-line="6" class="code-line" dir="auto">该 Pass 的目标是识别 Chisel 电路中所有的 Mux 条件信号，并将它们沿着模块实例化层级向上传播。 对于每个包含或使用了 Mux 条件的模块实例，会在其接口上添加一个新的 Bundle 类型的输出端口（默认为 <code>_mux_cond</code>）。 这个 Bundle 包含了所有源自该模块内部或其子模块实例的 Mux 条件信号。</p>
-<p data-line="8" class="code-line" dir="auto">将 Mux 条件传播至顶层 Module 主要在于方便后续的仿真验证与分析。在仿真运行时，只需观测顶层的 _mux_cond 端口上的信号值（例如，记录它们是否都达到过 0 和 1 状态），就能有效地追踪设计中对应 Mux 的真/假分支是否都曾被执行。</p>
-<p data-line="10" class="code-line" dir="auto">这为统计分支覆盖率提供了清晰、直接的数据来源。</p>
-<h3 data-line="12" class="code-line" dir="auto" id="muxcondpropagator-转换思路详解" tabindex="-1">MuxCondPropagator 转换思路详解</h3>
-<h4 data-line="14" class="code-line" dir="auto" id="一-transform-方法-主入口" tabindex="-1">一、 <code>transform</code> 方法 (主入口)</h4>
-<p data-line="16" class="code-line" dir="auto"><code>transform</code> 方法是 Mux 条件传播 Pass 的主入口点，负责协调整个电路的转换过程。</p>
-<ol data-line="18" class="code-line" dir="auto">
-<li data-line="18" class="code-line" dir="auto">
-<p data-line="18" class="code-line" dir="auto"><strong>准备阶段:</strong></p>
-<ul data-line="20" class="code-line" dir="auto">
-<li data-line="20" class="code-line" dir="auto"><strong>(1) 获取内部条件:</strong> 调用 <code>ModuleInternalCondsMapProvider.getMap(circuit)</code> 获取或计算每个模块内部直接使用的（非字面量）Mux 条件表达式的映射 <code>internalCondMap</code> (类型 <code>Map[String, Seq[Expression]]</code>)。这是后续分析的基础。</li>
-<li data-line="21" class="code-line" dir="auto"><strong>(2) 构建模块映射:</strong> 创建一个从模块名称到模块定义 (<code>DefModule</code>) 的映射 <code>moduleMap</code>，方便快速查找模块定义。</li>
-<li data-line="22" class="code-line" dir="auto"><strong>(3) 初始化缓存:</strong> 创建一个可变映射 <code>processedModules</code> (类型 <code>mutable.Map[(String, Seq[String]), ModuleTransformResult]</code>)，用于缓存已经处理过的模块（以 <code>(模块名, 实例路径)</code> 为键）及其转换结果。这对于处理模块实例化和避免重复计算至关重要。</li>
-<li data-line="23" class="code-line" dir="auto"><strong>(4) 计算顶层名称:</strong> 遍历电路中的所有模块 (<code>Module</code>) 和类 (<code>DefClass</code>) 定义，对每个定义调用 <code>collectTopLevelNames</code> 辅助函数，收集其顶层作用域（端口、Wire、Reg、Node、Instance 等）定义的名称集合。将结果存储在 <code>topLevelNamesMap</code> (类型 <code>mutable.Map[String, Set[String]]</code>) 中。这用于后续判断本地条件是否需要“提升”(hoist)。</li>
-</ul>
-</li>
-<li data-line="25" class="code-line" dir="auto">
-<p data-line="25" class="code-line" dir="auto"><strong>递归处理:</strong></p>
-<ul data-line="27" class="code-line" dir="auto">
-<li data-line="27" class="code-line" dir="auto">定义一个内部递归函数 <code>processModule(moduleName: String, instancePath: Seq[String]): ModuleTransformResult</code>。此函数负责处理单个模块（或类）的转换。</li>
-<li data-line="28" class="code-line" dir="auto"><strong>调用入口:</strong> 从电路的主模块 (<code>circuit.main</code>) 开始，以指定的顶层实例名 <code>topInstName</code> 作为初始实例路径 (<code>Seq(topInstName)</code>)，调用 <code>processModule(circuit.main, Seq(topInstName))</code> 启动递归处理。</li>
-</ul>
-</li>
+        <h2 data-line="0" class="code-line" dir="auto" id="完成-muxcondpropagator-pass" tabindex="-1">完成 MuxCondPropagator Pass</h2>
+<h3 data-line="2" class="code-line" dir="auto" id="背景原因" tabindex="-1">背景原因</h3>
+<h4 data-line="4" class="code-line" dir="auto" id="技术驱动简化验证与提高覆盖率分析效率" tabindex="-1">技术驱动：简化验证与提高覆盖率分析效率</h4>
+<p data-line="6" class="code-line" dir="auto">在复杂的数字电路设计（尤其是使用 Chisel/FIRRTL 生成的设计）中，Multiplexer (Mux) 是非常基础且常见的组件，用于根据条件信号选择不同的数据路径。为了确保设计的健壮性和功能的完整性，进行充分的验证至关重要，其中分支覆盖率（Branch Coverage）是一个关键的衡量指标。对于 Mux 而言，分支覆盖率意味着需要确认在仿真或测试过程中，其对应的真分支（条件为 1）和假分支（条件为 0）都至少被执行过一次。</p>
+<p data-line="8" class="code-line" dir="auto">然而，在大型、具有多层级模块化结构的设计中，Mux 的条件信号往往深层嵌套在不同的模块实例内部。如果想要直接在仿真中观测所有这些条件信号，就需要深入到设计的各个层级去添加探测点（Probe）或进行追踪，这会变得非常繁琐、易错且难以管理。当设计发生迭代更新时，维护这些分散的观测点也会成为一个沉重的负担。</p>
+<p data-line="10" class="code-line" dir="auto">为了解决这个问题，迫切需要一种自动化、系统化的方法来收集和暴露这些分散在设计层级各处的 Mux 条件信号。理想的方案是能够将这些关键的条件信号集中到一个易于访问的位置，例如设计的顶层接口。这样，验证工程师在进行仿真时，只需观测顶层的少数几个信号（或一个聚合的 Bundle 信号），就能全面了解整个设计中所有 Mux 的分支执行情况，从而极大地简化分支覆盖率的统计和分析工作，提高验证效率和设计质量。MuxCondPropagator Pass 正是为了应对这一技术挑战而设计的。</p>
+<h4 data-line="12" class="code-line" dir="auto" id="个人驱动学习-chiselfirrtl-编译机制" tabindex="-1">个人驱动：学习 Chisel/FIRRTL 编译机制</h4>
+<p data-line="14" class="code-line" dir="auto">除了上述技术层面的需求外，选择重新实现 MuxCondPropagator 也有个人的学习目标驱动。这是一个深入理解和实践 Chisel 编译流程中 Phase 概念以及 FIRRTL IR (Intermediate Representation) 本身的绝佳机会。通过编写一个需要遍历、分析并修改 FIRRTL IR 的转换 Pass（Transformation），能够显著加深对硬件编译器内部工作机制的认识，提升在 Chisel/FIRRTL 生态系统中的开发、定制和调试能力。</p>
+<h3 data-line="16" class="code-line" dir="auto" id="muxcondpropagator-作用" tabindex="-1">MuxCondPropagator 作用</h3>
+<p data-line="18" class="code-line" dir="auto">该 Pass 的目标是识别 Chisel 电路中所有的 Mux 条件信号，并将它们沿着模块实例化层级向上传播。 对于每个包含或使用了 Mux 条件的模块实例，会在其接口上添加一个新的 Bundle 类型的输出端口（默认为 <code>_mux_cond</code>）。 这个 Bundle 包含了所有源自该模块内部或其子模块实例的 Mux 条件信号。</p>
+<p data-line="20" class="code-line" dir="auto">将 Mux 条件传播至顶层 Module 主要在于方便后续的仿真验证与分析。在仿真运行时，只需观测顶层的 _mux_cond 端口上的信号值（例如，记录它们是否都达到过 0 和 1 状态），就能有效地追踪设计中对应 Mux 的真/假分支是否都曾被执行。</p>
+<p data-line="22" class="code-line" dir="auto">这为统计分支覆盖率提供了清晰、直接的数据来源。</p>
+<h3 data-line="24" class="code-line" dir="auto" id="muxcondpropagator-转换思路详解" tabindex="-1">MuxCondPropagator 转换思路详解</h3>
+<h4 data-line="26" class="code-line" dir="auto" id="一-transform-方法-主入口" tabindex="-1">一、 <code>transform</code> 方法 (主入口)</h4>
+<p data-line="28" class="code-line" dir="auto"><code>transform</code> 方法是 Mux 条件传播 Pass 的主入口点，负责协调整个电路的转换过程。</p>
+<ol data-line="30" class="code-line" dir="auto">
 <li data-line="30" class="code-line" dir="auto">
-<p data-line="30" class="code-line" dir="auto"><strong><code>processModule</code> 函数内部逻辑:</strong></p>
+<p data-line="30" class="code-line" dir="auto"><strong>准备阶段:</strong></p>
 <ul data-line="32" class="code-line" dir="auto">
-<li data-line="32" class="code-line" dir="auto"><strong>缓存检查:</strong> 使用 <code>(moduleName, instancePath)</code> 作为键检查 <code>processedModules</code> 缓存。如果命中，直接返回缓存的 <code>ModuleTransformResult</code>。</li>
-<li data-line="33" class="code-line" dir="auto"><strong>查找模块定义:</strong> 使用 <code>moduleName</code> 在 <code>moduleMap</code> 中查找对应的 <code>DefModule</code>。</li>
-<li data-line="34" class="code-line" dir="auto"><strong>处理不同模块类型:</strong>
-<ul data-line="35" class="code-line" dir="auto">
-<li data-line="35" class="code-line" dir="auto"><strong><code>Module</code>:</strong> 调用核心转换逻辑 <code>transformModule(module, moduleMap, internalCondMap, topLevelNamesMap(moduleName), instancePath, processModule)</code>。</li>
-<li data-line="36" class="code-line" dir="auto"><strong><code>DefClass</code>:</strong> 将 <code>DefClass</code> 临时包装成一个 <code>Module</code> 对象，然后调用 <code>transformModule</code> 进行处理。处理完成后，将结果中的端口和主体放回一个新的 <code>DefClass</code> 定义中。</li>
-<li data-line="37" class="code-line" dir="auto"><strong><code>ExtModule</code> / <code>IntModule</code>:</strong> 这些模块没有内部逻辑，无需转换。直接创建 <code>ModuleTransformResult</code> 并返回原始模块定义和 <code>None</code> 端口信息。</li>
-<li data-line="38" class="code-line" dir="auto"><strong>其他/未找到:</strong> 抛出内部错误。</li>
+<li data-line="32" class="code-line" dir="auto"><strong>(1) 获取内部条件:</strong> 调用 <code>ModuleInternalCondsMapProvider.getMap(circuit)</code> 获取或计算每个模块内部直接使用的（非字面量）Mux 条件表达式的映射 <code>internalCondMap</code> (类型 <code>Map[String, Seq[Expression]]</code>)。这是后续分析的基础。</li>
+<li data-line="33" class="code-line" dir="auto"><strong>(2) 构建模块映射:</strong> 创建一个从模块名称到模块定义 (<code>DefModule</code>) 的映射 <code>moduleMap</code>，方便快速查找模块定义。</li>
+<li data-line="34" class="code-line" dir="auto"><strong>(3) 初始化缓存:</strong> 创建一个可变映射 <code>processedModules</code> (类型 <code>mutable.Map[(String, Seq[String]), ModuleTransformResult]</code>)，用于缓存已经处理过的模块（以 <code>(模块名, 实例路径)</code> 为键）及其转换结果。这对于处理模块实例化和避免重复计算至关重要。</li>
+<li data-line="35" class="code-line" dir="auto"><strong>(4) 计算顶层名称:</strong> 遍历电路中的所有模块 (<code>Module</code>) 和类 (<code>DefClass</code>) 定义，对每个定义调用 <code>collectTopLevelNames</code> 辅助函数，收集其顶层作用域（端口、Wire、Reg、Node、Instance 等）定义的名称集合。将结果存储在 <code>topLevelNamesMap</code> (类型 <code>mutable.Map[String, Set[String]]</code>) 中。这用于后续判断本地条件是否需要“提升”(hoist)。</li>
 </ul>
 </li>
-<li data-line="39" class="code-line" dir="auto"><strong>缓存结果:</strong> 将得到的 <code>ModuleTransformResult</code> 存入 <code>processedModules</code> 缓存（使用 <code>(moduleName, instancePath)</code> 作为键）。</li>
-<li data-line="40" class="code-line" dir="auto"><strong>返回结果:</strong> 返回 <code>ModuleTransformResult</code>。</li>
+<li data-line="37" class="code-line" dir="auto">
+<p data-line="37" class="code-line" dir="auto"><strong>递归处理:</strong></p>
+<ul data-line="39" class="code-line" dir="auto">
+<li data-line="39" class="code-line" dir="auto">定义一个内部递归函数 <code>processModule(moduleName: String, instancePath: Seq[String]): ModuleTransformResult</code>。此函数负责处理单个模块（或类）的转换。</li>
+<li data-line="40" class="code-line" dir="auto"><strong>调用入口:</strong> 从电路的主模块 (<code>circuit.main</code>) 开始，以指定的顶层实例名 <code>topInstName</code> 作为初始实例路径 (<code>Seq(topInstName)</code>)，调用 <code>processModule(circuit.main, Seq(topInstName))</code> 启动递归处理。</li>
 </ul>
 </li>
 <li data-line="42" class="code-line" dir="auto">
-<p data-line="42" class="code-line" dir="auto"><strong>结果整合与返回:</strong></p>
-<ul data-line="43" class="code-line" dir="auto">
-<li data-line="43" class="code-line" dir="auto">递归处理完成后，<code>processedModules</code> 缓存中包含了所有被访问到的模块（在特定实例路径下）的转换结果。</li>
-<li data-line="44" class="code-line" dir="auto">创建一个最终的模块映射 <code>finalModules</code> (类型 <code>mutable.Map[String, DefModule]</code>)。</li>
-<li data-line="45" class="code-line" dir="auto">遍历 <code>processedModules</code> 的值 (即 <code>ModuleTransformResult</code>)，将其中的 <code>transformedModule</code> 按模块名添加到 <code>finalModules</code> 中。</li>
-<li data-line="46" class="code-line" dir="auto">遍历原始电路 <code>circuit.modules</code>，将任何未出现在 <code>finalModules</code> 中的模块（例如未被实例化的模块或 <code>ExtModule</code>/<code>IntModule</code>）添加到 <code>finalModules</code> 中，以确保所有模块都被包含。</li>
-<li data-line="47" class="code-line" dir="auto">创建一个新的 <code>Circuit</code> 对象，其 <code>modules</code> 列表包含 <code>finalModules</code> 中的所有模块定义，并按名称排序以保证确定性。</li>
-<li data-line="48" class="code-line" dir="auto">返回这个新的 <code>Circuit</code> 对象。</li>
+<p data-line="42" class="code-line" dir="auto"><strong><code>processModule</code> 函数内部逻辑:</strong></p>
+<ul data-line="44" class="code-line" dir="auto">
+<li data-line="44" class="code-line" dir="auto"><strong>缓存检查:</strong> 使用 <code>(moduleName, instancePath)</code> 作为键检查 <code>processedModules</code> 缓存。如果命中，直接返回缓存的 <code>ModuleTransformResult</code>。</li>
+<li data-line="45" class="code-line" dir="auto"><strong>查找模块定义:</strong> 使用 <code>moduleName</code> 在 <code>moduleMap</code> 中查找对应的 <code>DefModule</code>。</li>
+<li data-line="46" class="code-line" dir="auto"><strong>处理不同模块类型:</strong>
+<ul data-line="47" class="code-line" dir="auto">
+<li data-line="47" class="code-line" dir="auto"><strong><code>Module</code>:</strong> 调用核心转换逻辑 <code>transformModule(module, moduleMap, internalCondMap, topLevelNamesMap(moduleName), instancePath, processModule)</code>。</li>
+<li data-line="48" class="code-line" dir="auto"><strong><code>DefClass</code>:</strong> 将 <code>DefClass</code> 临时包装成一个 <code>Module</code> 对象，然后调用 <code>transformModule</code> 进行处理。处理完成后，将结果中的端口和主体放回一个新的 <code>DefClass</code> 定义中。</li>
+<li data-line="49" class="code-line" dir="auto"><strong><code>ExtModule</code> / <code>IntModule</code>:</strong> 这些模块没有内部逻辑，无需转换。直接创建 <code>ModuleTransformResult</code> 并返回原始模块定义和 <code>None</code> 端口信息。</li>
+<li data-line="50" class="code-line" dir="auto"><strong>其他/未找到:</strong> 抛出内部错误。</li>
 </ul>
 </li>
-</ol>
-<h4 data-line="50" class="code-line" dir="auto" id="二-transformmodule-方法-核心转换逻辑" tabindex="-1">二、 <code>transformModule</code> 方法 (核心转换逻辑)</h4>
-<p data-line="52" class="code-line" dir="auto"><code>transformModule</code> 方法负责对单个模块（或模拟的类）执行具体的 Mux 条件传播转换。</p>
-<ol data-line="54" class="code-line" dir="auto">
+<li data-line="51" class="code-line" dir="auto"><strong>缓存结果:</strong> 将得到的 <code>ModuleTransformResult</code> 存入 <code>processedModules</code> 缓存（使用 <code>(moduleName, instancePath)</code> 作为键）。</li>
+<li data-line="52" class="code-line" dir="auto"><strong>返回结果:</strong> 返回 <code>ModuleTransformResult</code>。</li>
+</ul>
+</li>
 <li data-line="54" class="code-line" dir="auto">
-<p data-line="54" class="code-line" dir="auto"><strong>收集本地条件 (<code>LocalCondSource</code>):</strong></p>
-<ul data-line="56" class="code-line" dir="auto">
-<li data-line="56" class="code-line" dir="auto">从传入的 <code>internalCondMap</code> 中获取当前模块 <code>module.name</code> 对应的 Mux 条件表达式列表。</li>
-<li data-line="57" class="code-line" dir="auto">遍历这些表达式：
-<ul data-line="58" class="code-line" dir="auto">
-<li data-line="58" class="code-line" dir="auto">使用 <code>distinctBy(_.serialize)</code> 去重。</li>
-<li data-line="59" class="code-line" dir="auto">规范化条件类型为 1 位宽 <code>GroundType</code> (通常是 <code>UInt&lt;1&gt;</code>)。</li>
-<li data-line="60" class="code-line" dir="auto">使用 <code>getConditionBaseName(expr)</code> 获取表达式的基础名称。</li>
-<li data-line="61" class="code-line" dir="auto">结合 <code>currentInstancePath</code> 和 <code>LocalMarker</code> 生成全局唯一的字段名 (<code>fieldName</code>)，格式类似 <code>path__I__local__I__basename</code>。</li>
-<li data-line="62" class="code-line" dir="auto">创建 <code>LocalCondSource(fieldName, ConditionOriginInfo(expr, condType))</code> 并收集起来。</li>
-</ul>
-</li>
-</ul>
-</li>
-<li data-line="64" class="code-line" dir="auto">
-<p data-line="64" class="code-line" dir="auto"><strong>收集子模块条件 (<code>ChildCondSource</code>):</strong></p>
-<ul data-line="66" class="code-line" dir="auto">
-<li data-line="66" class="code-line" dir="auto">定义内部递归函数 <code>findInstancesAndCollectChildConds</code> 来遍历模块主体语句 <code>module.body</code>。</li>
-<li data-line="67" class="code-line" dir="auto">当遇到 <code>DefInstance inst</code> 时：
-<ul data-line="68" class="code-line" dir="auto">
-<li data-line="68" class="code-line" dir="auto">构建子模块的实例路径 <code>childInstancePath = currentInstancePath :+ inst.name</code>。</li>
-<li data-line="69" class="code-line" dir="auto">递归调用 <code>processFunc(inst.module, childInstancePath)</code> (即外部传入的 <code>processModule</code>) 来处理子模块。</li>
-<li data-line="70" class="code-line" dir="auto">获取子模块的转换结果 <code>childResult</code>。</li>
-<li data-line="71" class="code-line" dir="auto">如果 <code>childResult.conditionPortInfo</code> 为 <code>Some((childPortName, childBundleType))</code>：
-<ul data-line="72" class="code-line" dir="auto">
-<li data-line="72" class="code-line" dir="auto">遍历 <code>childBundleType</code> 的每个字段 <code>field</code>。</li>
-<li data-line="73" class="code-line" dir="auto"><code>field.name</code> 已经是子模块传递上来的全局唯一字段名。</li>
-<li data-line="74" class="code-line" dir="auto">创建访问该子模块条件端口字段的表达式 <code>fieldAccess = SubField(Reference(inst.name, ...), childPortName, ...).field</code>。</li>
-<li data-line="75" class="code-line" dir="auto">创建 <code>ChildCondSource</code>，其中 <code>fieldName</code> 直接使用 <code>field.name</code>，<code>originInfo</code> 包含 <code>fieldAccess</code> 表达式。将 <code>ChildCondSource</code> 收集起来。</li>
-</ul>
-</li>
-</ul>
-</li>
-<li data-line="76" class="code-line" dir="auto">对 <code>Block</code>, <code>Conditionally</code>, <code>LayerBlock</code> 等结构递归调用 <code>findInstancesAndCollectChildConds</code>。</li>
-</ul>
-</li>
-<li data-line="78" class="code-line" dir="auto">
-<p data-line="78" class="code-line" dir="auto"><strong>整合条件并定义端口:</strong></p>
-<ul data-line="80" class="code-line" dir="auto">
-<li data-line="80" class="code-line" dir="auto">合并本地条件和子模块条件列表，得到 <code>allCondSources</code>。</li>
-<li data-line="81" class="code-line" dir="auto">如果 <code>allCondSources</code> 为空，说明此模块无需修改，直接返回原始模块和 <code>None</code> 端口信息。</li>
-<li data-line="82" class="code-line" dir="auto">遍历 <code>allCondSources</code>，为每个条件创建一个 <code>Field</code> 定义：
-<ul data-line="83" class="code-line" dir="auto">
-<li data-line="83" class="code-line" dir="auto">字段名为 <code>source.fieldName</code> (已保证唯一)。</li>
-<li data-line="84" class="code-line" dir="auto">字段类型规范化为 1 位宽 <code>GroundType</code>。</li>
-<li data-line="85" class="code-line" dir="auto">方向为 <code>Default</code>。</li>
-</ul>
-</li>
-<li data-line="86" class="code-line" dir="auto">将生成的 <code>Field</code> 列表按名称去重（理论上已唯一）并排序，得到 <code>finalUniqueFields</code>。</li>
-<li data-line="87" class="code-line" dir="auto">使用 <code>finalUniqueFields</code> 创建最终的 <code>BundleType</code> (<code>combinedBundleType</code>)。</li>
-<li data-line="88" class="code-line" dir="auto">创建新的输出端口 <code>newOutputPort</code>：名称为 <code>ConditionOutputPortName</code> (<code>_mux_cond</code>)，方向为 <code>Output</code>，类型为 <code>combinedBundleType</code>。</li>
-<li data-line="89" class="code-line" dir="auto">更新模块的端口列表 <code>updatedPorts</code>，移除旧的同名端口（若有）并添加 <code>newOutputPort</code>。</li>
-</ul>
-</li>
-<li data-line="91" class="code-line" dir="auto">
-<p data-line="91" class="code-line" dir="auto"><strong>处理本地条件的提升 (Hoisting):</strong></p>
-<ul data-line="93" class="code-line" dir="auto">
-<li data-line="93" class="code-line" dir="auto">遍历 <code>localCondSources</code> (本地条件)。</li>
-<li data-line="94" class="code-line" dir="auto">对每个本地条件的 <code>sourceExpr</code> 调用 <code>getRootReferenceName</code> 获取其根引用名 <code>refName</code> (如果可能)。</li>
-<li data-line="95" class="code-line" dir="auto"><strong>判断是否需要提升:</strong> 如果 <code>refName</code> 存在且 <em>不</em> 在当前模块的顶层名称集合 <code>topLevelNames</code> 中，则认为该条件源自局部定义（如内部 <code>Node</code>），需要提升。</li>
-<li data-line="96" class="code-line" dir="auto"><strong>记录提升信息:</strong> 如果需要提升：
-<ul data-line="97" class="code-line" dir="auto">
-<li data-line="97" class="code-line" dir="auto">生成一个唯一的中间 Wire 名称 <code>wireName</code> (使用 <code>IntermediateWirePrefix</code> 和字段名)。</li>
-<li data-line="98" class="code-line" dir="auto">将 <code>(expr, tpe, wireName)</code> 存入 <code>localCondsToHoist</code> (以 <code>refName</code> 为键)。</li>
-<li data-line="99" class="code-line" dir="auto">将 <code>refName</code> 到 <code>fieldName</code> 的映射存入 <code>localCondFieldNameMap</code>。</li>
-</ul>
-</li>
-<li data-line="100" class="code-line" dir="auto"><strong>处理非引用条件:</strong> 如果 <code>sourceExpr</code> 不是基于简单引用（例如 <code>DoPrim</code>），尝试用 <code>getConditionBaseName</code> 获取基础名，并同样检查是否在 <code>topLevelNames</code> 中来判断是否需要提升。</li>
-</ul>
-</li>
-<li data-line="102" class="code-line" dir="auto">
-<p data-line="102" class="code-line" dir="auto"><strong>生成中间结构:</strong></p>
-<ul data-line="104" class="code-line" dir="auto">
-<li data-line="104" class="code-line" dir="auto"><strong>(Wire 定义):</strong> 根据 <code>localCondsToHoist</code> 中的信息，为每个需要提升的条件生成 <code>DefWire(NoInfo, wireName, tpe)</code> 语句，收集为 <code>intermediateWires</code>。</li>
-<li data-line="105" class="code-line" dir="auto"><strong>(默认连接):</strong> 为避免 FIRRTL 的 "not fully initialized" 问题，为 <code>intermediateWires</code> 中的每个 Wire 生成一条默认连接 <code>Connect(NoInfo, Reference(wireName, tpe), UIntLiteral(0, IntWidth(1)))</code>，收集为 <code>defaultConnects</code>。</li>
-</ul>
-</li>
-<li data-line="107" class="code-line" dir="auto">
-<p data-line="107" class="code-line" dir="auto"><strong>修改主体以添加中间连接:</strong></p>
-<ul data-line="109" class="code-line" dir="auto">
-<li data-line="109" class="code-line" dir="auto">定义内部递归函数 <code>addIntermediateConnects(stmt: Statement): Seq[Statement]</code> 来遍历原模块主体语句 <code>module.body</code>。</li>
-<li data-line="110" class="code-line" dir="auto">当遇到 <code>DefNode(info, name, value)</code> 时：
-<ul data-line="111" class="code-line" dir="auto">
-<li data-line="111" class="code-line" dir="auto">检查 <code>name</code> 是否在 <code>localCondsToHoist</code> 中且尚未添加连接（通过 <code>connectAdded</code> 集合判断）。</li>
-<li data-line="112" class="code-line" dir="auto">如果是，获取对应的 <code>wireName</code> 和 <code>tpe</code>。</li>
-<li data-line="113" class="code-line" dir="auto">创建连接语句 <code>connectStmt = Connect(info, Reference(wireName, tpe), Reference(name, tpe))</code>。</li>
-<li data-line="114" class="code-line" dir="auto">将 <code>name</code> 加入 <code>connectAdded</code>。</li>
-<li data-line="115" class="code-line" dir="auto">返回 <code>Seq(node, connectStmt)</code>。</li>
-<li data-line="116" class="code-line" dir="auto">否则，只返回 <code>Seq(node)</code>。</li>
-</ul>
-</li>
-<li data-line="117" class="code-line" dir="auto">对 <code>Block</code>, <code>Conditionally</code>, <code>LayerBlock</code> 等结构递归调用 <code>addIntermediateConnects</code>，并处理返回的 <code>Seq[Statement]</code>（可能需要重新包装成 <code>Block</code>）。</li>
-<li data-line="118" class="code-line" dir="auto">对原模块主体 <code>existingStmts</code> 应用 <code>addIntermediateConnects</code>，得到包含中间连接的新主体语句列表 <code>bodyWithIntermediateConnects</code>。</li>
-</ul>
-</li>
-<li data-line="120" class="code-line" dir="auto">
-<p data-line="120" class="code-line" dir="auto"><strong>创建到输出端口的最终连接:</strong></p>
-<ul data-line="122" class="code-line" dir="auto">
-<li data-line="122" class="code-line" dir="auto">遍历最终端口字段列表 <code>finalUniqueFields</code>。</li>
-<li data-line="123" class="code-line" dir="auto">对每个 <code>field</code>：
-<ul data-line="124" class="code-line" dir="auto">
-<li data-line="124" class="code-line" dir="auto">创建访问该端口字段的表达式 <code>portFieldAccess = SubField(Reference(newOutputPort.name, ...), field.name, ...)</code> (连接的 LHS)。</li>
-<li data-line="125" class="code-line" dir="auto">在 <code>allCondSources</code> 中找到与 <code>field.name</code> 对应的原始 <code>source</code>。</li>
-<li data-line="126" class="code-line" dir="auto"><strong>确定连接源 (RHS):</strong>
-<ul data-line="127" class="code-line" dir="auto">
-<li data-line="127" class="code-line" dir="auto">如果 <code>source</code> 是 <code>LocalCondSource</code>: 检查其根引用名 <code>refName</code> 是否需要提升且已成功添加连接（检查 <code>localCondsToHoist</code> 和 <code>connectAdded</code>）。如果是，RHS 为对应的中间 <code>Reference(wireName, tpe)</code>；否则，RHS 为原始的 <code>source.info.sourceExpr</code>。</li>
-<li data-line="128" class="code-line" dir="auto">如果 <code>source</code> 是 <code>ChildCondSource</code>: RHS 直接使用记录的 <code>source.info.sourceExpr</code> (即访问子模块端口字段的表达式)。</li>
-</ul>
-</li>
-<li data-line="129" class="code-line" dir="auto">创建连接语句 <code>Connect(NoInfo, portFieldAccess, connectSourceExpr)</code> 并收集为 <code>finalPortConnects</code>。</li>
-</ul>
-</li>
-</ul>
-</li>
-<li data-line="131" class="code-line" dir="auto">
-<p data-line="131" class="code-line" dir="auto"><strong>构建最终模块:</strong></p>
-<ul data-line="132" class="code-line" dir="auto">
-<li data-line="132" class="code-line" dir="auto">组合所有语句形成最终的模块主体：<code>finalBodyStmts = intermediateWires ++ defaultConnects ++ bodyWithIntermediateConnects ++ finalPortConnects</code>。</li>
-<li data-line="133" class="code-line" dir="auto">创建转换后的模块定义 <code>transformedModule = module.copy(ports = updatedPorts, body = Block(finalBodyStmts))</code>。</li>
-<li data-line="134" class="code-line" dir="auto">返回 <code>ModuleTransformResult(transformedModule, Some((ConditionOutputPortName, combinedBundleType)))</code>。</li>
+<p data-line="54" class="code-line" dir="auto"><strong>结果整合与返回:</strong></p>
+<ul data-line="55" class="code-line" dir="auto">
+<li data-line="55" class="code-line" dir="auto">递归处理完成后，<code>processedModules</code> 缓存中包含了所有被访问到的模块（在特定实例路径下）的转换结果。</li>
+<li data-line="56" class="code-line" dir="auto">创建一个最终的模块映射 <code>finalModules</code> (类型 <code>mutable.Map[String, DefModule]</code>)。</li>
+<li data-line="57" class="code-line" dir="auto">遍历 <code>processedModules</code> 的值 (即 <code>ModuleTransformResult</code>)，将其中的 <code>transformedModule</code> 按模块名添加到 <code>finalModules</code> 中。</li>
+<li data-line="58" class="code-line" dir="auto">遍历原始电路 <code>circuit.modules</code>，将任何未出现在 <code>finalModules</code> 中的模块（例如未被实例化的模块或 <code>ExtModule</code>/<code>IntModule</code>）添加到 <code>finalModules</code> 中，以确保所有模块都被包含。</li>
+<li data-line="59" class="code-line" dir="auto">创建一个新的 <code>Circuit</code> 对象，其 <code>modules</code> 列表包含 <code>finalModules</code> 中的所有模块定义，并按名称排序以保证确定性。</li>
+<li data-line="60" class="code-line" dir="auto">返回这个新的 <code>Circuit</code> 对象。</li>
 </ul>
 </li>
 </ol>
-<h3 data-line="136" class="code-line" dir="auto" id="muxcondpropagator-转换流程图" tabindex="-1">MuxCondPropagator 转换流程图</h3>
-<p data-line="138" class="code-line" dir="auto"><img src="graph.svg" alt="流程图" data-src="graph.svg"></p>
-<h2 data-line="140" class="code-line" dir="auto" id="下周工作" tabindex="-1">下周工作</h2>
-<ul data-line="142" class="code-line" dir="auto">
-<li data-line="142" class="code-line" dir="auto">进一步完成 Conditionally 的分支条件向上传播</li>
-<li data-line="143" class="code-line" dir="auto">尝试使用 Verilator 对 MuxCondPropagator Pass 后的电路进行 Mux 分支覆盖率分析</li>
+<h4 data-line="62" class="code-line" dir="auto" id="二-transformmodule-方法-核心转换逻辑" tabindex="-1">二、 <code>transformModule</code> 方法 (核心转换逻辑)</h4>
+<p data-line="64" class="code-line" dir="auto"><code>transformModule</code> 方法负责对单个模块（或模拟的类）执行具体的 Mux 条件传播转换。</p>
+<ol data-line="66" class="code-line" dir="auto">
+<li data-line="66" class="code-line" dir="auto">
+<p data-line="66" class="code-line" dir="auto"><strong>收集本地条件 (<code>LocalCondSource</code>):</strong></p>
+<ul data-line="68" class="code-line" dir="auto">
+<li data-line="68" class="code-line" dir="auto">从传入的 <code>internalCondMap</code> 中获取当前模块 <code>module.name</code> 对应的 Mux 条件表达式列表。</li>
+<li data-line="69" class="code-line" dir="auto">遍历这些表达式：
+<ul data-line="70" class="code-line" dir="auto">
+<li data-line="70" class="code-line" dir="auto">使用 <code>distinctBy(_.serialize)</code> 去重。</li>
+<li data-line="71" class="code-line" dir="auto">规范化条件类型为 1 位宽 <code>GroundType</code> (通常是 <code>UInt&lt;1&gt;</code>)。</li>
+<li data-line="72" class="code-line" dir="auto">使用 <code>getConditionBaseName(expr)</code> 获取表达式的基础名称。</li>
+<li data-line="73" class="code-line" dir="auto">结合 <code>currentInstancePath</code> 和 <code>LocalMarker</code> 生成全局唯一的字段名 (<code>fieldName</code>)，格式类似 <code>path__I__local__I__basename</code>。</li>
+<li data-line="74" class="code-line" dir="auto">创建 <code>LocalCondSource(fieldName, ConditionOriginInfo(expr, condType))</code> 并收集起来。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li data-line="76" class="code-line" dir="auto">
+<p data-line="76" class="code-line" dir="auto"><strong>收集子模块条件 (<code>ChildCondSource</code>):</strong></p>
+<ul data-line="78" class="code-line" dir="auto">
+<li data-line="78" class="code-line" dir="auto">定义内部递归函数 <code>findInstancesAndCollectChildConds</code> 来遍历模块主体语句 <code>module.body</code>。</li>
+<li data-line="79" class="code-line" dir="auto">当遇到 <code>DefInstance inst</code> 时：
+<ul data-line="80" class="code-line" dir="auto">
+<li data-line="80" class="code-line" dir="auto">构建子模块的实例路径 <code>childInstancePath = currentInstancePath :+ inst.name</code>。</li>
+<li data-line="81" class="code-line" dir="auto">递归调用 <code>processFunc(inst.module, childInstancePath)</code> (即外部传入的 <code>processModule</code>) 来处理子模块。</li>
+<li data-line="82" class="code-line" dir="auto">获取子模块的转换结果 <code>childResult</code>。</li>
+<li data-line="83" class="code-line" dir="auto">如果 <code>childResult.conditionPortInfo</code> 为 <code>Some((childPortName, childBundleType))</code>：
+<ul data-line="84" class="code-line" dir="auto">
+<li data-line="84" class="code-line" dir="auto">遍历 <code>childBundleType</code> 的每个字段 <code>field</code>。</li>
+<li data-line="85" class="code-line" dir="auto"><code>field.name</code> 已经是子模块传递上来的全局唯一字段名。</li>
+<li data-line="86" class="code-line" dir="auto">创建访问该子模块条件端口字段的表达式 <code>fieldAccess = SubField(Reference(inst.name, ...), childPortName, ...).field</code>。</li>
+<li data-line="87" class="code-line" dir="auto">创建 <code>ChildCondSource</code>，其中 <code>fieldName</code> 直接使用 <code>field.name</code>，<code>originInfo</code> 包含 <code>fieldAccess</code> 表达式。将 <code>ChildCondSource</code> 收集起来。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li data-line="88" class="code-line" dir="auto">对 <code>Block</code>, <code>Conditionally</code>, <code>LayerBlock</code> 等结构递归调用 <code>findInstancesAndCollectChildConds</code>。</li>
+</ul>
+</li>
+<li data-line="90" class="code-line" dir="auto">
+<p data-line="90" class="code-line" dir="auto"><strong>整合条件并定义端口:</strong></p>
+<ul data-line="92" class="code-line" dir="auto">
+<li data-line="92" class="code-line" dir="auto">合并本地条件和子模块条件列表，得到 <code>allCondSources</code>。</li>
+<li data-line="93" class="code-line" dir="auto">如果 <code>allCondSources</code> 为空，说明此模块无需修改，直接返回原始模块和 <code>None</code> 端口信息。</li>
+<li data-line="94" class="code-line" dir="auto">遍历 <code>allCondSources</code>，为每个条件创建一个 <code>Field</code> 定义：
+<ul data-line="95" class="code-line" dir="auto">
+<li data-line="95" class="code-line" dir="auto">字段名为 <code>source.fieldName</code> (已保证唯一)。</li>
+<li data-line="96" class="code-line" dir="auto">字段类型规范化为 1 位宽 <code>GroundType</code>。</li>
+<li data-line="97" class="code-line" dir="auto">方向为 <code>Default</code>。</li>
+</ul>
+</li>
+<li data-line="98" class="code-line" dir="auto">将生成的 <code>Field</code> 列表按名称去重（理论上已唯一）并排序，得到 <code>finalUniqueFields</code>。</li>
+<li data-line="99" class="code-line" dir="auto">使用 <code>finalUniqueFields</code> 创建最终的 <code>BundleType</code> (<code>combinedBundleType</code>)。</li>
+<li data-line="100" class="code-line" dir="auto">创建新的输出端口 <code>newOutputPort</code>：名称为 <code>ConditionOutputPortName</code> (<code>_mux_cond</code>)，方向为 <code>Output</code>，类型为 <code>combinedBundleType</code>。</li>
+<li data-line="101" class="code-line" dir="auto">更新模块的端口列表 <code>updatedPorts</code>，移除旧的同名端口（若有）并添加 <code>newOutputPort</code>。</li>
+</ul>
+</li>
+<li data-line="103" class="code-line" dir="auto">
+<p data-line="103" class="code-line" dir="auto"><strong>处理本地条件的提升 (Hoisting):</strong></p>
+<ul data-line="105" class="code-line" dir="auto">
+<li data-line="105" class="code-line" dir="auto">遍历 <code>localCondSources</code> (本地条件)。</li>
+<li data-line="106" class="code-line" dir="auto">对每个本地条件的 <code>sourceExpr</code> 调用 <code>getRootReferenceName</code> 获取其根引用名 <code>refName</code> (如果可能)。</li>
+<li data-line="107" class="code-line" dir="auto"><strong>判断是否需要提升:</strong> 如果 <code>refName</code> 存在且 <em>不</em> 在当前模块的顶层名称集合 <code>topLevelNames</code> 中，则认为该条件源自局部定义（如内部 <code>Node</code>），需要提升。</li>
+<li data-line="108" class="code-line" dir="auto"><strong>记录提升信息:</strong> 如果需要提升：
+<ul data-line="109" class="code-line" dir="auto">
+<li data-line="109" class="code-line" dir="auto">生成一个唯一的中间 Wire 名称 <code>wireName</code> (使用 <code>IntermediateWirePrefix</code> 和字段名)。</li>
+<li data-line="110" class="code-line" dir="auto">将 <code>(expr, tpe, wireName)</code> 存入 <code>localCondsToHoist</code> (以 <code>refName</code> 为键)。</li>
+<li data-line="111" class="code-line" dir="auto">将 <code>refName</code> 到 <code>fieldName</code> 的映射存入 <code>localCondFieldNameMap</code>。</li>
+</ul>
+</li>
+<li data-line="112" class="code-line" dir="auto"><strong>处理非引用条件:</strong> 如果 <code>sourceExpr</code> 不是基于简单引用（例如 <code>DoPrim</code>），尝试用 <code>getConditionBaseName</code> 获取基础名，并同样检查是否在 <code>topLevelNames</code> 中来判断是否需要提升。</li>
+</ul>
+</li>
+<li data-line="114" class="code-line" dir="auto">
+<p data-line="114" class="code-line" dir="auto"><strong>生成中间结构:</strong></p>
+<ul data-line="116" class="code-line" dir="auto">
+<li data-line="116" class="code-line" dir="auto"><strong>(Wire 定义):</strong> 根据 <code>localCondsToHoist</code> 中的信息，为每个需要提升的条件生成 <code>DefWire(NoInfo, wireName, tpe)</code> 语句，收集为 <code>intermediateWires</code>。</li>
+<li data-line="117" class="code-line" dir="auto"><strong>(默认连接):</strong> 为避免 FIRRTL 的 "not fully initialized" 问题，为 <code>intermediateWires</code> 中的每个 Wire 生成一条默认连接 <code>Connect(NoInfo, Reference(wireName, tpe), UIntLiteral(0, IntWidth(1)))</code>，收集为 <code>defaultConnects</code>。</li>
+</ul>
+</li>
+<li data-line="119" class="code-line" dir="auto">
+<p data-line="119" class="code-line" dir="auto"><strong>修改主体以添加中间连接:</strong></p>
+<ul data-line="121" class="code-line" dir="auto">
+<li data-line="121" class="code-line" dir="auto">定义内部递归函数 <code>addIntermediateConnects(stmt: Statement): Seq[Statement]</code> 来遍历原模块主体语句 <code>module.body</code>。</li>
+<li data-line="122" class="code-line" dir="auto">当遇到 <code>DefNode(info, name, value)</code> 时：
+<ul data-line="123" class="code-line" dir="auto">
+<li data-line="123" class="code-line" dir="auto">检查 <code>name</code> 是否在 <code>localCondsToHoist</code> 中且尚未添加连接（通过 <code>connectAdded</code> 集合判断）。</li>
+<li data-line="124" class="code-line" dir="auto">如果是，获取对应的 <code>wireName</code> 和 <code>tpe</code>。</li>
+<li data-line="125" class="code-line" dir="auto">创建连接语句 <code>connectStmt = Connect(info, Reference(wireName, tpe), Reference(name, tpe))</code>。</li>
+<li data-line="126" class="code-line" dir="auto">将 <code>name</code> 加入 <code>connectAdded</code>。</li>
+<li data-line="127" class="code-line" dir="auto">返回 <code>Seq(node, connectStmt)</code>。</li>
+<li data-line="128" class="code-line" dir="auto">否则，只返回 <code>Seq(node)</code>。</li>
+</ul>
+</li>
+<li data-line="129" class="code-line" dir="auto">对 <code>Block</code>, <code>Conditionally</code>, <code>LayerBlock</code> 等结构递归调用 <code>addIntermediateConnects</code>，并处理返回的 <code>Seq[Statement]</code>（可能需要重新包装成 <code>Block</code>）。</li>
+<li data-line="130" class="code-line" dir="auto">对原模块主体 <code>existingStmts</code> 应用 <code>addIntermediateConnects</code>，得到包含中间连接的新主体语句列表 <code>bodyWithIntermediateConnects</code>。</li>
+</ul>
+</li>
+<li data-line="132" class="code-line" dir="auto">
+<p data-line="132" class="code-line" dir="auto"><strong>创建到输出端口的最终连接:</strong></p>
+<ul data-line="134" class="code-line" dir="auto">
+<li data-line="134" class="code-line" dir="auto">遍历最终端口字段列表 <code>finalUniqueFields</code>。</li>
+<li data-line="135" class="code-line" dir="auto">对每个 <code>field</code>：
+<ul data-line="136" class="code-line" dir="auto">
+<li data-line="136" class="code-line" dir="auto">创建访问该端口字段的表达式 <code>portFieldAccess = SubField(Reference(newOutputPort.name, ...), field.name, ...)</code> (连接的 LHS)。</li>
+<li data-line="137" class="code-line" dir="auto">在 <code>allCondSources</code> 中找到与 <code>field.name</code> 对应的原始 <code>source</code>。</li>
+<li data-line="138" class="code-line" dir="auto"><strong>确定连接源 (RHS):</strong>
+<ul data-line="139" class="code-line" dir="auto">
+<li data-line="139" class="code-line" dir="auto">如果 <code>source</code> 是 <code>LocalCondSource</code>: 检查其根引用名 <code>refName</code> 是否需要提升且已成功添加连接（检查 <code>localCondsToHoist</code> 和 <code>connectAdded</code>）。如果是，RHS 为对应的中间 <code>Reference(wireName, tpe)</code>；否则，RHS 为原始的 <code>source.info.sourceExpr</code>。</li>
+<li data-line="140" class="code-line" dir="auto">如果 <code>source</code> 是 <code>ChildCondSource</code>: RHS 直接使用记录的 <code>source.info.sourceExpr</code> (即访问子模块端口字段的表达式)。</li>
+</ul>
+</li>
+<li data-line="141" class="code-line" dir="auto">创建连接语句 <code>Connect(NoInfo, portFieldAccess, connectSourceExpr)</code> 并收集为 <code>finalPortConnects</code>。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li data-line="143" class="code-line" dir="auto">
+<p data-line="143" class="code-line" dir="auto"><strong>构建最终模块:</strong></p>
+<ul data-line="144" class="code-line" dir="auto">
+<li data-line="144" class="code-line" dir="auto">组合所有语句形成最终的模块主体：<code>finalBodyStmts = intermediateWires ++ defaultConnects ++ bodyWithIntermediateConnects ++ finalPortConnects</code>。</li>
+<li data-line="145" class="code-line" dir="auto">创建转换后的模块定义 <code>transformedModule = module.copy(ports = updatedPorts, body = Block(finalBodyStmts))</code>。</li>
+<li data-line="146" class="code-line" dir="auto">返回 <code>ModuleTransformResult(transformedModule, Some((ConditionOutputPortName, combinedBundleType)))</code>。</li>
+</ul>
+</li>
+</ol>
+<h3 data-line="148" class="code-line" dir="auto" id="muxcondpropagator-转换流程图" tabindex="-1">MuxCondPropagator 转换流程图</h3>
+<p data-line="150" class="code-line" dir="auto"><img src="graph.svg" alt="流程图" data-src="graph.svg"></p>
+<h2 data-line="152" class="code-line" dir="auto" id="下周工作" tabindex="-1">下周工作</h2>
+<ul data-line="154" class="code-line" dir="auto">
+<li data-line="154" class="code-line" dir="auto">进一步完成 Conditionally(switch/when) 的条件向上传播</li>
+<li data-line="155" class="code-line" dir="auto">尝试使用 Verilator 对 Pass 后的电路进行分支覆盖率分析</li>
 </ul>
 
         <script>var qe=(e,t)=>()=>(t||e((t={exports:{}}).exports,t),t.exports);var He=qe((It,Ie)=>{var ke="Expected a function",Oe=NaN,ot="[object Symbol]",st=/^\s+|\s+$/g,lt=/^[-+]0x[0-9a-f]+$/i,ct=/^0b[01]+$/i,dt=/^0o[0-7]+$/i,ut=parseInt,ft=typeof global=="object"&&global&&global.Object===Object&&global,mt=typeof self=="object"&&self&&self.Object===Object&&self,gt=ft||mt||Function("return this")(),pt=Object.prototype,vt=pt.toString,ht=Math.max,bt=Math.min,pe=function(){return gt.Date.now()};function yt(e,t,n){var r,i,a,s,o,d,m=0,y=!1,T=!1,S=!0;if(typeof e!="function")throw new TypeError(ke);t=De(t)||0,ne(n)&&(y=!!n.leading,T="maxWait"in n,a=T?ht(De(n.maxWait)||0,t):a,S="trailing"in n?!!n.trailing:S);function M(g){var w=r,k=i;return r=i=void 0,m=g,s=e.apply(k,w),s}function re(g){return m=g,o=setTimeout(E,t),y?M(g):s}function X(g){var w=g-d,k=g-m,I=t-w;return T?bt(I,a-k):I}function R(g){var w=g-d,k=g-m;return d===void 0||w>=t||w<0||T&&k>=a}function E(){var g=pe();if(R(g))return D(g);o=setTimeout(E,X(g))}function D(g){return o=void 0,S&&r?M(g):(r=i=void 0,s)}function B(){o!==void 0&&clearTimeout(o),m=0,r=d=i=o=void 0}function Y(){return o===void 0?s:D(pe())}function N(){var g=pe(),w=R(g);if(r=arguments,i=this,d=g,w){if(o===void 0)return re(d);if(T)return o=setTimeout(E,t),M(d)}return o===void 0&&(o=setTimeout(E,t)),s}return N.cancel=B,N.flush=Y,N}function Tt(e,t,n){var r=!0,i=!0;if(typeof e!="function")throw new TypeError(ke);return ne(n)&&(r="leading"in n?!!n.leading:r,i="trailing"in n?!!n.trailing:i),yt(e,t,{leading:r,maxWait:t,trailing:i})}function ne(e){var t=typeof e;return!!e&&(t=="object"||t=="function")}function wt(e){return!!e&&typeof e=="object"}function Et(e){return typeof e=="symbol"||wt(e)&&vt.call(e)==ot}function De(e){if(typeof e=="number")return e;if(Et(e))return Oe;if(ne(e)){var t=typeof e.valueOf=="function"?e.valueOf():e;e=ne(t)?t+"":t}if(typeof e!="string")return e===0?e:+e;e=e.replace(st,"");var n=ct.test(e);return n||dt.test(e)?ut(e.slice(2),n?2:8):lt.test(e)?Oe:+e}Ie.exports=Tt});var we="code-line",U=class{constructor(t,n,r){this.element=t;this.line=n;this.codeElement=r;this._detailParentElements=Array.from(Xe(t,"DETAILS"))}get isVisible(){return!this._detailParentElements.some(t=>!t.open)}},se=(()=>{let e,t=-1;return n=>{if(!e||n!==t){t=n,e=[new U(document.body,-1)];for(let r of document.getElementsByClassName(we)){if(!(r instanceof HTMLElement))continue;let i=+r.getAttribute("data-line");isNaN(i)||(r.tagName==="CODE"&&r.parentElement&&r.parentElement.tagName==="PRE"?e.push(new U(r.parentElement,i,r)):r.tagName==="UL"||r.tagName==="OL"||e.push(new U(r,i)))}}return e}})();function le(e,t){let n=Math.floor(e),r=se(t),i=r[0]||null;for(let a of r){if(a.line===n)return{previous:a,next:void 0};if(a.line>n)return{previous:i,next:a};i=a}return{previous:i}}function ze(e,t){let n=se(t).filter(d=>d.isVisible),r=e-window.scrollY,i=-1,a=n.length-1;for(;i+1<a;){let d=Math.floor((i+a)/2),m=W(n[d]);m.top+m.height>=r?a=d:i=d}let s=n[a],o=W(s);return a>=1&&o.top>r?{previous:n[i],next:s}:a>1&&a<n.length&&o.top+o.height>r?{previous:s,next:n[a+1]}:{previous:s}}function W({element:e}){let t=e.getBoundingClientRect(),n=e.querySelector(`.${we}`);if(n){let r=n.getBoundingClientRect(),i=Math.max(1,r.top-t.top);return{top:t.top,height:i}}return t}function J(e,t,n){if(!n.settings?.scrollPreviewWithEditor)return;if(e<=0){window.scroll(window.scrollX,0);return}let{previous:r,next:i}=le(e,t);if(!r)return;let a=0,s=W(r),o=s.top;if(i&&i.line!==r.line){let d=(e-r.line)/(i.line-r.line),m=o+s.height,y=i.element.getBoundingClientRect().top-m;a=m+d*y}else{let d=e-Math.floor(e);a=o+s.height*d}a=Math.abs(a)<1?Math.sign(a):a,window.scroll(window.scrollX,Math.max(1,window.scrollY+a))}function ce(e,t){let{previous:n,next:r}=ze(e,t);if(n){if(n.line<0)return 0;let i=W(n),a=e-window.scrollY-i.top;if(r){let s=a/(W(r).top-i.top);return n.line+s*(r.line-n.line)}else{let s=a/i.height;return n.line+s}}return null}function Ee(e,t){return se(t).find(n=>n.element.id===e)}function*Xe(e,t){for(let n=e.parentElement;n;n=n.parentElement)n.tagName===t&&(yield n)}var Q=class{onDidChangeTextEditorSelection(t,n){let{previous:r}=le(t,n);this._update(r&&(r.codeElement||r.element))}_update(t){this._unmarkActiveElement(this._current),this._markActiveElement(t),this._current=t}_unmarkActiveElement(t){t&&t.classList.toggle("code-active-line",!1)}_markActiveElement(t){t&&t.classList.toggle("code-active-line",!0)}};function Se(e){document.readyState==="loading"||document.readyState==="uninitialized"?document.addEventListener("DOMContentLoaded",e):e()}var Ae=(e,t)=>({postMessage(n,r){e.postMessage({type:n,source:t.settings.source,...r})}});function de(e){let t=document.getElementById("vscode-markdown-preview-data");if(t){let n=t.getAttribute(e);if(n)return n}throw new Error(`Could not load data for ${e}`)}function ue(e){return JSON.parse(de(e))}var Z=class{constructor(){this._settings=ue("data-settings")}get settings(){return this._settings}updateSettings(t){this._settings=t}};var Le=11;function Ye(e,t){var n=t.attributes,r,i,a,s,o;if(!(t.nodeType===Le||e.nodeType===Le)){for(var d=n.length-1;d>=0;d--)r=n[d],i=r.name,a=r.namespaceURI,s=r.value,a?(i=r.localName||i,o=e.getAttributeNS(a,i),o!==s&&(r.prefix==="xmlns"&&(i=r.name),e.setAttributeNS(a,i,s))):(o=e.getAttribute(i),o!==s&&e.setAttribute(i,s));for(var m=e.attributes,y=m.length-1;y>=0;y--)r=m[y],i=r.name,a=r.namespaceURI,a?(i=r.localName||i,t.hasAttributeNS(a,i)||e.removeAttributeNS(a,i)):t.hasAttribute(i)||e.removeAttribute(i)}}var ee,Ge="http://www.w3.org/1999/xhtml",b=typeof document>"u"?void 0:document,$e=!!b&&"content"in b.createElement("template"),Ke=!!b&&b.createRange&&"createContextualFragment"in b.createRange();function Je(e){var t=b.createElement("template");return t.innerHTML=e,t.content.childNodes[0]}function Qe(e){ee||(ee=b.createRange(),ee.selectNode(b.body));var t=ee.createContextualFragment(e);return t.childNodes[0]}function Ze(e){var t=b.createElement("body");return t.innerHTML=e,t.childNodes[0]}function et(e){return e=e.trim(),$e?Je(e):Ke?Qe(e):Ze(e)}function te(e,t){var n=e.nodeName,r=t.nodeName,i,a;return n===r?!0:(i=n.charCodeAt(0),a=r.charCodeAt(0),i<=90&&a>=97?n===r.toUpperCase():a<=90&&i>=97?r===n.toUpperCase():!1)}function tt(e,t){return!t||t===Ge?b.createElement(e):b.createElementNS(t,e)}function nt(e,t){for(var n=e.firstChild;n;){var r=n.nextSibling;t.appendChild(n),n=r}return t}function fe(e,t,n){e[n]!==t[n]&&(e[n]=t[n],e[n]?e.setAttribute(n,""):e.removeAttribute(n))}var xe={OPTION:function(e,t){var n=e.parentNode;if(n){var r=n.nodeName.toUpperCase();r==="OPTGROUP"&&(n=n.parentNode,r=n&&n.nodeName.toUpperCase()),r==="SELECT"&&!n.hasAttribute("multiple")&&(e.hasAttribute("selected")&&!t.selected&&(e.setAttribute("selected","selected"),e.removeAttribute("selected")),n.selectedIndex=-1)}fe(e,t,"selected")},INPUT:function(e,t){fe(e,t,"checked"),fe(e,t,"disabled"),e.value!==t.value&&(e.value=t.value),t.hasAttribute("value")||e.removeAttribute("value")},TEXTAREA:function(e,t){var n=t.value;e.value!==n&&(e.value=n);var r=e.firstChild;if(r){var i=r.nodeValue;if(i==n||!n&&i==e.placeholder)return;r.nodeValue=n}},SELECT:function(e,t){if(!t.hasAttribute("multiple")){for(var n=-1,r=0,i=e.firstChild,a,s;i;)if(s=i.nodeName&&i.nodeName.toUpperCase(),s==="OPTGROUP")a=i,i=a.firstChild;else{if(s==="OPTION"){if(i.hasAttribute("selected")){n=r;break}r++}i=i.nextSibling,!i&&a&&(i=a.nextSibling,a=null)}e.selectedIndex=n}}},V=1,Me=11,Ne=3,Ce=8;function O(){}function rt(e){if(e)return e.getAttribute&&e.getAttribute("id")||e.id}function it(e){return function(n,r,i){if(i||(i={}),typeof r=="string")if(n.nodeName==="#document"||n.nodeName==="HTML"||n.nodeName==="BODY"){var a=r;r=b.createElement("html"),r.innerHTML=a}else r=et(r);else r.nodeType===Me&&(r=r.firstElementChild);var s=i.getNodeKey||rt,o=i.onBeforeNodeAdded||O,d=i.onNodeAdded||O,m=i.onBeforeElUpdated||O,y=i.onElUpdated||O,T=i.onBeforeNodeDiscarded||O,S=i.onNodeDiscarded||O,M=i.onBeforeElChildrenUpdated||O,re=i.skipFromChildren||O,X=i.addChild||function(l,c){return l.appendChild(c)},R=i.childrenOnly===!0,E=Object.create(null),D=[];function B(l){D.push(l)}function Y(l,c){if(l.nodeType===V)for(var p=l.firstChild;p;){var u=void 0;c&&(u=s(p))?B(u):(S(p),p.firstChild&&Y(p,c)),p=p.nextSibling}}function N(l,c,p){T(l)!==!1&&(c&&c.removeChild(l),S(l),Y(l,p))}function g(l){if(l.nodeType===V||l.nodeType===Me)for(var c=l.firstChild;c;){var p=s(c);p&&(E[p]=c),g(c),c=c.nextSibling}}g(n);function w(l){d(l);for(var c=l.firstChild;c;){var p=c.nextSibling,u=s(c);if(u){var f=E[u];f&&te(c,f)?(c.parentNode.replaceChild(f,c),I(f,c)):w(c)}else w(c);c=p}}function k(l,c,p){for(;c;){var u=c.nextSibling;(p=s(c))?B(p):N(c,l,!0),c=u}}function I(l,c,p){var u=s(c);if(u&&delete E[u],!p){var f=m(l,c);if(f===!1||(f instanceof HTMLElement&&(l=f,g(l)),e(l,c),y(l),M(l,c)===!1))return}l.nodeName!=="TEXTAREA"?Ve(l,c):xe.TEXTAREA(l,c)}function Ve(l,c){var p=re(l,c),u=c.firstChild,f=l.firstChild,F,A,_,$,C;e:for(;u;){for($=u.nextSibling,F=s(u);!p&&f;){if(_=f.nextSibling,u.isSameNode&&u.isSameNode(f)){u=$,f=_;continue e}A=s(f);var K=f.nodeType,P=void 0;if(K===u.nodeType&&(K===V?(F?F!==A&&((C=E[F])?_===C?P=!1:(l.insertBefore(C,f),A?B(A):N(f,l,!0),f=C,A=s(f)):P=!1):A&&(P=!1),P=P!==!1&&te(f,u),P&&I(f,u)):(K===Ne||K==Ce)&&(P=!0,f.nodeValue!==u.nodeValue&&(f.nodeValue=u.nodeValue))),P){u=$,f=_;continue e}A?B(A):N(f,l,!0),f=_}if(F&&(C=E[F])&&te(C,u))p||X(l,C),I(C,u);else{var oe=o(u);oe!==!1&&(oe&&(u=oe),u.actualize&&(u=u.actualize(l.ownerDocument||b)),X(l,u),w(u))}u=$,f=_}k(l,f,A);var Te=xe[l.nodeName];Te&&Te(l,c)}var v=n,G=v.nodeType,ye=r.nodeType;if(!R){if(G===V)ye===V?te(n,r)||(S(n),v=nt(n,tt(r.nodeName,r.namespaceURI))):v=r;else if(G===Ne||G===Ce){if(ye===G)return v.nodeValue!==r.nodeValue&&(v.nodeValue=r.nodeValue),v;v=r}}if(v===r)S(n);else{if(r.isSameNode&&r.isSameNode(v))return;if(I(v,r,R),D)for(var ie=0,je=D.length;ie<je;ie++){var ae=E[D[ie]];ae&&N(ae,ae.parentNode,!1)}}return!R&&v!==n&&n.parentNode&&(v.actualize&&(v=v.actualize(n.ownerDocument||b)),n.parentNode.replaceChild(v,n)),v}}var at=it(Ye),Pe=at;var me=Object.freeze({http:"http",https:"https",file:"file",untitled:"untitled",mailto:"mailto",vscode:"vscode","vscode-insiders":"vscode-insiders",notebookCell:"vscode-notebook-cell"});function ge(e,t){return t.toLowerCase().startsWith(e+":")}var Re=He(),H=0,Be=new Q,h=new Z,L=0,j=h.settings.source,q=acquireVsCodeApi(),ve=q.getState()??{},x={...ve,...ue("data-state")};typeof ve.scrollProgress<"u"&&ve?.resource!==x.resource&&(x.scrollProgress=0);q.setState(x);var z=Ae(q,h);window.cspAlerter.setPoster(z);window.styleLoadingMonitor.setPoster(z);function he(e){let t=document.getElementsByTagName("img");if(t.length>0){let n=Array.from(t,r=>r.complete?Promise.resolve():new Promise(i=>{r.addEventListener("load",()=>i()),r.addEventListener("error",()=>i())}));Promise.all(n).then(()=>setTimeout(e,0))}else setTimeout(e,0)}Se(()=>{let n=[...new DOMParser().parseFromString(de("data-initial-md-content"),"text/html").body.children];document.body.append(...n);for(let i of n)i instanceof HTMLElement&&be(i);let r=x.scrollProgress;if(Fe(),typeof r=="number"&&!h.settings.fragment){he(()=>{H+=1;let i=Math.max(1,r*document.body.clientHeight);window.scrollTo(0,i)});return}h.settings.scrollPreviewWithEditor&&he(()=>{if(h.settings.fragment){let i;try{i=encodeURIComponent(h.settings.fragment)}catch{i=h.settings.fragment}x.fragment=void 0,q.setState(x);let a=Ee(i,L);a&&(H+=1,J(a.line,L,h))}else isNaN(h.settings.line)||(H+=1,J(h.settings.line,L,h))}),typeof h.settings.selectedLine=="number"&&Be.onDidChangeTextEditorSelection(h.settings.selectedLine,L)});var St=(()=>{let e=Re(t=>{H+=1,he(()=>J(t,L,h))},50);return t=>{isNaN(t)||(x.line=t,e(t))}})();window.addEventListener("resize",()=>{H+=1,Ue()},!0);function Fe(){let e=document.getElementsByTagName("img"),t=0;for(let n of e){n.id="image-"+t,t+=1;let r=n.getAttribute("data-src"),a=r&&!(ge(me.http,r)||ge(me.https,r))?"localImage":"image";n.setAttribute("data-vscode-context",JSON.stringify({webviewSection:a,id:n.id,preventDefaultContextMenuItems:!0,resource:j,imageSource:r}))}}async function _e(e,t=5){if(!document.hasFocus()&&t>0){setTimeout(()=>{_e(e,t-1)},20);return}try{await navigator.clipboard.write([new ClipboardItem({"image/png":new Promise(n=>{let r=document.createElement("canvas");r!==null&&(r.width=e.naturalWidth,r.height=e.naturalHeight,r.getContext("2d")?.drawImage(e,0,0)),r.toBlob(i=>{i&&n(i),r.remove()},"image/png")})})])}catch(n){console.error(n);let r=window.getSelection();if(!r){await navigator.clipboard.writeText(e.getAttribute("data-src")??e.src);return}r.removeAllRanges();let i=document.createRange();i.selectNode(e),r.addRange(i),document.execCommand("copy"),r.removeAllRanges()}}window.addEventListener("message",async e=>{let t=e.data;switch(t.type){case"copyImage":{let n=document.getElementById(t.id);n instanceof HTMLImageElement&&_e(n);return}case"onDidChangeTextEditorSelection":t.source===j&&Be.onDidChangeTextEditorSelection(t.line,L);return;case"updateView":t.source===j&&St(t.line);return;case"updateContent":{let n=document.querySelector(".markdown-body"),i=new DOMParser().parseFromString(t.content,"text/html");for(let a of Array.from(i.querySelectorAll("meta")))a.hasAttribute("http-equiv")&&a.remove();if(t.source!==j){j=t.source;let a=i.querySelector(".markdown-body");n.replaceWith(a),be(a)}else{let a=i.querySelector(".markdown-body"),s=a.querySelectorAll("link");for(let o of s)o.remove();a.prepend(...s),Pe(n,a,{childrenOnly:!0,onBeforeElUpdated:(o,d)=>{if(We(o,d)){let m=o.querySelectorAll("[data-line]"),y=d.querySelectorAll("[data-line]");m.length!==y.length&&console.log("unexpected line number change");for(let T=0;T<m.length;++T){let S=m[T],M=y[T];M&&S.setAttribute("data-line",M.getAttribute("data-line"))}return!1}return o.tagName==="DETAILS"&&d.tagName==="DETAILS"&&o.hasAttribute("open")&&d.setAttribute("open",""),!0},addChild:(o,d)=>{o.appendChild(d),d instanceof HTMLElement&&be(d)}})}++L,window.dispatchEvent(new CustomEvent("vscode.markdown.updateContent")),Fe();break}}},!1);document.addEventListener("dblclick",e=>{if(!h.settings.doubleClickToSwitchToEditor)return;for(let r=e.target;r;r=r.parentNode)if(r.tagName==="A")return;let t=e.pageY,n=ce(t,L);typeof n=="number"&&!isNaN(n)&&z.postMessage("didClick",{line:Math.floor(n)})});var At=["http:","https:","mailto:","vscode:","vscode-insiders:"];document.addEventListener("click",e=>{if(!e)return;let t=e.target;for(;t;){if(t.tagName&&t.tagName==="A"&&t.href){if(t.getAttribute("href").startsWith("#"))return;let n=t.getAttribute("data-href");if(!n&&(n=t.getAttribute("href"),At.some(r=>n.startsWith(r))))return;if(!/^[a-z\-]+:/i.test(n)){z.postMessage("openLink",{href:n}),e.preventDefault(),e.stopPropagation();return}return}t=t.parentNode}},!0);window.addEventListener("scroll",Re(()=>{if(Ue(),H>0)H-=1;else{let e=ce(window.scrollY,L);typeof e=="number"&&!isNaN(e)&&z.postMessage("revealLine",{line:e})}},50));function Ue(){x.scrollProgress=window.scrollY/document.body.clientHeight,q.setState(x)}function We(e,t){let n=["open"];if(e.isEqualNode(t))return!0;if(e.tagName!==t.tagName||e.textContent!==t.textContent)return!1;let r=[...e.attributes].filter(o=>!n.includes(o.name)),i=[...t.attributes].filter(o=>!n.includes(o.name));if(r.length!==i.length)return!1;for(let o=0;o<r.length;++o){let d=r[o],m=i[o];if(d.name!==m.name||d.value!==m.value&&d.name!=="data-line")return!1}let a=Array.from(e.children),s=Array.from(t.children);return a.length===s.length&&a.every((o,d)=>We(o,s[d]))}function be(e){let t=["type","src","nonce","noModule","async"],n=e.tagName==="SCRIPT"?[e]:Array.from(e.getElementsByTagName("script"));for(let r of n){if(!(r instanceof HTMLElement))continue;let i=document.createElement("script"),a=r.innerText;i.text=a;for(let s of t){let o=r.getAttribute&&r.getAttribute(s);o&&i.setAttribute(s,o)}r.insertAdjacentElement("afterend",i),r.remove()}}

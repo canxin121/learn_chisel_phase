@@ -23,20 +23,20 @@ class CustomTransform extends firrtl.options.Phase {
     val circuit = circuitAnno.circuit
 
     FileUtil.writeToFile(
-      "output2/old.firrtl",
+      "output1/old.firrtl",
       Serializer.serialize(circuit)
     )
 
     val new_mux_circuit = MuxCondPropagator.transform(circuit)
     FileUtil.writeToFile(
-      "output2/new_mux.firrtl",
+      "output1/new_mux.firrtl",
       Serializer.serialize(new_mux_circuit)
     )
 
     val new_cond_circuit =
       ConditionallyPredPropagator.transform(new_mux_circuit)
     FileUtil.writeToFile(
-      "output2/new_cond.firrtl",
+      "output1/new_cond.firrtl",
       Serializer.serialize(new_cond_circuit)
     )
 
@@ -49,27 +49,27 @@ class CustomTransform extends firrtl.options.Phase {
 object ExampleMain extends App {
   val old_sv = ChiselStage.emitSystemVerilog(
     // new example_module1.TopModule(32),
-    // new example_module2.WaveformGenerator,
-    new example_module3.TopModule,
+    new example_module2.WaveformGenerator,
+    // new example_module3.TopModule,
     // new example_module4.SimpleFsm,
     firtoolOpts = Array("-disable-all-randomization", "-strip-debug-info")
   )
 
   FileUtil.writeToFile(
-    "output2/old.sv",
+    "output1/old.sv",
     old_sv
   )
 
   val new_sv = CustomStage.emitSystemVerilog(
     // new example_module1.TopModule(32),
-    // new example_module2.WaveformGenerator,
-    new example_module3.TopModule,
+    new example_module2.WaveformGenerator,
+    // new example_module3.TopModule,
     // new example_module4.SimpleFsm,
     firtoolOpts = Array("-disable-all-randomization", "-strip-debug-info")
   )
 
   FileUtil.writeToFile(
-    "output2/new.sv",
+    "output1/new.sv",
     new_sv
   )
 }
