@@ -1,6 +1,18 @@
-# MuxCondPropagator 转换思路详解
+## 完成的工作
 
-## 一、 `transform` 方法 (主入口)
+完成了 MuxCondPropagator
+
+### MuxCondPropagator 作用
+
+该 Pass 的目标是识别 Chisel 电路中所有的 Mux 条件信号，并将它们沿着模块实例化层级向上传播。 对于每个包含或使用了 Mux 条件的模块实例，会在其接口上添加一个新的 Bundle 类型的输出端口（默认为 `_mux_cond`）。 这个 Bundle 包含了所有源自该模块内部或其子模块实例的 Mux 条件信号。
+
+将 Mux 条件传播至顶层 Module 主要在于方便后续的仿真验证与分析。在仿真运行时，只需观测顶层的 \_mux_cond 端口上的信号值（例如，记录它们是否都达到过 0 和 1 状态），就能有效地追踪设计中对应 Mux 的真/假分支是否都曾被执行。
+
+这为统计分支覆盖率提供了清晰、直接的数据来源。
+
+### MuxCondPropagator 转换思路详解
+
+#### 一、 `transform` 方法 (主入口)
 
 `transform` 方法是 Mux 条件传播 Pass 的主入口点，负责协调整个电路的转换过程。
 
@@ -36,7 +48,7 @@
     - 创建一个新的 `Circuit` 对象，其 `modules` 列表包含 `finalModules` 中的所有模块定义，并按名称排序以保证确定性。
     - 返回这个新的 `Circuit` 对象。
 
-## 二、 `transformModule` 方法 (核心转换逻辑)
+#### 二、 `transformModule` 方法 (核心转换逻辑)
 
 `transformModule` 方法负责对单个模块（或模拟的类）执行具体的 Mux 条件传播转换。
 
@@ -121,3 +133,12 @@
     - 组合所有语句形成最终的模块主体：`finalBodyStmts = intermediateWires ++ defaultConnects ++ bodyWithIntermediateConnects ++ finalPortConnects`。
     - 创建转换后的模块定义 `transformedModule = module.copy(ports = updatedPorts, body = Block(finalBodyStmts))`。
     - 返回 `ModuleTransformResult(transformedModule, Some((ConditionOutputPortName, combinedBundleType)))`。
+
+### MuxCondPropagator 转换流程图
+
+![流程图](graph.svg)
+
+## 下周工作
+
+- 进一步完成 Conditionally 的分支条件向上传播
+- 尝试使用 Verilator 对 MuxCondPropagator Pass 后的电路进行 Mux 分支覆盖率分析

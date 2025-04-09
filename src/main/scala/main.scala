@@ -26,14 +26,22 @@ class CustomTransform extends firrtl.options.Phase {
       "output2/old.firrtl",
       Serializer.serialize(circuit)
     )
-    val new_circuit = MuxCondPropagator.transform(circuit)
+
+    val new_mux_circuit = MuxCondPropagator.transform(circuit)
     FileUtil.writeToFile(
-      "output2/new.firrtl",
-      Serializer.serialize(new_circuit)
+      "output2/new_mux.firrtl",
+      Serializer.serialize(new_mux_circuit)
+    )
+
+    val new_cond_circuit =
+      ConditionallyPredPropagator.transform(new_mux_circuit)
+    FileUtil.writeToFile(
+      "output2/new_cond.firrtl",
+      Serializer.serialize(new_cond_circuit)
     )
 
     firrtl.stage.FirrtlCircuitAnnotation(
-      new_circuit
+      new_cond_circuit
     ) +: otherAnnos
   }
 }
@@ -43,6 +51,7 @@ object ExampleMain extends App {
     // new example_module1.TopModule(32),
     // new example_module2.WaveformGenerator,
     new example_module3.TopModule,
+    // new example_module4.SimpleFsm,
     firtoolOpts = Array("-disable-all-randomization", "-strip-debug-info")
   )
 
@@ -55,6 +64,7 @@ object ExampleMain extends App {
     // new example_module1.TopModule(32),
     // new example_module2.WaveformGenerator,
     new example_module3.TopModule,
+    // new example_module4.SimpleFsm,
     firtoolOpts = Array("-disable-all-randomization", "-strip-debug-info")
   )
 
