@@ -17,39 +17,9 @@ import circt.stage.FirtoolOption
 import circt.stage.EmittedMLIR
 import firrtl.EmittedVerilogCircuitAnnotation
 import firrtl.options.Dependency
+import firrtl.options.Phase
 
-class CustomStage extends ChiselStage {
-
-  override val shell = new firrtl.options.Shell("Custom") with CLI {
-    // These are added by firrtl.options.Shell (which we must extend because we are a Stage)
-    override protected def includeLoggerOptions = false
-  }
-
-  override def run(annotations: firrtl.AnnotationSeq): firrtl.AnnotationSeq = {
-
-    val pm = new firrtl.options.PhaseManager(
-      targets = Seq(
-        Dependency[chisel3.stage.phases.AddImplicitOutputFile],
-        Dependency[chisel3.stage.phases.AddImplicitOutputAnnotationFile],
-        Dependency[chisel3.stage.phases.MaybeAspectPhase],
-        Dependency[chisel3.stage.phases.AddSerializationAnnotations],
-        Dependency[chisel3.stage.phases.Convert],
-        Dependency[chisel3.stage.phases.AddDedupGroupAnnotations],
-        Dependency[chisel3.stage.phases.MaybeInjectingPhase],
-        Dependency[circt.stage.phases.AddImplicitOutputFile],
-        Dependency[circt.stage.phases.CIRCT]
-      ),
-      currentState = Seq(
-        Dependency[firrtl.stage.phases.AddDefaults],
-        Dependency[firrtl.stage.phases.Checks]
-      )
-    )
-    pm.transform(annotations)
-  }
-
-}
-
-object CustomStage {
+class CustomStage(val customPhases: Seq[Phase] = Seq.empty) {
 
   /** A phase shared by all the CIRCT backends */
   private def phase = new PhaseManager(

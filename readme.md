@@ -1,4 +1,4 @@
-## 完成 MuxCondPropagator Pass
+## 完成 MuxCondPropagator
 
 ### 背景原因
 
