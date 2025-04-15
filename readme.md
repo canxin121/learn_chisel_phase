@@ -122,7 +122,7 @@ object ExampleMain extends App {
 4.  启动开发服务器: `pnpm run tauri dev`
 5.  应用程序启动后，点击 "Select Coverage Report File" 按钮上传你的 `coverage_report.json` 文件即可查看。
 
-![app_shot.png](assets\app_shot.png)
+![app_shot.png](assets/app_shot.png)
 
 ## Chisel 模块覆盖率处理流程详解
 
@@ -249,4 +249,4 @@ object ExampleMain extends App {
 
 整个流程通过 Chisel/FIRRTL 的 `Phase` 机制，在标准的编译流程中插入了自定义的 `CustomTransform`。这个转换利用通用的 `SignalPropagator` 框架，根据具体配置（Mux 条件、`when` 谓词、寄存器）将内部信号传播到顶层模块的新端口。然后，`CoverageCollectorGenerator` 利用这些传播出来的信号信息，生成配套的 C++ 代码（包含覆盖点定义、初始化逻辑和仿真时的更新/报告逻辑）以及一个 Bash 脚本，最终实现了一个基于 Verilator 的、带有自定义覆盖率收集功能的仿真流程。`CoverageUtil.processModule` 则负责协调这一切，并将所有生成的文件放置到指定的输出目录结构中。
 
-![CoverageUtil.svg](assets\CoverageUtil.svg)
+![CoverageUtil.svg](assets/CoverageUtil.svg)
