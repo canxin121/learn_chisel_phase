@@ -1,0 +1,253 @@
+{
+  "summary": {
+    "overall_coverage_percent": 98.64864864864864558,
+    "total_bins_hit": 73,
+    "total_bins": 74
+  },
+  "conditional_predicates": [
+    {
+      "name": "_cond_pred_UART_rx__I__local__I___T",
+      "hit_true": true,
+      "hit_false": true,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00
+    },
+    {
+      "name": "_cond_pred_UART_rx__I__local__I___T_1",
+      "hit_true": true,
+      "hit_false": true,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00
+    },
+    {
+      "name": "_cond_pred_UART_rx__I__local__I___T_10",
+      "hit_true": true,
+      "hit_false": true,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00
+    },
+    {
+      "name": "_cond_pred_UART_rx__I__local__I___T_11",
+      "hit_true": true,
+      "hit_false": true,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00
+    },
+    {
+      "name": "_cond_pred_UART_rx__I__local__I___T_2",
+      "hit_true": true,
+      "hit_false": true,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00
+    },
+    {
+      "name": "_cond_pred_UART_rx__I__local__I___T_3",
+      "hit_true": true,
+      "hit_false": true,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00
+    },
+    {
+      "name": "_cond_pred_UART_rx__I__local__I___T_4",
+      "hit_true": true,
+      "hit_false": true,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00
+    },
+    {
+      "name": "_cond_pred_UART_rx__I__local__I___T_5",
+      "hit_true": true,
+      "hit_false": true,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00
+    },
+    {
+      "name": "_cond_pred_UART_rx__I__local__I___T_6",
+      "hit_true": true,
+      "hit_false": true,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00
+    },
+    {
+      "name": "_cond_pred_UART_rx__I__local__I___T_8",
+      "hit_true": true,
+      "hit_false": true,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00
+    },
+    {
+      "name": "_cond_pred_UART_rx__I__local__I___T_9",
+      "hit_true": true,
+      "hit_false": true,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00
+    }
+  ],
+  "mux_conditions": [
+  ],
+  "register_coverage": [
+    {
+      "name": "_reg_signals_UART_rx__I__local__I__bitCnterReg",
+      "width": 4,
+      "bins_hit": 8,
+      "bins_total": 8,
+      "coverage_percent": 100.00000000000000000,
+      "bit_details": [
+        {"bit": 0, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
+        {"bit": 1, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
+        {"bit": 2, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
+        {"bit": 3, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"}
+      ]
+    },
+    {
+      "name": "_reg_signals_UART_rx__I__local__I__clkCnterReg",
+      "width": 9,
+      "bins_hit": 17,
+      "bins_total": 18,
+      "coverage_percent": 94.44444444444444287,
+      "bit_details": [
+        {"bit": 0, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
+        {"bit": 1, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
+        {"bit": 2, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
+        {"bit": 3, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
+        {"bit": 4, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
+        {"bit": 5, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
+        {"bit": 6, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
+        {"bit": 7, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
+        {"bit": 8, "hit_zero": true, "hit_one": false, "covered": false, "status": "Z!", "missing": "MISSING_1"}
+      ]
+    },
+    {
+      "name": "_reg_signals_UART_rx__I__local__I__outDataReg_0",
+      "width": 1,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00000000000000000,
+      "bit_details": [
+        {"bit": 0, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"}
+      ]
+    },
+    {
+      "name": "_reg_signals_UART_rx__I__local__I__outDataReg_1",
+      "width": 1,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00000000000000000,
+      "bit_details": [
+        {"bit": 0, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"}
+      ]
+    },
+    {
+      "name": "_reg_signals_UART_rx__I__local__I__outDataReg_2",
+      "width": 1,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00000000000000000,
+      "bit_details": [
+        {"bit": 0, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"}
+      ]
+    },
+    {
+      "name": "_reg_signals_UART_rx__I__local__I__outDataReg_3",
+      "width": 1,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00000000000000000,
+      "bit_details": [
+        {"bit": 0, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"}
+      ]
+    },
+    {
+      "name": "_reg_signals_UART_rx__I__local__I__outDataReg_4",
+      "width": 1,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00000000000000000,
+      "bit_details": [
+        {"bit": 0, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"}
+      ]
+    },
+    {
+      "name": "_reg_signals_UART_rx__I__local__I__outDataReg_5",
+      "width": 1,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00000000000000000,
+      "bit_details": [
+        {"bit": 0, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"}
+      ]
+    },
+    {
+      "name": "_reg_signals_UART_rx__I__local__I__outDataReg_6",
+      "width": 1,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00000000000000000,
+      "bit_details": [
+        {"bit": 0, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"}
+      ]
+    },
+    {
+      "name": "_reg_signals_UART_rx__I__local__I__outDataReg_7",
+      "width": 1,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00000000000000000,
+      "bit_details": [
+        {"bit": 0, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"}
+      ]
+    },
+    {
+      "name": "_reg_signals_UART_rx__I__local__I__outRxDoneReg",
+      "width": 1,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00000000000000000,
+      "bit_details": [
+        {"bit": 0, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"}
+      ]
+    },
+    {
+      "name": "_reg_signals_UART_rx__I__local__I__serialDataReg",
+      "width": 1,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00000000000000000,
+      "bit_details": [
+        {"bit": 0, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"}
+      ]
+    },
+    {
+      "name": "_reg_signals_UART_rx__I__local__I__serialDataReg_REG",
+      "width": 1,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00000000000000000,
+      "bit_details": [
+        {"bit": 0, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"}
+      ]
+    },
+    {
+      "name": "_reg_signals_UART_rx__I__local__I__stateReg",
+      "width": 2,
+      "bins_hit": 4,
+      "bins_total": 4,
+      "coverage_percent": 100.00000000000000000,
+      "bit_details": [
+        {"bit": 0, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
+        {"bit": 1, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"}
+      ]
+    }
+  ]
+}

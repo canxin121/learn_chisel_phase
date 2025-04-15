@@ -1,9 +1,11 @@
 .bsp
 .metals
 .scala-build
+.vscode
 null
 test_run_dir
 project
 target
 .bloop
-output_generated
+dev_output_generated
+.clangd

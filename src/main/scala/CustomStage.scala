@@ -18,22 +18,24 @@ import circt.stage.EmittedMLIR
 import firrtl.EmittedVerilogCircuitAnnotation
 import firrtl.options.Dependency
 import firrtl.options.Phase
+import firrtl.options.Shell // Added import
 
 class CustomStage(val customPhases: Seq[Phase] = Seq.empty) {
 
   /** A phase shared by all the CIRCT backends */
-  private def phase = new PhaseManager(
-    Seq(
-      Dependency[chisel3.aop.injecting.InjectingPhase],
-      Dependency[chisel3.stage.phases.Elaborate],
-      Dependency[chisel3.stage.phases.Convert],
-      Dependency[main.CustomTransform],
-      Dependency[circt.stage.phases.AddImplicitOutputFile],
-      Dependency[chisel3.stage.phases.AddImplicitOutputAnnotationFile],
-      Dependency[circt.stage.phases.Checks],
-      Dependency[circt.stage.phases.CIRCT]
+  private def phase =
+    new PhaseManager(
+      Seq(
+        Dependency[chisel3.aop.injecting.InjectingPhase],
+        Dependency[chisel3.stage.phases.Elaborate],
+        Dependency[chisel3.stage.phases.Convert]
+      ) ++ customPhases.map(p => Dependency(p.getClass)) ++ Seq(
+        Dependency[circt.stage.phases.AddImplicitOutputFile],
+        Dependency[chisel3.stage.phases.AddImplicitOutputAnnotationFile],
+        Dependency[circt.stage.phases.Checks],
+        Dependency[circt.stage.phases.CIRCT]
+      )
     )
-  )
 
   /** Elaborate a Chisel circuit into a CHIRRTL string */
   def emitCHIRRTL(

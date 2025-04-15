@@ -1,156 +1,252 @@
-## 完成 MuxCondPropagator
+# Chisel 覆盖率工具
 
-### 背景原因
+## 项目简介
 
-#### 技术驱动：简化验证与提高覆盖率分析效率
+本项目提供了一个基于 Chisel 和 FIRRTL 的工具，用于自动提取 Chisel 设计中的特定覆盖点（目前支持 `when`/`else when` 语句的谓词、`Mux` 表达式的条件以及所有寄存器的值），并将这些信号传播到顶层模块。然后，它会生成配套的 C++ 代码和一个 Bash 脚本，以便使用 Verilator 进行仿真，并在仿真过程中收集这些覆盖点的信息，最终生成覆盖率报告（控制台输出和 JSON 文件）。
 
-在复杂的数字电路设计（尤其是使用 Chisel/FIRRTL 生成的设计）中，Multiplexer (Mux) 是非常基础且常见的组件，用于根据条件信号选择不同的数据路径。为了确保设计的健壮性和功能的完整性，进行充分的验证至关重要，其中分支覆盖率（Branch Coverage）是一个关键的衡量指标。对于 Mux 而言，分支覆盖率意味着需要确认在仿真或测试过程中，其对应的真分支（条件为 1）和假分支（条件为 0）都至少被执行过一次。
+主要目标是辅助开发者了解在仿真过程中，设计的哪些条件分支被触发，哪些 Mux 选择被使用，以及寄存器的值变化情况，从而帮助评估测试向量的完备性。
 
-然而，在大型、具有多层级模块化结构的设计中，Mux 的条件信号往往深层嵌套在不同的模块实例内部。如果想要直接在仿真中观测所有这些条件信号，就需要深入到设计的各个层级去添加探测点（Probe）或进行追踪，这会变得非常繁琐、易错且难以管理。当设计发生迭代更新时，维护这些分散的观测点也会成为一个沉重的负担。
+## 使用说明
 
-为了解决这个问题，迫切需要一种自动化、系统化的方法来收集和暴露这些分散在设计层级各处的 Mux 条件信号。理想的方案是能够将这些关键的条件信号集中到一个易于访问的位置，例如设计的顶层接口。这样，验证工程师在进行仿真时，只需观测顶层的少数几个信号（或一个聚合的 Bundle 信号），就能全面了解整个设计中所有 Mux 的分支执行情况，从而极大地简化分支覆盖率的统计和分析工作，提高验证效率和设计质量。MuxCondPropagator Pass 正是为了应对这一技术挑战而设计的。
+1.  **准备 Chisel 模块**: 确保你的 Chisel 模块可以被实例化（例如，继承自 `RawModule` 或 `Module`）。
+2.  **配置主程序**: 参考下面的示例代码，在 `main.scala` (或其他主程序文件) 中：
+    - 定义一个 `Seq`，包含要处理的模块生成器函数和对应的输出子目录名称。
+    - 遍历这个 `Seq`，对每个模块调用 `CoverageUtil.processModule`。
+    - `CoverageUtil.processModule` 参数说明：
+      - `moduleGenerator`: 一个返回 `RawModule` 实例的函数 (例如 `() => new MyModule()`)。
+      - `outputDir`: 指定该模块所有输出文件的根目录。
+      - `enableDevOutput`: (可选, 默认为 `false`) 如果设置为 `true`，会在 `outputDir` 下创建一个 `dev` 子目录，并生成额外的调试文件，如转换前的 FIRRTL (`old.fir`)、转换后的 FIRRTL (`new.fir`) 和转换前的 SystemVerilog (`old.sv`)。
+      - `firtoolOpts`: (可选) 传递给 `firtool` (用于生成 SystemVerilog) 的额外参数。
+3.  **运行主程序**: 在 IDE (如 Visual Studio Code) 中运行包含 `ExampleMain` (或你的主程序对象) 的 Scala 文件。
+4.  **检查输出**: 程序执行完毕后，会在指定的 `outputDir` (例如 `output_generated/uart_rx`) 下生成以下文件和目录：
+    - `<TopModuleName>.sv`: 经过转换、带有覆盖率信号导出端口的 SystemVerilog 文件。
+    - `coverage.bash`: 用于编译和运行 Verilator 仿真的 Bash 脚本。
+    - `obj_dir/`: Verilator 的工作目录。
+      - `coverage_collector.h`: 包含覆盖点数据结构和收集逻辑的 C++ 头文件。
+      - `sim_main.cpp`: Verilator 仿真的 C++ 主程序框架。
+    - `dev/` (如果 `enableDevOutput` 为 `true`):
+      - `old.fir`: 原始 FIRRTL 代码。
+      - `new.fir`: 转换后的 FIRRTL 代码。
+      - `old.sv`: 原始 SystemVerilog 代码。
+5.  **运行仿真和收集覆盖率**:
+    - 打开终端或 Git Bash。
+    - `cd` 到包含 `coverage.bash` 的 `outputDir` 目录 (例如 `cd output_generated/uart_rx`)。
+    - 确保你的环境安装了 Verilator 和 C++ 编译器 (如 g++)。
+    - 执行 `./coverage.bash generate` 来编译 Verilog 代码生成 C++ 模型。
+    - 手动编辑 `obj_dir/sim_main.cpp` 文件，在仿真循环中添加你的测试激励逻辑。根据你的设计需求，编写 C++ 代码来驱动 DUT 的输入端口。
+    - 执行 `./coverage.bash run` 来编译 C++ 代码（包含你添加的激励）并运行仿真。
+    - 仿真结束后，会在当前目录 (即 `outputDir`) 生成 `coverage_report.json` 文件，并在控制台打印覆盖率摘要。同时，在 `obj_dir` 目录下会生成 `waveform.vcd` 文件。
 
-#### 个人驱动：学习 Chisel/FIRRTL 编译机制
+## 示例代码
 
-除了上述技术层面的需求外，选择重新实现 MuxCondPropagator 也有个人的学习目标驱动。这是一个深入理解和实践 Chisel 编译流程中 Phase 概念以及 FIRRTL IR (Intermediate Representation) 本身的绝佳机会。通过编写一个需要遍历、分析并修改 FIRRTL IR 的转换 Pass（Transformation），能够显著加深对硬件编译器内部工作机制的认识，提升在 Chisel/FIRRTL 生态系统中的开发、定制和调试能力。
+以下是 `src/main/scala/main.scala` 中的示例，展示了如何使用 `CoverageUtil` 处理多个模块：
 
-### MuxCondPropagator 作用
+```scala
+// filepath: src/main/scala/main.scala
+package firrtl.ir
 
-该 Pass 的目标是识别 Chisel 电路中所有的 Mux 条件信号，并将它们沿着模块实例化层级向上传播。 对于每个包含或使用了 Mux 条件的模块实例，会在其接口上添加一个新的 Bundle 类型的输出端口（默认为 `_mux_cond`）。 这个 Bundle 包含了所有源自该模块内部或其子模块实例的 Mux 条件信号。
+import circt.stage.CustomStage
+import file_util.FileUtil
+import java.io.File
+import circt.stage.ChiselStage
+import chisel3.RawModule
+import modules.WaveformGenerator // 导入你的 Chisel 模块
+import modules.UART_rx         // 导入你的 Chisel 模块
+import modules.UART_tx         // 导入你的 Chisel 模块
 
-将 Mux 条件传播至顶层 Module 主要在于方便后续的仿真验证与分析。在仿真运行时，只需观测顶层的 \_mux_cond 端口上的信号值（例如，记录它们是否都达到过 0 和 1 状态），就能有效地追踪设计中对应 Mux 的真/假分支是否都曾被执行。
+object ExampleMain extends App {
+  // 定义所有输出的基础目录
+  val baseOutputDir = "output_generated"
 
-这为统计分支覆盖率提供了清晰、直接的数据来源。
+  // 定义要处理的模块列表
+  // 每个元素是一个元组: (模块生成器函数, 输出子目录名)
+  val modulesToProcess: Seq[(() => RawModule, String)] = Seq(
+    (
+      () => new WaveformGenerator, // 第一个模块
+      "waveform_generator"         // 对应的输出子目录
+    ),
+    (
+      () => new UART_rx(), // 第二个模块
+      "uart_rx"
+    ),
+    (
+      () => new UART_tx(), // 第三个模块
+      "uart_tx"
+    )
+    // 可以继续添加更多模块...
+  )
 
-### MuxCondPropagator 转换思路详解
+  // 遍历列表，处理每个模块
+  modulesToProcess.foreach { case (moduleGenerator, outputSubDir) =>
+    // 构建完整的输出路径
+    val outputDir = s"$baseOutputDir/$outputSubDir"
+    println(s"--- 开始处理模块: ($outputDir) ---") // 添加日志区分模块
 
-#### 一、 `transform` 方法 (主入口)
+    // 调用核心处理函数
+    CoverageUtil.processModule(
+      moduleGenerator = moduleGenerator, // 传递模块生成器
+      outputDir = outputDir,             // 传递输出目录
+      enableDevOutput = true             // 启用开发调试文件生成
+      // firtoolOpts = Array("-disable-all-randomization", "-strip-debug-info") // 可以自定义 firtool 选项
+    )
+    println(s"--- 完成处理模块: ($outputDir) ---\n") // 添加日志区分模块
+  }
+  println("所有模块处理完毕.")
+}
 
-`transform` 方法是 Mux 条件传播 Pass 的主入口点，负责协调整个电路的转换过程。
+```
 
-1.  **准备阶段:**
+## 覆盖率结果分析工具 (Tauri + Vue3)
 
-    - **(1) 获取内部条件:** 调用 `ModuleInternalCondsMapProvider.getMap(circuit)` 获取或计算每个模块内部直接使用的（非字面量）Mux 条件表达式的映射 `internalCondMap` (类型 `Map[String, Seq[Expression]]`)。这是后续分析的基础。
-    - **(2) 构建模块映射:** 创建一个从模块名称到模块定义 (`DefModule`) 的映射 `moduleMap`，方便快速查找模块定义。
-    - **(3) 初始化缓存:** 创建一个可变映射 `processedModules` (类型 `mutable.Map[(String, Seq[String]), ModuleTransformResult]`)，用于缓存已经处理过的模块（以 `(模块名, 实例路径)` 为键）及其转换结果。这对于处理模块实例化和避免重复计算至关重要。
-    - **(4) 计算顶层名称:** 遍历电路中的所有模块 (`Module`) 和类 (`DefClass`) 定义，对每个定义调用 `collectTopLevelNames` 辅助函数，收集其顶层作用域（端口、Wire、Reg、Node、Instance 等）定义的名称集合。将结果存储在 `topLevelNamesMap` (类型 `mutable.Map[String, Set[String]]`) 中。这用于后续判断本地条件是否需要“提升”(hoist)。
+项目包含一个简单的桌面应用程序 (`analysis_app` 目录)，用于可视化 `coverage_report.json` 文件中的覆盖率结果。
 
-2.  **递归处理:**
+### 功能
 
-    - 定义一个内部递归函数 `processModule(moduleName: String, instancePath: Seq[String]): ModuleTransformResult`。此函数负责处理单个模块（或类）的转换。
-    - **调用入口:** 从电路的主模块 (`circuit.main`) 开始，以指定的顶层实例名 `topInstName` 作为初始实例路径 (`Seq(topInstName)`)，调用 `processModule(circuit.main, Seq(topInstName))` 启动递归处理。
+- **上传报告**: 通过界面选择并上传 `coverage_report.json` 文件。
+- **总体摘要**: 显示整体覆盖率、条件谓词覆盖率、Mux 条件覆盖率和寄存器位覆盖率的百分比及 hit/total bins 数量。
+- **分层浏览**:
+  - 使用三个独立的标签页分别展示条件谓词、Mux 条件和寄存器覆盖点的详细信息。
+  - 每个标签页内使用可展开的树状结构，按照模块实例层级组织覆盖点。
+  - 节点名称旁边会显示该层级或具体覆盖点的覆盖率百分比。
+  - 使用颜色高亮未完全覆盖的节点 (红色: <50%, 橙色: <80%, 黄色: <100%)。
+- **详细信息**:
+  - 对于条件/Mux 覆盖点，显示 `True` 和 `False` 是否被命中 (使用 Ant Design Tag)。
+  - 对于寄存器覆盖点，显示其位宽和 hit/total bins。
+  - 展开寄存器节点，可以查看每个位的覆盖情况 (0 和 1 是否命中)。
 
-3.  **`processModule` 函数内部逻辑:**
+### 运行
 
-    - **缓存检查:** 使用 `(moduleName, instancePath)` 作为键检查 `processedModules` 缓存。如果命中，直接返回缓存的 `ModuleTransformResult`。
-    - **查找模块定义:** 使用 `moduleName` 在 `moduleMap` 中查找对应的 `DefModule`。
-    - **处理不同模块类型:**
-      - **`Module`:** 调用核心转换逻辑 `transformModule(module, moduleMap, internalCondMap, topLevelNamesMap(moduleName), instancePath, processModule)`。
-      - **`DefClass`:** 将 `DefClass` 临时包装成一个 `Module` 对象，然后调用 `transformModule` 进行处理。处理完成后，将结果中的端口和主体放回一个新的 `DefClass` 定义中。
-      - **`ExtModule` / `IntModule`:** 这些模块没有内部逻辑，无需转换。直接创建 `ModuleTransformResult` 并返回原始模块定义和 `None` 端口信息。
-      - **其他/未找到:** 抛出内部错误。
-    - **缓存结果:** 将得到的 `ModuleTransformResult` 存入 `processedModules` 缓存（使用 `(moduleName, instancePath)` 作为键）。
-    - **返回结果:** 返回 `ModuleTransformResult`。
+1.  确保你的开发环境安装了 Node.js 和 Rust (Tauri 开发所需)。
+2.  进入 `analysis_app` 目录: `cd analysis_app`
+3.  安装依赖: `pnpm install`
+4.  启动开发服务器: `pnpm run tauri dev`
+5.  应用程序启动后，点击 "Select Coverage Report File" 按钮上传你的 `coverage_report.json` 文件即可查看。
 
-4.  **结果整合与返回:**
-    - 递归处理完成后，`processedModules` 缓存中包含了所有被访问到的模块（在特定实例路径下）的转换结果。
-    - 创建一个最终的模块映射 `finalModules` (类型 `mutable.Map[String, DefModule]`)。
-    - 遍历 `processedModules` 的值 (即 `ModuleTransformResult`)，将其中的 `transformedModule` 按模块名添加到 `finalModules` 中。
-    - 遍历原始电路 `circuit.modules`，将任何未出现在 `finalModules` 中的模块（例如未被实例化的模块或 `ExtModule`/`IntModule`）添加到 `finalModules` 中，以确保所有模块都被包含。
-    - 创建一个新的 `Circuit` 对象，其 `modules` 列表包含 `finalModules` 中的所有模块定义，并按名称排序以保证确定性。
-    - 返回这个新的 `Circuit` 对象。
+![app_shot.png](assets\app_shot.png)
 
-#### 二、 `transformModule` 方法 (核心转换逻辑)
+## Chisel 模块覆盖率处理流程详解
 
-`transformModule` 方法负责对单个模块（或模拟的类）执行具体的 Mux 条件传播转换。
+这个流程的核心入口是 CoverageUtil.scala 文件中的 `processModule` 方法。它的主要目标是接收一个 Chisel 模块生成器函数，对其进行一系列转换以收集覆盖率信息，并最终生成用于 Verilator 仿真的 SystemVerilog 代码、C++ 辅助代码以及一个 Bash 脚本来运行仿真。
 
-1.  **收集本地条件 (`LocalCondSource`):**
+#### 1. `CoverageUtil.processModule` - 流程协调器
 
-    - 从传入的 `internalCondMap` 中获取当前模块 `module.name` 对应的 Mux 条件表达式列表。
-    - 遍历这些表达式：
-      - 使用 `distinctBy(_.serialize)` 去重。
-      - 规范化条件类型为 1 位宽 `GroundType` (通常是 `UInt<1>`)。
-      - 使用 `getConditionBaseName(expr)` 获取表达式的基础名称。
-      - 结合 `currentInstancePath` 和 `LocalMarker` 生成全局唯一的字段名 (`fieldName`)，格式类似 `path__I__local__I__basename`。
-      - 创建 `LocalCondSource(fieldName, ConditionOriginInfo(expr, condType))` 并收集起来。
+`processModule` 方法负责协调整个处理过程。它的主要步骤如下：
 
-2.  **收集子模块条件 (`ChildCondSource`):**
+1.  **初始化和目录设置**:
+    - 接收 `moduleGenerator` (一个返回 `RawModule` 的函数)、`outputDir` (输出目录路径)、`enableDevOutput` (是否生成额外的调试文件) 和 `firtoolOpts` (传递给 firtool 的参数)。
+    - 根据 `outputDir` 创建主输出目录和 `obj_dir` 子目录（用于存放 Verilator 生成的文件和 C++ 代码）。
+2.  **实例化 `CustomStage`**:
+    - 创建一个 `circt.stage.CustomStage` 实例。关键在于，这个实例在构造时传入了一个自定义的 FIRRTL `Phase`：`CustomTransform`。
+    - `CustomStage` 本身扩展了标准的 Chisel/FIRRTL 编译流程，允许在标准的转换（如 Elaborate、Convert）之间插入自定义的转换逻辑。
+3.  **(可选) 生成开发/调试文件**:
+    - 如果 `enableDevOutput` 为 true：
+      - 创建 `dev` 子目录。
+      - 调用标准的 `ChiselStage.emitSystemVerilog` 来生成未经修改的模块的 SystemVerilog 代码，并将其写入 `dev/old.sv`。
+      - 在核心转换完成后，将转换前 (`old.fir`) 和转换后 (`new.fir`) 的 FIRRTL 代码写入 `dev` 目录。这有助于对比转换前后的代码。
+4.  **执行核心转换和生成**:
+    - 调用 `stage.emitSystemVerilog(moduleGenerator(), firtoolOpts = firtoolOpts)`。这是整个流程的核心触发点。
+    - `CustomStage` 会按照预定义的 `PhaseManager` 顺序执行各个阶段。当执行到 FIRRTL 转换阶段时，我们注入的 `CustomTransform` 会被调用。
+    - `CustomTransform` 内部完成了信号传播和 C++/Bash 代码的生成（详见下文），并将这些代码暂存到全局的 `TransformOutputData` 对象中。
+    - `CustomStage` 继续执行后续阶段，最终使用转换后的 FIRRTL 电路生成最终的 SystemVerilog 文件 (`<TopModule>.sv`)。
+5.  **写入生成的仿真辅助文件**:
+    - `processModule` 在 `stage.emitSystemVerilog` 调用完成后，从 `TransformOutputData` 读取 C++ 头文件 (`coverage_collector.h`)、C++ 主程序 (`sim_main.cpp`) 和 Bash 脚本 (`coverage.bash`) 的内容。
+    - 使用 `FileUtil.writeToFile` 将这些内容写入到指定的路径：
+      - `coverage_collector.h` 和 `sim_main.cpp` 写入 `obj_dir`。
+      - `coverage.bash` 写入 `outputDir`。
+6.  **清理**: 调用 `TransformOutputData.reset()` 清理全局状态，为处理下一个模块做准备。
 
-    - 定义内部递归函数 `findInstancesAndCollectChildConds` 来遍历模块主体语句 `module.body`。
-    - 当遇到 `DefInstance inst` 时：
-      - 构建子模块的实例路径 `childInstancePath = currentInstancePath :+ inst.name`。
-      - 递归调用 `processFunc(inst.module, childInstancePath)` (即外部传入的 `processModule`) 来处理子模块。
-      - 获取子模块的转换结果 `childResult`。
-      - 如果 `childResult.conditionPortInfo` 为 `Some((childPortName, childBundleType))`：
-        - 遍历 `childBundleType` 的每个字段 `field`。
-        - `field.name` 已经是子模块传递上来的全局唯一字段名。
-        - 创建访问该子模块条件端口字段的表达式 `fieldAccess = SubField(Reference(inst.name, ...), childPortName, ...).field`。
-        - 创建 `ChildCondSource`，其中 `fieldName` 直接使用 `field.name`，`originInfo` 包含 `fieldAccess` 表达式。将 `ChildCondSource` 收集起来。
-    - 对 `Block`, `Conditionally`, `LayerBlock` 等结构递归调用 `findInstancesAndCollectChildConds`。
+#### 2. `CustomTransform` - FIRRTL 转换核心
 
-3.  **整合条件并定义端口:**
+这个类是一个自定义的 FIRRTL `Phase`，被 `CoverageUtil` 注入到 `CustomStage` 中。它的 `transform` 方法在 FIRRTL 电路可用后执行：
 
-    - 合并本地条件和子模块条件列表，得到 `allCondSources`。
-    - 如果 `allCondSources` 为空，说明此模块无需修改，直接返回原始模块和 `None` 端口信息。
-    - 遍历 `allCondSources`，为每个条件创建一个 `Field` 定义：
-      - 字段名为 `source.fieldName` (已保证唯一)。
-      - 字段类型规范化为 1 位宽 `GroundType`。
-      - 方向为 `Default`。
-    - 将生成的 `Field` 列表按名称去重（理论上已唯一）并排序，得到 `finalUniqueFields`。
-    - 使用 `finalUniqueFields` 创建最终的 `BundleType` (`combinedBundleType`)。
-    - 创建新的输出端口 `newOutputPort`：名称为 `ConditionOutputPortName` (`_mux_cond`)，方向为 `Output`，类型为 `combinedBundleType`。
-    - 更新模块的端口列表 `updatedPorts`，移除旧的同名端口（若有）并添加 `newOutputPort`。
+1.  **获取 FIRRTL 电路**: 从输入的 `AnnotationSeq` 中提取 `FirrtlCircuitAnnotation`，得到 FIRRTL 电路对象 (`circuit`)。
+2.  **执行信号传播**:
+    - 依次调用三个 `SignalPropagator` 的具体实现：
+      - `MuxCondPropagator.transform(circuit)`: 传播 Mux 条件信号。
+      - `ConditionallyPredPropagator.transform(new_mux_circuit)`: 传播 `when`/`else when` 的谓词信号。
+      - `RegisterSignalPropagator.transform(new_cond_circuit)`: 传播所有寄存器的值信号。
+    - 每次转换都接收上一次转换的结果电路，并返回一个新的电路和关于顶层模块新增端口的信息 (`Option[TopLevelExportInfo]`)。
+3.  **收集端口信息**: 将三次转换返回的 `TopLevelExportInfo` 合并成一个列表 `port_info_list`。这个列表包含了所有被传播到顶层模块的新增端口及其内部信号的详细信息（名称、类型）。
+4.  **调用代码生成器**:
+    - 使用 `circuit.main` (顶层模块名) 和 `port_info_list` 调用 `CoverageCollectorGenerator` 的方法：
+      - `generateCoverageCollectorHeader`: 生成 C++ 头文件内容。
+      - `generateSimMain`: 生成 C++ 仿真主程序内容。
+      - `generateCoverageBashScript`: 生成 Bash 脚本内容。
+5.  **暂存结果**: 将生成的代码字符串以及原始和转换后的 FIRRTL 字符串存储到全局的 `TransformOutputData` 对象中，供 `CoverageUtil.processModule` 后续使用。
+6.  **返回转换后的电路**: 将最终经过三次信号传播的 FIRRTL 电路 (`new_reg_circuit`) 包装在 `FirrtlCircuitAnnotation` 中，连同其他 `Annotation` 一起返回，以便 `CustomStage` 的后续阶段（如 Verilog 生成）使用这个转换后的电路。
 
-4.  **处理本地条件的提升 (Hoisting):**
+#### 3. SignalPropagator.scala - 通用信号传播框架
 
-    - 遍历 `localCondSources` (本地条件)。
-    - 对每个本地条件的 `sourceExpr` 调用 `getRootReferenceName` 获取其根引用名 `refName` (如果可能)。
-    - **判断是否需要提升:** 如果 `refName` 存在且 _不_ 在当前模块的顶层名称集合 `topLevelNames` 中，则认为该条件源自局部定义（如内部 `Node`），需要提升。
-    - **记录提升信息:** 如果需要提升：
-      - 生成一个唯一的中间 Wire 名称 `wireName` (使用 `IntermediateWirePrefix` 和字段名)。
-      - 将 `(expr, tpe, wireName)` 存入 `localCondsToHoist` (以 `refName` 为键)。
-      - 将 `refName` 到 `fieldName` 的映射存入 `localCondFieldNameMap`。
-    - **处理非引用条件:** 如果 `sourceExpr` 不是基于简单引用（例如 `DoPrim`），尝试用 `getConditionBaseName` 获取基础名，并同样检查是否在 `topLevelNames` 中来判断是否需要提升。
+这个文件定义了一个通用的框架，用于将模块内部的特定信号“传播”到模块的顶层输出端口。这使得原本在模块内部难以观测的信号可以在仿真时从顶层访问。
 
-5.  **生成中间结构:**
+- **核心思想**: 递归地遍历模块层级。对于每个模块，识别其内部需要传播的“本地”信号，并检查其子模块实例是否已经传播了信号。将所有这些信号汇集起来，在该模块上创建一个新的 `Bundle` 类型的输出端口，并将所有来源信号连接到这个新端口的对应字段上。字段的名称被设计成能够唯一地标识信号的原始来源（包括实例路径和本地名称）。
+- **`PropagatorConfig`**: 这个 case class 用于配置信号传播器的行为：
+  - `signalName`: 信号的描述性名称（用于日志/错误）。
+  - `outputPortName`: 在模块上创建的新输出端口的名称（如 `_mux_cond`, `_cond_pred`, `_reg_signals`）。
+  - `intermediateWirePrefix`: 为非顶层定义的本地信号创建中间 Wire 的前缀。
+  - `localSignalExtractor`: **关键配置**。这是一个函数，接收 `Circuit` 对象，返回一个 `Map[String, Seq[Expression]]`，其中 Key 是模块名，Value 是该模块内需要传播的本地信号 `Expression` 列表。不同的传播器（Mux, Cond, Reg）通过提供不同的 `localSignalExtractor` 来实现对特定信号的提取。
+  - `defaultTypeForUnknown`: 可选的默认类型。如果提取出的信号类型是 `UnknownType`，则使用此类型（例如，Mux 和 Cond 的条件通常是 `BoolType`）。对于寄存器，则为 `None`，因为寄存器类型必须明确。
+- **`SignalPropagator.transform` (主方法)**:
+  - 接收 `Circuit` 和 `PropagatorConfig`。
+  - 调用 `config.localSignalExtractor` 获取所有模块的本地信号。
+  - 递归调用内部的 `processModule` (或 `transformModule`) 函数处理模块层级。
+  - `transformModule` (内部辅助方法):
+    - 收集本地信号源 (`LocalSignalSource`)。
+    - 递归处理子模块实例，收集子模块传播上来的信号源 (`ChildSignalSource`)。
+    - 如果存在任何信号源，则：
+      - 根据所有信号源的类型和唯一名称构建 `BundleType`。
+      - 创建新的输出端口 (`Port`)。
+      - 处理需要中间 Wire 的本地信号（即那些不是在模块顶层直接定义的信号，例如在 `when` 块内定义的 `Node`）。
+      - 生成连接语句，将所有来源信号（本地信号、中间 Wire、子模块端口字段）连接到新输出端口的对应字段。
+      - 返回转换后的模块和新端口信息 (`ModuleTransformResult`)。
+  - 收集所有转换后的模块定义，构建新的 `Circuit`。
+  - **重要**: 从主模块的 `ModuleTransformResult` 中提取新添加的端口信息，并将其包装成 `TopLevelExportInfo` 返回。这个 `TopLevelExportInfo` 包含了最终顶层模块新增的那个包含所有传播信号的 Bundle 端口的详细信息。
+- **具体实现**:
+  - `ConditionallyPredPropagator`, `MuxCondPropagator`, `RegisterSignalPropagator` 都是 `object`，它们内部定义了各自的 `Extractor` (实现了 `localSignalExtractor` 逻辑，用于查找对应的谓词、条件或寄存器) 和 `PropagatorConfig`。它们的 `transform` 方法仅仅是调用通用的 `SignalPropagator.transform` 并传入自己的 `config`。
 
-    - **(Wire 定义):** 根据 `localCondsToHoist` 中的信息，为每个需要提升的条件生成 `DefWire(NoInfo, wireName, tpe)` 语句，收集为 `intermediateWires`。
-    - **(默认连接):** 为避免 FIRRTL 的 "not fully initialized" 问题，为 `intermediateWires` 中的每个 Wire 生成一条默认连接 `Connect(NoInfo, Reference(wireName, tpe), UIntLiteral(0, IntWidth(1)))`，收集为 `defaultConnects`。
+#### 4. CoverageCollectorGenerator.scala - C++/Bash 代码生成器
 
-6.  **修改主体以添加中间连接:**
+这个 `object` 负责根据 FIRRTL 电路信息（特别是经过 `SignalPropagator` 处理后得到的顶层导出端口信息）生成 C++ 和 Bash 代码。
 
-    - 定义内部递归函数 `addIntermediateConnects(stmt: Statement): Seq[Statement]` 来遍历原模块主体语句 `module.body`。
-    - 当遇到 `DefNode(info, name, value)` 时：
-      - 检查 `name` 是否在 `localCondsToHoist` 中且尚未添加连接（通过 `connectAdded` 集合判断）。
-      - 如果是，获取对应的 `wireName` 和 `tpe`。
-      - 创建连接语句 `connectStmt = Connect(info, Reference(wireName, tpe), Reference(name, tpe))`。
-      - 将 `name` 加入 `connectAdded`。
-      - 返回 `Seq(node, connectStmt)`。
-      - 否则，只返回 `Seq(node)`。
-    - 对 `Block`, `Conditionally`, `LayerBlock` 等结构递归调用 `addIntermediateConnects`，并处理返回的 `Seq[Statement]`（可能需要重新包装成 `Block`）。
-    - 对原模块主体 `existingStmts` 应用 `addIntermediateConnects`，得到包含中间连接的新主体语句列表 `bodyWithIntermediateConnects`。
+- **`escapeSignalName`**: 一个辅助函数，用于转义 FIRRTL 信号名中的 `__`，避免与 Verilator 内部命名冲突。
+- **`getSignalWidth`**: 从 FIRRTL 的 `Type` 中提取位宽。
+- **`generateRegisterPointsRecursive`**: 递归函数，用于为 `_reg_signals` 端口中的（可能是嵌套的）Vector 类型的寄存器信号生成 C++ `emplace_back` 调用代码。它会展开 Vector 并为每个基本元素生成一个覆盖点。
+- **`generateCoverageCollectorHeader`**:
+  - 接收顶层模块名 (`topModuleName`) 和 `List[TopLevelExportInfo]` (来自 `CustomTransform`，源自 `SignalPropagator`)。
+  - 生成 `coverage_collector.h` 的内容。
+  - **C++ 结构体**: 定义了 `ConditionCoveragePoint` 和 `RegisterCoveragePoint` 结构体。
+    - `ConditionCoveragePoint`: 用于 Mux 条件和 Predicate 谓词。包含信号名、`hit_true`/`hit_false` 标志、指向 Verilator 模型中对应 1 位信号的指针 (`uint8_t*`)。提供 `update`, `get_hit_rate`, `print_status`, `exportJson` 等方法。
+    - `RegisterCoveragePoint`: 用于寄存器信号。包含信号名、位宽 (`width`)、一个 `RegisterBitCoverage` 的 `vector` (每个 bit 一个，用于跟踪 0/1 翻转)、指向 Verilator 模型中对应信号的通用指针 (`void*`)。`RegisterBitCoverage` 内部有 `hit_zero`/`hit_one` 标志。`RegisterCoveragePoint` 提供 `update` (根据指针读取当前值并更新所有 bit 的覆盖状态，能处理 VlWide 类型)、`get_register_coverage`, `print_status` (包括详细的未覆盖 bit 报告), `exportJson` (包括每个 bit 的详细覆盖状态) 等方法。
+  - **`CoverageCollector` 类**:
+    - 包含 `std::vector` 来存储所有的 `ConditionCoveragePoint` (区分 Mux 和 Predicate) 和 `RegisterCoveragePoint`。
+    - `initialize` 方法: **关键部分**。遍历传入的 `exportInfos`：
+      - 根据端口名 (`_cond_pred`, `_mux_cond`, `_reg_signals`) 区分信号类型。
+      - 对于 `_cond_pred` 和 `_mux_cond`，遍历其 `exportedSignals`，生成 `condition_points.emplace_back(...)` 或 `mux_condition_points.emplace_back(...)` C++ 代码。代码中包含信号的完整层级名称 (从 `TopLevelExportInfo` 获取) 和通过 `&top-><escaped_signal_name>` 获取的信号指针。
+      - 对于 `_reg_signals`，遍历其 `exportedSignals`，调用 `generateRegisterPointsRecursive` 来处理可能的 Vector 类型，并生成 `register_points.emplace_back(...)` C++ 代码，同样包含信号名、宽度和指针。
+    - `update` 方法: 遍历所有存储的覆盖点，并调用它们各自的 `update` 方法。
+    - `report` 方法: 打印覆盖率报告到控制台。
+    - `exportJson` 方法: 将覆盖率数据导出为 JSON 文件。
+  - **代码拼接**: 将 C++ 模板代码和根据 `exportInfos` 动态生成的 `emplace_back` 调用代码组合成完整的头文件内容。
+- **`generateSimMain`**:
+  - 生成 `sim_main.cpp` 的内容。
+  - 这是一个标准的 Verilator C++ 测试平台骨架：
+    - 包含必要的头文件 (`verilated.h`, `V<TopModule>.h`, `coverage_collector.h`)。
+    - 设置 Verilator 上下文 (`VerilatedContext`) 和 VCD 追踪 (`VerilatedVcdC`)。
+    - 实例化 DUT (`V<TopModule>`) 和 `CoverageCollector`。
+    - 调用 `coverage_collector.initialize(top.get())`。
+    - 实现基本的仿真循环：管理时间、处理时钟和复位。
+    - **包含一个用户需要编辑的占位符区域 (`// --- Stimulus Generation (User Placeholder) ---`)，用于添加测试激励。**
+    - 在每个时钟边沿调用 `top->eval()`。
+    - **关键**: 在适当的位置调用 `coverage_collector.update()` 来更新覆盖率状态。
+    - 仿真结束后，调用 `coverage_collector.report()` 打印报告和 `coverage_collector.exportJson("coverage_report.json")` 导出 JSON 文件。
+- **`generateCoverageBashScript`**:
+  - 生成 `coverage.bash` 脚本内容。
+  - 提供 `generate` 和 `run` 两个命令：
+    - `generate`: 调用 `verilator` 命令，传入 `.sv` 文件、`obj_dir/sim_main.cpp`、`--trace`、`-Iobj_dir` 等参数，编译生成 C++ 模型代码到 `obj_dir`。
+    - `run`: 先 `cd` 到 `obj_dir`，然后调用 `make` 命令（使用 Verilator 生成的 `V<TopModule>.mk`）来编译 C++ 代码（**包括用户在 `sim_main.cpp` 中添加的激励**）生成可执行文件 `V<TopModule>` (或 `.exe`)，然后执行该文件进行仿真。仿真结束后会提示 JSON 报告和 VCD 文件的生成位置。
 
-7.  **创建到输出端口的最终连接:**
+#### 总结
 
-    - 遍历最终端口字段列表 `finalUniqueFields`。
-    - 对每个 `field`：
-      - 创建访问该端口字段的表达式 `portFieldAccess = SubField(Reference(newOutputPort.name, ...), field.name, ...)` (连接的 LHS)。
-      - 在 `allCondSources` 中找到与 `field.name` 对应的原始 `source`。
-      - **确定连接源 (RHS):**
-        - 如果 `source` 是 `LocalCondSource`: 检查其根引用名 `refName` 是否需要提升且已成功添加连接（检查 `localCondsToHoist` 和 `connectAdded`）。如果是，RHS 为对应的中间 `Reference(wireName, tpe)`；否则，RHS 为原始的 `source.info.sourceExpr`。
-        - 如果 `source` 是 `ChildCondSource`: RHS 直接使用记录的 `source.info.sourceExpr` (即访问子模块端口字段的表达式)。
-      - 创建连接语句 `Connect(NoInfo, portFieldAccess, connectSourceExpr)` 并收集为 `finalPortConnects`。
+整个流程通过 Chisel/FIRRTL 的 `Phase` 机制，在标准的编译流程中插入了自定义的 `CustomTransform`。这个转换利用通用的 `SignalPropagator` 框架，根据具体配置（Mux 条件、`when` 谓词、寄存器）将内部信号传播到顶层模块的新端口。然后，`CoverageCollectorGenerator` 利用这些传播出来的信号信息，生成配套的 C++ 代码（包含覆盖点定义、初始化逻辑和仿真时的更新/报告逻辑）以及一个 Bash 脚本，最终实现了一个基于 Verilator 的、带有自定义覆盖率收集功能的仿真流程。`CoverageUtil.processModule` 则负责协调这一切，并将所有生成的文件放置到指定的输出目录结构中。
 
-8.  **构建最终模块:**
-    - 组合所有语句形成最终的模块主体：`finalBodyStmts = intermediateWires ++ defaultConnects ++ bodyWithIntermediateConnects ++ finalPortConnects`。
-    - 创建转换后的模块定义 `transformedModule = module.copy(ports = updatedPorts, body = Block(finalBodyStmts))`。
-    - 返回 `ModuleTransformResult(transformedModule, Some((ConditionOutputPortName, combinedBundleType)))`。
-
-### MuxCondPropagator 转换流程图
-
-![流程图](graph.svg)
-
-## 下周工作
-
-- 进一步完成 Conditionally(switch/when) 的条件向上传播
-- 尝试使用 Verilator 对 Pass 后的电路进行分支覆盖率分析
+![CoverageUtil.svg](assets\CoverageUtil.svg)

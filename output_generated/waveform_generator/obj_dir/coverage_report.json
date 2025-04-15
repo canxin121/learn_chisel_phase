@@ -1,0 +1,78 @@
+{
+  "summary": {
+    "overall_coverage_percent": 100.00000000000000000,
+    "total_bins_hit": 42,
+    "total_bins": 42
+  },
+  "conditional_predicates": [
+    {
+      "name": "_cond_pred_WaveformGenerator__I__local__I___T",
+      "hit_true": true,
+      "hit_false": true,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00
+    },
+    {
+      "name": "_cond_pred_WaveformGenerator__I__local__I___T_1",
+      "hit_true": true,
+      "hit_false": true,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00
+    },
+    {
+      "name": "_cond_pred_WaveformGenerator__I__local__I___T_2",
+      "hit_true": true,
+      "hit_false": true,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00
+    },
+    {
+      "name": "_cond_pred_WaveformGenerator__I__local__I___T_3",
+      "hit_true": true,
+      "hit_false": true,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00
+    }
+  ],
+  "mux_conditions": [
+    {
+      "name": "_mux_cond_WaveformGenerator__I__local__I___io_output_T_4",
+      "hit_true": true,
+      "hit_false": true,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00
+    }
+  ],
+  "register_coverage": [
+    {
+      "name": "_reg_signals_WaveformGenerator__I__local__I__phaseAcc",
+      "width": 16,
+      "bins_hit": 32,
+      "bins_total": 32,
+      "coverage_percent": 100.00000000000000000,
+      "bit_details": [
+        {"bit": 0, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
+        {"bit": 1, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
+        {"bit": 2, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
+        {"bit": 3, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
+        {"bit": 4, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
+        {"bit": 5, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
+        {"bit": 6, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
+        {"bit": 7, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
+        {"bit": 8, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
+        {"bit": 9, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
+        {"bit": 10, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
+        {"bit": 11, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
+        {"bit": 12, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
+        {"bit": 13, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
+        {"bit": 14, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
+        {"bit": 15, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"}
+      ]
+    }
+  ]
+}
