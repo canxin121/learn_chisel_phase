@@ -15,14 +15,14 @@ circuit UART_tx :
     wire _cond_pred_prop_wire_UART_tx__I__local__I___T_4 : UInt<1>
     wire _cond_pred_prop_wire_UART_tx__I__local__I___T_5 : UInt<1>
     wire _cond_pred_prop_wire_UART_tx__I__local__I___T_1 : UInt<1>
-    connect _cond_pred_prop_wire_UART_tx__I__local__I___T_6, UInt<1>(0h0)
-    connect _cond_pred_prop_wire_UART_tx__I__local__I___T_7, UInt<1>(0h0)
-    connect _cond_pred_prop_wire_UART_tx__I__local__I___T_8, UInt<1>(0h0)
-    connect _cond_pred_prop_wire_UART_tx__I__local__I___T_2, UInt<1>(0h0)
-    connect _cond_pred_prop_wire_UART_tx__I__local__I___T_3, UInt<1>(0h0)
-    connect _cond_pred_prop_wire_UART_tx__I__local__I___T_4, UInt<1>(0h0)
-    connect _cond_pred_prop_wire_UART_tx__I__local__I___T_5, UInt<1>(0h0)
-    connect _cond_pred_prop_wire_UART_tx__I__local__I___T_1, UInt<1>(0h0)
+    invalidate _cond_pred_prop_wire_UART_tx__I__local__I___T_6
+    invalidate _cond_pred_prop_wire_UART_tx__I__local__I___T_7
+    invalidate _cond_pred_prop_wire_UART_tx__I__local__I___T_8
+    invalidate _cond_pred_prop_wire_UART_tx__I__local__I___T_2
+    invalidate _cond_pred_prop_wire_UART_tx__I__local__I___T_3
+    invalidate _cond_pred_prop_wire_UART_tx__I__local__I___T_4
+    invalidate _cond_pred_prop_wire_UART_tx__I__local__I___T_5
+    invalidate _cond_pred_prop_wire_UART_tx__I__local__I___T_1
     regreset clkCnterReg : UInt<8>, clock, reset, UInt<8>(0h0) @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\modules\\Uart.scala 120:28]
     regreset bitCnterReg : UInt<4>, clock, reset, UInt<4>(0h0) @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\modules\\Uart.scala 121:28]
     regreset inDataReg : UInt<8>, clock, reset, UInt<8>(0h0) @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\modules\\Uart.scala 123:26]

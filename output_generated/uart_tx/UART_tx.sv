@@ -33,12 +33,9 @@ module UART_tx(
   reg        outTxDoneReg;
   reg  [1:0] stateReg;
   wire       _cond_pred_UART_tx__I__local__I___T_0 = stateReg == 2'h0;
-  wire       _GEN = stateReg == 2'h1;
-  wire       _GEN_0 = clkCnterReg < 8'h56;
-  wire       _GEN_1 = stateReg == 2'h2;
-  wire       _GEN_2 = _cond_pred_UART_tx__I__local__I___T_0 | _GEN;
-  wire       _GEN_3 = _GEN | _GEN_1;
-  wire       _GEN_4 = _cond_pred_UART_tx__I__local__I___T_0 | _GEN_3;
+  wire       _cond_pred_prop_wire_UART_tx__I__local__I___T_2 = stateReg == 2'h1;
+  wire       _cond_pred_prop_wire_UART_tx__I__local__I___T_8 = clkCnterReg < 8'h56;
+  wire       _cond_pred_prop_wire_UART_tx__I__local__I___T_4 = stateReg == 2'h2;
   always @(posedge clock) begin
     if (reset) begin
       clkCnterReg <= 8'h0;
@@ -50,33 +47,34 @@ module UART_tx(
       stateReg <= 2'h0;
     end
     else begin
-      automatic logic [3:0][7:0] _GEN_5 =
-        {{_GEN_0 ? clkCnterReg + 8'h1 : 8'h0},
-         {_GEN_0 ? clkCnterReg + 8'h1 : 8'h0},
-         {_GEN_0 ? clkCnterReg + 8'h1 : 8'h0},
+      automatic logic [3:0][7:0] _GEN =
+        {{_cond_pred_prop_wire_UART_tx__I__local__I___T_8 ? clkCnterReg + 8'h1 : 8'h0},
+         {_cond_pred_prop_wire_UART_tx__I__local__I___T_8 ? clkCnterReg + 8'h1 : 8'h0},
+         {_cond_pred_prop_wire_UART_tx__I__local__I___T_8 ? clkCnterReg + 8'h1 : 8'h0},
          {8'h0}};
-      automatic logic [3:0][1:0] _GEN_6 =
-        {{{2{_GEN_0}}},
-         {{1'h1, ~(_GEN_0 | ~(bitCnterReg[3]))}},
-         {_GEN_0 ? 2'h1 : 2'h2},
+      automatic logic [3:0][1:0] _GEN_0 =
+        {{{2{_cond_pred_prop_wire_UART_tx__I__local__I___T_8}}},
+         {{1'h1, ~(_cond_pred_prop_wire_UART_tx__I__local__I___T_8 | ~(bitCnterReg[3]))}},
+         {_cond_pred_prop_wire_UART_tx__I__local__I___T_8 ? 2'h1 : 2'h2},
          {{1'h0, io_i_tx_trig}}};
-      clkCnterReg <= _GEN_5[stateReg];
+      clkCnterReg <= _GEN[stateReg];
       if (_cond_pred_UART_tx__I__local__I___T_0) begin
         bitCnterReg <= 4'h0;
         outDataReg <= ~io_i_tx_trig & outDataReg;
       end
       else begin
-        automatic logic [7:0] _GEN_7;
-        _GEN_7 = {4'h0, bitCnterReg};
-        if (_GEN) begin
-          if (~_GEN_0) begin
+        automatic logic [7:0] _GEN_1;
+        _GEN_1 = {4'h0, bitCnterReg};
+        if (_cond_pred_prop_wire_UART_tx__I__local__I___T_2) begin
+          if (~_cond_pred_prop_wire_UART_tx__I__local__I___T_8) begin
             automatic logic [7:0] _outDataReg_T;
             bitCnterReg <= bitCnterReg + 4'h1;
-            _outDataReg_T = inDataReg >> _GEN_7;
+            _outDataReg_T = inDataReg >> _GEN_1;
             outDataReg <= _outDataReg_T[0];
           end
         end
-        else if (~_GEN_1 | _GEN_0) begin
+        else if (~_cond_pred_prop_wire_UART_tx__I__local__I___T_4
+                 | _cond_pred_prop_wire_UART_tx__I__local__I___T_8) begin
         end
         else begin
           automatic logic [7:0] _outDataReg_T_2;
@@ -84,7 +82,7 @@ module UART_tx(
             bitCnterReg <= 4'h0;
           else
             bitCnterReg <= bitCnterReg + 4'h1;
-          _outDataReg_T_2 = inDataReg >> _GEN_7;
+          _outDataReg_T_2 = inDataReg >> _GEN_1;
           outDataReg <= bitCnterReg[3] | _outDataReg_T_2[0];
         end
       end
@@ -93,26 +91,29 @@ module UART_tx(
       outTxBusyReg <= |stateReg;
       outTxDoneReg <=
         ~_cond_pred_UART_tx__I__local__I___T_0
-        & (~_GEN_3 & (&stateReg) & ~_GEN_0 | outTxDoneReg);
-      stateReg <= _GEN_6[stateReg];
+        & (~(_cond_pred_prop_wire_UART_tx__I__local__I___T_2
+             | _cond_pred_prop_wire_UART_tx__I__local__I___T_4) & (&stateReg)
+           & ~_cond_pred_prop_wire_UART_tx__I__local__I___T_8 | outTxDoneReg);
+      stateReg <= _GEN_0[stateReg];
     end
   end // always @(posedge)
   assign io_o_tx_busy = outTxBusyReg;
   assign io_o_tx_done = outTxDoneReg;
   assign io_o_serial_data = outDataReg;
   assign _cond_pred_UART_tx__I__local__I___T = _cond_pred_UART_tx__I__local__I___T_0;
-  assign _cond_pred_UART_tx__I__local__I___T_1 =
-    _cond_pred_UART_tx__I__local__I___T_0 & io_i_tx_trig;
+  assign _cond_pred_UART_tx__I__local__I___T_1 = io_i_tx_trig;
   assign _cond_pred_UART_tx__I__local__I___T_2 =
-    ~_cond_pred_UART_tx__I__local__I___T_0 & _GEN;
+    _cond_pred_prop_wire_UART_tx__I__local__I___T_2;
   assign _cond_pred_UART_tx__I__local__I___T_3 =
-    ~_cond_pred_UART_tx__I__local__I___T_0 & _GEN & _GEN_0;
-  assign _cond_pred_UART_tx__I__local__I___T_4 = ~_GEN_2 & _GEN_1;
-  assign _cond_pred_UART_tx__I__local__I___T_5 = ~_GEN_2 & _GEN_1 & _GEN_0;
-  assign _cond_pred_UART_tx__I__local__I___T_6 =
-    ~_GEN_2 & _GEN_1 & ~_GEN_0 & ~(bitCnterReg[3]);
-  assign _cond_pred_UART_tx__I__local__I___T_7 = ~_GEN_4 & (&stateReg);
-  assign _cond_pred_UART_tx__I__local__I___T_8 = ~_GEN_4 & (&stateReg) & _GEN_0;
+    _cond_pred_prop_wire_UART_tx__I__local__I___T_8;
+  assign _cond_pred_UART_tx__I__local__I___T_4 =
+    _cond_pred_prop_wire_UART_tx__I__local__I___T_4;
+  assign _cond_pred_UART_tx__I__local__I___T_5 =
+    _cond_pred_prop_wire_UART_tx__I__local__I___T_8;
+  assign _cond_pred_UART_tx__I__local__I___T_6 = ~(bitCnterReg[3]);
+  assign _cond_pred_UART_tx__I__local__I___T_7 = &stateReg;
+  assign _cond_pred_UART_tx__I__local__I___T_8 =
+    _cond_pred_prop_wire_UART_tx__I__local__I___T_8;
   assign _reg_signals_UART_tx__I__local__I__bitCnterReg = bitCnterReg;
   assign _reg_signals_UART_tx__I__local__I__clkCnterReg = clkCnterReg;
   assign _reg_signals_UART_tx__I__local__I__inDataReg = inDataReg;

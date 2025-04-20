@@ -787,12 +787,7 @@ module WaveformGenerator(
       8'h0};
   reg  [15:0]       phaseAcc;
   wire [15:0]       _phase_T = phaseAcc + io_phaseOffset;
-  wire              _cond_pred_WaveformGenerator__I__local__I___T_0 = io_waveType == 2'h0;
-  wire              _GEN_2 = io_waveType == 2'h1;
-  wire              _GEN_3 = io_waveType == 2'h2;
-  wire              _GEN_4 =
-    _cond_pred_WaveformGenerator__I__local__I___T_0 | _GEN_2 | _GEN_3;
-  wire [3:0][7:0]   _GEN_5 =
+  wire [3:0][7:0]   _GEN_2 =
     {{_phase_T[15] ? 8'h81 : 8'h7F},
      {_GEN[_phase_T[15:8]]},
      {_GEN_0[_phase_T[15:8]]},
@@ -803,16 +798,12 @@ module WaveformGenerator(
     else
       phaseAcc <= phaseAcc + io_freqCtrl;
   end // always @(posedge)
-  assign io_output = _GEN_5[io_waveType];
-  assign _mux_cond_WaveformGenerator__I__local__I___io_output_T_4 =
-    ~_GEN_4 & (&io_waveType) & _phase_T[15];
-  assign _cond_pred_WaveformGenerator__I__local__I___T =
-    _cond_pred_WaveformGenerator__I__local__I___T_0;
-  assign _cond_pred_WaveformGenerator__I__local__I___T_1 =
-    ~_cond_pred_WaveformGenerator__I__local__I___T_0 & _GEN_2;
-  assign _cond_pred_WaveformGenerator__I__local__I___T_2 =
-    ~(_cond_pred_WaveformGenerator__I__local__I___T_0 | _GEN_2) & _GEN_3;
-  assign _cond_pred_WaveformGenerator__I__local__I___T_3 = ~_GEN_4 & (&io_waveType);
+  assign io_output = _GEN_2[io_waveType];
+  assign _mux_cond_WaveformGenerator__I__local__I___io_output_T_4 = _phase_T[15];
+  assign _cond_pred_WaveformGenerator__I__local__I___T = io_waveType == 2'h0;
+  assign _cond_pred_WaveformGenerator__I__local__I___T_1 = io_waveType == 2'h1;
+  assign _cond_pred_WaveformGenerator__I__local__I___T_2 = io_waveType == 2'h2;
+  assign _cond_pred_WaveformGenerator__I__local__I___T_3 = &io_waveType;
   assign _reg_signals_WaveformGenerator__I__local__I__phaseAcc = phaseAcc;
 endmodule
 

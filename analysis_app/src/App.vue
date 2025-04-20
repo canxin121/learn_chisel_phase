@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import type { CSSProperties } from 'vue';
-import { message, type UploadChangeParam, type UploadFile, DirectoryTree as ADirectoryTree } from 'ant-design-vue';
+import { message, type UploadChangeParam, type UploadFile, DirectoryTree as ADirectoryTree, Tag as ATag } from 'ant-design-vue';
+import { UploadOutlined } from "@ant-design/icons-vue";
 import {
   CoverageReport,
   ConditionCoveragePoint,
   RegisterCoveragePoint,
   RegisterBitCoverage,
 } from "./types/CoverageReport";
-import { UploadOutlined } from "@ant-design/icons-vue";
 
 interface TreeNode {
   title: string;
@@ -329,11 +329,26 @@ const getNodeStyle = (coverage?: number): CSSProperties => {
 
 // --- 辅助函数：获取条件 Tag 颜色 ---
 const getConditionTagColor = (hit: boolean | undefined): string => {
-  return hit === true ? 'success' : 'default';
+  return hit === true ? 'success' : 'error';
 };
 // --- 辅助函数：获取寄存器位 Tag 颜色 ---
 const getBitTagColor = (hit: boolean | undefined): string => {
-  return hit === true ? 'success' : 'default';
+  return hit === true ? 'success' : 'error';
+};
+
+// --- 辅助函数：格式化百分比 ---
+const formatPercent = (value?: number): string => {
+  if (value === undefined || value === null) return '-';
+  return `${value.toFixed(1)}%`;
+};
+
+// --- 辅助函数：格式化计数 ---
+const formatCount = (value?: number): string => {
+  if (value === undefined || value === null) return '-';
+  if (value >= 1e9) return (value / 1e9).toFixed(1) + 'G';
+  if (value >= 1e6) return (value / 1e6).toFixed(1) + 'M';
+  if (value >= 1e3) return (value / 1e3).toFixed(1) + 'k';
+  return value.toString();
 };
 
 </script>
@@ -399,15 +414,17 @@ const getBitTagColor = (hit: boolean | undefined): string => {
                   <a-directory-tree :showLine="true" v-if="predicateTreeData.length > 0" :tree-data="predicateTreeData"
                     :default-expand-all="false">
                     <template #title="{ data: nodeData }">
-                      <span>
-                        <span :style="getNodeStyle(nodeData.coverage)">{{ nodeData.title }}</span>
+                      <span class="tree-node-title">
+                        <span :style="getNodeStyle(nodeData.coverage)" class="node-text">{{ nodeData.title }}</span>
                         <span v-if="nodeData.coverage !== undefined" class="coverage-value"
                           :style="getNodeStyle(nodeData.coverage)">
                           ({{ formatCoverage(nodeData.coverage) }})
                         </span>
-                        <span v-if="nodeData.type === 'predicate'" class="node-details condition-details">
-                          <a-tag :color="getConditionTagColor(nodeData.details?.hit_true)">True</a-tag>
-                          <a-tag :color="getConditionTagColor(nodeData.details?.hit_false)">False</a-tag>
+                        <span v-if="nodeData.type === 'predicate' && nodeData.details" class="node-details condition-details">
+                          <a-tag :color="getConditionTagColor(nodeData.details.hit_true)">True</a-tag>
+                          <span class="detail-count">({{ formatCount(nodeData.details.count_true) }}, {{ formatPercent(nodeData.details.true_percentage) }})</span>
+                          <a-tag :color="getConditionTagColor(nodeData.details.hit_false)">False</a-tag>
+                          <span class="detail-count">({{ formatCount(nodeData.details.count_false) }}, {{ formatPercent(nodeData.details.false_percentage) }})</span>
                         </span>
                       </span>
                     </template>
@@ -431,15 +448,17 @@ const getBitTagColor = (hit: boolean | undefined): string => {
                 <div class="tree-container">
                   <a-directory-tree v-if="muxTreeData.length > 0" :tree-data="muxTreeData" :default-expand-all="false">
                     <template #title="{ data: nodeData }">
-                      <span>
-                        <span :style="getNodeStyle(nodeData.coverage)">{{ nodeData.title }}</span>
+                      <span class="tree-node-title">
+                        <span :style="getNodeStyle(nodeData.coverage)" class="node-text">{{ nodeData.title }}</span>
                         <span v-if="nodeData.coverage !== undefined" class="coverage-value"
                           :style="getNodeStyle(nodeData.coverage)">
                           ({{ formatCoverage(nodeData.coverage) }})
                         </span>
-                        <span v-if="nodeData.type === 'mux'" class="node-details condition-details">
-                          <a-tag :color="getConditionTagColor(nodeData.details?.hit_true)">True</a-tag>
-                          <a-tag :color="getConditionTagColor(nodeData.details?.hit_false)">False</a-tag>
+                        <span v-if="nodeData.type === 'mux' && nodeData.details" class="node-details condition-details">
+                           <a-tag :color="getConditionTagColor(nodeData.details.hit_true)">True</a-tag>
+                           <span class="detail-count">({{ formatCount(nodeData.details.count_true) }}, {{ formatPercent(nodeData.details.true_percentage) }})</span>
+                           <a-tag :color="getConditionTagColor(nodeData.details.hit_false)">False</a-tag>
+                           <span class="detail-count">({{ formatCount(nodeData.details.count_false) }}, {{ formatPercent(nodeData.details.false_percentage) }})</span>
                         </span>
                       </span>
                     </template>
@@ -465,19 +484,24 @@ const getBitTagColor = (hit: boolean | undefined): string => {
                   <a-directory-tree v-if="registerTreeData.length > 0" :tree-data="registerTreeData"
                     :default-expand-all="false">
                     <template #title="{ data: nodeData }">
-                      <span>
-                        <span :style="getNodeStyle(nodeData.coverage)">{{ nodeData.title }}</span>
+                      <span class="tree-node-title">
+                        <span :style="getNodeStyle(nodeData.coverage)" class="node-text">{{ nodeData.title }}</span>
                         <span v-if="nodeData.coverage !== undefined" class="coverage-value"
                           :style="getNodeStyle(nodeData.coverage)">
                           ({{ formatCoverage(nodeData.coverage) }})
                         </span>
-                        <span v-if="nodeData.type === 'register'" class="node-details register-summary-details">
-                          (W: {{ nodeData.details?.width }}, Hit: {{ nodeData.details?.bins_hit }}/{{
-                            nodeData.details?.bins_total }})
+                        <span v-if="nodeData.type === 'register' && nodeData.details" class="node-details register-summary-details">
+                          (W: {{ nodeData.details.width }}, Hit: {{ nodeData.details.bins_hit }}/{{
+                            nodeData.details.bins_total }})
                         </span>
-                        <span v-if="nodeData.type === 'register_bit'" class="node-details bit-details">
-                          <a-tag :color="getBitTagColor(nodeData.details?.hit_zero)">0</a-tag>
-                          <a-tag :color="getBitTagColor(nodeData.details?.hit_one)">1</a-tag>
+                        <span v-if="nodeData.type === 'register_bit' && nodeData.details" class="node-details bit-details">
+                           <a-tag :color="getBitTagColor(nodeData.details.hit_zero)">0</a-tag>
+                           <span class="detail-count">({{ formatCount(nodeData.details.count_zero) }}, {{ formatPercent(nodeData.details.zero_percentage) }})</span>
+                           <a-tag :color="getBitTagColor(nodeData.details.hit_one)">1</a-tag>
+                           <span class="detail-count">({{ formatCount(nodeData.details.count_one) }}, {{ formatPercent(nodeData.details.one_percentage) }})</span>
+                           <span v-if="nodeData.details.missing" class="missing-indicator">
+                             ({{ nodeData.details.missing }})
+                           </span>
                         </span>
                       </span>
                     </template>
@@ -540,8 +564,27 @@ const getBitTagColor = (hit: boolean | undefined): string => {
   padding: 20px;
 }
 
+.tree-node-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.node-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+  min-width: 50px;
+}
+
 .coverage-value {
   margin-left: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .node-details {
@@ -549,6 +592,8 @@ const getBitTagColor = (hit: boolean | undefined): string => {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .condition-details .ant-tag,
@@ -559,21 +604,45 @@ const getBitTagColor = (hit: boolean | undefined): string => {
   font-size: 0.85em;
 }
 
+.detail-count {
+  font-size: 0.85em;
+  color: #555;
+  margin-right: 6px;
+  white-space: nowrap;
+}
+
 .register-summary-details {
   color: #888;
+  font-size: 0.9em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.missing-indicator {
+  margin-left: 5px;
+  font-size: 0.8em;
+  color: #ff4d4f;
+  font-style: italic;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 :deep(.ant-tree-node-content-wrapper) {
-  white-space: normal !important;
-  overflow: visible !important;
   padding: 2px 5px;
   border-radius: 3px;
+  line-height: 1.8;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
 }
 
 :deep(.ant-tree-node-content-wrapper:hover) {
   background-color: #e6f7ff;
 }
+
 </style>
+
 <style>
 body {
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;

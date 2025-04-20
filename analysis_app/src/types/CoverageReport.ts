@@ -18,6 +18,11 @@ export interface ConditionCoveragePoint {
     bins_hit: number;
     bins_total: number;
     coverage_percent: number;
+    count_true?: number;
+    count_false?: number;
+    total_updates?: number;
+    true_percentage?: number;
+    false_percentage?: number;
 }
 
 export interface RegisterCoveragePoint {
@@ -36,4 +41,9 @@ export interface RegisterBitCoverage {
     covered: boolean;
     status: string;
     missing?: string;
+    count_zero?: number;
+    count_one?: number;
+    total_updates?: number;
+    zero_percentage?: number;
+    one_percentage?: number;
 }

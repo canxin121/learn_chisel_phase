@@ -11,11 +11,11 @@ circuit WaveformGenerator :
     wire _cond_pred_prop_wire_WaveformGenerator__I__local__I___T_2 : UInt<1>
     wire _cond_pred_prop_wire_WaveformGenerator__I__local__I___T_3 : UInt<1>
     wire _cond_pred_prop_wire_WaveformGenerator__I__local__I___T_1 : UInt<1>
-    connect _cond_pred_prop_wire_WaveformGenerator__I__local__I___T_2, UInt<1>(0h0)
-    connect _cond_pred_prop_wire_WaveformGenerator__I__local__I___T_3, UInt<1>(0h0)
-    connect _cond_pred_prop_wire_WaveformGenerator__I__local__I___T_1, UInt<1>(0h0)
+    invalidate _cond_pred_prop_wire_WaveformGenerator__I__local__I___T_2
+    invalidate _cond_pred_prop_wire_WaveformGenerator__I__local__I___T_3
+    invalidate _cond_pred_prop_wire_WaveformGenerator__I__local__I___T_1
     wire _mux_cond_prop_wire_WaveformGenerator__I__local__I___io_output_T_4 : UInt<1>
-    connect _mux_cond_prop_wire_WaveformGenerator__I__local__I___io_output_T_4, UInt<1>(0h0)
+    invalidate _mux_cond_prop_wire_WaveformGenerator__I__local__I___io_output_T_4
     regreset phaseAcc : UInt<16>, clock, reset, UInt<16>(0h0) @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\modules\\WaveformGenerator.scala 17:25]
     node _phaseAcc_T = add(phaseAcc, io.freqCtrl) @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\modules\\WaveformGenerator.scala 18:24]
     node _phaseAcc_T_1 = tail(_phaseAcc_T, 1) @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\modules\\WaveformGenerator.scala 18:24]

@@ -135,7 +135,6 @@ run_step() {
         ./V${module_name}
         run_status=$?
     else
-        # This case should ideally not be reached due to the check above
         echo "Internal Error: Could not find executable V${module_name} or V${module_name}.exe inside obj_dir."
         run_status=1
     fi
@@ -145,7 +144,6 @@ run_step() {
 
     if [ $run_status -ne 0 ]; then
         echo "Error: Simulation run failed for $module_name (Exit code: $run_status)."
-        # Optionally exit here, or let the script continue to report completion status
         exit 1
     fi
     echo "--- Simulation run complete for $module_name ---"
@@ -184,4 +182,3 @@ esac
 
 echo "--- Action '$ACTION' completed successfully for $TOP_MODULE ---"
 exit 0
-

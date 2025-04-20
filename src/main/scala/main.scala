@@ -8,6 +8,8 @@ import chisel3.RawModule
 import modules.WaveformGenerator
 import modules.UART_rx
 import modules.UART_tx
+import chisel3.Reg
+import modules.RegModule
 
 object ExampleMain extends App {
   val baseOutputDir = "output_generated"
@@ -24,12 +26,13 @@ object ExampleMain extends App {
     (
       () => new UART_tx(),
       "uart_tx"
-    )
+    ),
+    (() => new RegModule(), "reg_module")
   )
 
   modulesToProcess.foreach { case (moduleGenerator, outputSubDir) =>
     val outputDir = s"$baseOutputDir/$outputSubDir"
-    CoverageUtil.processModule(
+    CoverageTool.processModule(
       moduleGenerator = moduleGenerator,
       outputDir = outputDir,
       enableDevOutput = true

@@ -1,0 +1,60 @@
+{
+  "summary": {
+    "overall_coverage_percent": 100.00000000000000000,
+    "total_bins_hit": 34,
+    "total_bins": 34
+  },
+  "conditional_predicates": [
+    {
+      "name": "_cond_pred_RegModule__I__local__I___T",
+      "hit_true": true,
+      "hit_false": true,
+      "count_true": 4995,
+      "count_false": 5000,
+      "total_updates": 9995,
+      "true_percentage": 49.97,
+      "false_percentage": 50.03,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00
+    }
+  ],
+  "mux_conditions": [
+  ],
+  "register_coverage": [
+    {
+      "name": "_reg_signals_RegModule__I__local__I__regA",
+      "width": 8,
+      "bins_hit": 16,
+      "bins_total": 16,
+      "coverage_percent": 100.00000000000000000,
+      "bit_details": [
+        {"bit": 0, "hit_zero": true, "hit_one": true, "count_zero": 4998, "count_one": 4997, "total_updates": 9995, "zero_percentage": 50.01, "one_percentage": 49.99, "covered": true, "status": "ZO"},
+        {"bit": 1, "hit_zero": true, "hit_one": true, "count_zero": 4998, "count_one": 4997, "total_updates": 9995, "zero_percentage": 50.01, "one_percentage": 49.99, "covered": true, "status": "ZO"},
+        {"bit": 2, "hit_zero": true, "hit_one": true, "count_zero": 4999, "count_one": 4996, "total_updates": 9995, "zero_percentage": 50.02, "one_percentage": 49.98, "covered": true, "status": "ZO"},
+        {"bit": 3, "hit_zero": true, "hit_one": true, "count_zero": 5000, "count_one": 4995, "total_updates": 9995, "zero_percentage": 50.03, "one_percentage": 49.97, "covered": true, "status": "ZO"},
+        {"bit": 4, "hit_zero": true, "hit_one": true, "count_zero": 5003, "count_one": 4992, "total_updates": 9995, "zero_percentage": 50.06, "one_percentage": 49.94, "covered": true, "status": "ZO"},
+        {"bit": 5, "hit_zero": true, "hit_one": true, "count_zero": 5003, "count_one": 4992, "total_updates": 9995, "zero_percentage": 50.06, "one_percentage": 49.94, "covered": true, "status": "ZO"},
+        {"bit": 6, "hit_zero": true, "hit_one": true, "count_zero": 5003, "count_one": 4992, "total_updates": 9995, "zero_percentage": 50.06, "one_percentage": 49.94, "covered": true, "status": "ZO"},
+        {"bit": 7, "hit_zero": true, "hit_one": true, "count_zero": 5003, "count_one": 4992, "total_updates": 9995, "zero_percentage": 50.06, "one_percentage": 49.94, "covered": true, "status": "ZO"}
+      ]
+    },
+    {
+      "name": "_reg_signals_RegModule__I__local__I__regB",
+      "width": 8,
+      "bins_hit": 16,
+      "bins_total": 16,
+      "coverage_percent": 100.00000000000000000,
+      "bit_details": [
+        {"bit": 0, "hit_zero": true, "hit_one": true, "count_zero": 4998, "count_one": 4997, "total_updates": 9995, "zero_percentage": 50.01, "one_percentage": 49.99, "covered": true, "status": "ZO"},
+        {"bit": 1, "hit_zero": true, "hit_one": true, "count_zero": 4997, "count_one": 4998, "total_updates": 9995, "zero_percentage": 49.99, "one_percentage": 50.01, "covered": true, "status": "ZO"},
+        {"bit": 2, "hit_zero": true, "hit_one": true, "count_zero": 4998, "count_one": 4997, "total_updates": 9995, "zero_percentage": 50.01, "one_percentage": 49.99, "covered": true, "status": "ZO"},
+        {"bit": 3, "hit_zero": true, "hit_one": true, "count_zero": 4997, "count_one": 4998, "total_updates": 9995, "zero_percentage": 49.99, "one_percentage": 50.01, "covered": true, "status": "ZO"},
+        {"bit": 4, "hit_zero": true, "hit_one": true, "count_zero": 4997, "count_one": 4998, "total_updates": 9995, "zero_percentage": 49.99, "one_percentage": 50.01, "covered": true, "status": "ZO"},
+        {"bit": 5, "hit_zero": true, "hit_one": true, "count_zero": 4998, "count_one": 4997, "total_updates": 9995, "zero_percentage": 50.01, "one_percentage": 49.99, "covered": true, "status": "ZO"},
+        {"bit": 6, "hit_zero": true, "hit_one": true, "count_zero": 4992, "count_one": 5003, "total_updates": 9995, "zero_percentage": 49.94, "one_percentage": 50.06, "covered": true, "status": "ZO"},
+        {"bit": 7, "hit_zero": true, "hit_one": true, "count_zero": 5003, "count_one": 4992, "total_updates": 9995, "zero_percentage": 50.06, "one_percentage": 49.94, "covered": true, "status": "ZO"}
+      ]
+    }
+  ]
+}

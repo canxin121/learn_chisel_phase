@@ -70,7 +70,7 @@ class CustomTransform extends firrtl.options.Phase {
   }
 }
 
-object CoverageUtil {
+object CoverageTool {
 
   /** 处理单个 Chisel 模块，执行转换并生成输出文件。
     *
@@ -99,10 +99,15 @@ object CoverageUtil {
     val devDir = s"$specificOutputDir/dev" // 开发文件目录
 
     // 创建输出目录
-    new File(specificOutputDir).mkdirs()
-    new File(objDir).mkdirs()
-    if (enableDevOutput) {
-      new File(devDir).mkdirs()
+    try {
+      new File(specificOutputDir).mkdirs()
+      new File(objDir).mkdirs()
+      if (enableDevOutput) {
+        new File(devDir).mkdirs()
+      }
+    } catch {
+      case e: Exception =>
+        println(s"  创建输出目录时出错: ${e.getMessage}")
     }
 
     // 实例化 CustomStage (包含 CustomTransform)
@@ -128,29 +133,53 @@ object CoverageUtil {
           println(
             s"   生成 old.sv 时出错: ${e.getMessage}"
           )
-          e.printStackTrace() // 打印堆栈跟踪
       }
     }
 
-    // 2. 通过 CustomStage 运行，触发 CustomTransform 并生成转换后的 SV
+    // 2. 通过 CustomStage 运行，触发 CustomTransform 并尝试生成转换后的 SV
+    var transformedSvOption: Option[String] = None
+    var moduleName: String = ""
     try {
-      println(s"  运行 CustomStage (转换并生成 .sv)...")
+      println(s"  运行 CustomStage (转换并尝试生成 .sv)...")
       val transformed_sv = stage.emitSystemVerilog(
         moduleGenerator(),
         firtoolOpts = firtoolOpts
       )
-      // 从 TransformOutputData 获取模块名
-      val moduleName = TransformOutputData.mainModuleName
-      val transformedSvPath = s"$specificOutputDir/${moduleName}.sv"
-      FileUtil.writeToFile(
-        transformedSvPath,
-        transformed_sv
-      )
-      println(s"  成功写入 $transformedSvPath")
+      transformedSvOption = Some(transformed_sv)
+      moduleName = TransformOutputData.mainModuleName
+      if (moduleName.isEmpty) {
+        println(s"  警告: CustomTransform 未能设置模块名。")
+      }
+      println(s"  CustomStage 运行成功，模块名: $moduleName")
+    } catch {
+      case e: Exception =>
+        println(
+          s"  运行 CustomStage (生成 .sv) 时出错: ${e.getMessage}"
+        )
+        moduleName = TransformOutputData.mainModuleName
+        if (moduleName.nonEmpty) {
+          println(s"  虽然 SV 生成失败，但获取到模块名: $moduleName")
+        } else {
+          println(s"  SV 生成失败，且未能获取模块名。")
+        }
+    }
 
-      // 3. 从全局对象获取数据并写入文件
-      if (moduleName.nonEmpty) {
-        println(s"  写入 FIRRTL, C++, Bash 文件...")
+    // 3. 尝试写入其他文件 (FIRRTL, C++, Bash)，特别是当 enableDevOutput 为 true 时
+    if (moduleName.nonEmpty) {
+      try {
+        println(s"  尝试写入 FIRRTL, C++, Bash 文件...")
+
+        // 写入转换后的 SV (如果成功生成)
+        transformedSvOption match {
+          case Some(transformed_sv) =>
+            val transformedSvPath = s"$specificOutputDir/${moduleName}.sv"
+            FileUtil.writeToFile(transformedSvPath, transformed_sv)
+            println(s"  成功写入 $transformedSvPath")
+          case None =>
+            println(s"  跳过写入 ${moduleName}.sv，因为生成失败。")
+        }
+
+        // 写入 C++ 和 Bash 文件
         FileUtil.writeToFile(
           s"$objDir/coverage_collector.h",
           TransformOutputData.coverageCollectorHeader
@@ -168,36 +197,43 @@ object CoverageUtil {
         println(s"  成功写入 $objDir/sim_main.cpp (如果不存在)")
         println(s"  成功写入 $specificOutputDir/coverage.bash")
 
+        // 写入开发 FIRRTL 文件 (如果启用)
         if (enableDevOutput) {
           println(s"  写入开发 FIRRTL 文件...")
-          FileUtil.writeToFile(
-            s"$devDir/old.fir",
-            TransformOutputData.originalFirrtl
-          )
-          FileUtil.writeToFile(
-            s"$devDir/new.fir",
-            TransformOutputData.transformedFirrtl
-          )
-          println(s"  成功写入 $devDir/old.fir")
-          println(s"  成功写入 $devDir/new.fir")
+          if (TransformOutputData.originalFirrtl.nonEmpty) {
+            FileUtil.writeToFile(
+              s"$devDir/old.fir",
+              TransformOutputData.originalFirrtl
+            )
+            println(s"  成功写入 $devDir/old.fir")
+          } else {
+            println(s"  跳过写入 old.fir (数据为空)")
+          }
+          if (TransformOutputData.transformedFirrtl.nonEmpty) {
+            FileUtil.writeToFile(
+              s"$devDir/new.fir",
+              TransformOutputData.transformedFirrtl
+            )
+            println(s"  成功写入 $devDir/new.fir")
+          } else {
+            println(s"  跳过写入 new.fir (数据为空)")
+          }
         }
-      } else {
-        println(
-          s"  警告: 未能从 Transform 获取模块名，C++/FIRRTL 数据未写入。"
-        )
+      } catch {
+        case e: Exception =>
+          println(s"  写入 FIRRTL/C++/Bash 文件时出错: ${e.getMessage}")
       }
-    } catch {
-      case e: Exception =>
-        println(
-          s"  处理模块 (生成 .sv 或写入 .cpp/.h/.fir) 时出错: ${e.getMessage}"
-        )
-        e.printStackTrace()
-    } finally {
-      TransformOutputData.reset()
+    } else {
+      println(
+        s"  警告: 未能获取模块名，无法写入 FIRRTL/C++/Bash 文件。"
+      )
     }
 
+    TransformOutputData.reset()
+
+    val finalModuleName = if (moduleName.nonEmpty) moduleName else "未知模块"
     println(
-      s"--- 完成处理模块: ${TransformOutputData.mainModuleName} ($outputDir) ---\n"
+      s"--- 完成处理模块: $finalModuleName ($outputDir) ---\n"
     )
   }
 }

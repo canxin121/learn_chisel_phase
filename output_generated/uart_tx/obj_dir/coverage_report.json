@@ -9,6 +9,11 @@
       "name": "_cond_pred_UART_tx__I__local__I___T",
       "hit_true": true,
       "hit_false": true,
+      "count_true": 2600,
+      "count_false": 17400,
+      "total_updates": 20000,
+      "true_percentage": 13.00,
+      "false_percentage": 87.00,
       "bins_hit": 2,
       "bins_total": 2,
       "coverage_percent": 100.00
@@ -17,6 +22,11 @@
       "name": "_cond_pred_UART_tx__I__local__I___T_1",
       "hit_true": true,
       "hit_false": true,
+      "count_true": 20,
+      "count_false": 19980,
+      "total_updates": 20000,
+      "true_percentage": 0.10,
+      "false_percentage": 99.90,
       "bins_hit": 2,
       "bins_total": 2,
       "coverage_percent": 100.00
@@ -25,6 +35,11 @@
       "name": "_cond_pred_UART_tx__I__local__I___T_2",
       "hit_true": true,
       "hit_false": true,
+      "count_true": 1740,
+      "count_false": 18260,
+      "total_updates": 20000,
+      "true_percentage": 8.70,
+      "false_percentage": 91.30,
       "bins_hit": 2,
       "bins_total": 2,
       "coverage_percent": 100.00
@@ -33,6 +48,11 @@
       "name": "_cond_pred_UART_tx__I__local__I___T_3",
       "hit_true": true,
       "hit_false": true,
+      "count_true": 1720,
+      "count_false": 18280,
+      "total_updates": 20000,
+      "true_percentage": 8.60,
+      "false_percentage": 91.40,
       "bins_hit": 2,
       "bins_total": 2,
       "coverage_percent": 100.00
@@ -41,6 +61,11 @@
       "name": "_cond_pred_UART_tx__I__local__I___T_4",
       "hit_true": true,
       "hit_false": true,
+      "count_true": 13920,
+      "count_false": 6080,
+      "total_updates": 20000,
+      "true_percentage": 69.60,
+      "false_percentage": 30.40,
       "bins_hit": 2,
       "bins_total": 2,
       "coverage_percent": 100.00
@@ -49,6 +74,11 @@
       "name": "_cond_pred_UART_tx__I__local__I___T_5",
       "hit_true": true,
       "hit_false": true,
+      "count_true": 13760,
+      "count_false": 6240,
+      "total_updates": 20000,
+      "true_percentage": 68.80,
+      "false_percentage": 31.20,
       "bins_hit": 2,
       "bins_total": 2,
       "coverage_percent": 100.00
@@ -57,6 +87,11 @@
       "name": "_cond_pred_UART_tx__I__local__I___T_6",
       "hit_true": true,
       "hit_false": true,
+      "count_true": 140,
+      "count_false": 19860,
+      "total_updates": 20000,
+      "true_percentage": 0.70,
+      "false_percentage": 99.30,
       "bins_hit": 2,
       "bins_total": 2,
       "coverage_percent": 100.00
@@ -65,6 +100,11 @@
       "name": "_cond_pred_UART_tx__I__local__I___T_7",
       "hit_true": true,
       "hit_false": true,
+      "count_true": 1740,
+      "count_false": 18260,
+      "total_updates": 20000,
+      "true_percentage": 8.70,
+      "false_percentage": 91.30,
       "bins_hit": 2,
       "bins_total": 2,
       "coverage_percent": 100.00
@@ -73,13 +113,17 @@
       "name": "_cond_pred_UART_tx__I__local__I___T_8",
       "hit_true": true,
       "hit_false": true,
+      "count_true": 1720,
+      "count_false": 18280,
+      "total_updates": 20000,
+      "true_percentage": 8.60,
+      "false_percentage": 91.40,
       "bins_hit": 2,
       "bins_total": 2,
       "coverage_percent": 100.00
     }
   ],
-  "mux_conditions": [
-  ],
+  "mux_conditions": [],
   "register_coverage": [
     {
       "name": "_reg_signals_UART_tx__I__local__I__bitCnterReg",
@@ -88,10 +132,54 @@
       "bins_total": 8,
       "coverage_percent": 100.00000000000000000,
       "bit_details": [
-        {"bit": 0, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
-        {"bit": 1, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
-        {"bit": 2, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
-        {"bit": 3, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"}
+        {
+          "bit": 0,
+          "hit_zero": true,
+          "hit_one": true,
+          "count_zero": 13040,
+          "count_one": 6960,
+          "total_updates": 20000,
+          "zero_percentage": 65.20,
+          "one_percentage": 34.80,
+          "covered": true,
+          "status": "ZO"
+        },
+        {
+          "bit": 1,
+          "hit_zero": true,
+          "hit_one": true,
+          "count_zero": 13040,
+          "count_one": 6960,
+          "total_updates": 20000,
+          "zero_percentage": 65.20,
+          "one_percentage": 34.80,
+          "covered": true,
+          "status": "ZO"
+        },
+        {
+          "bit": 2,
+          "hit_zero": true,
+          "hit_one": true,
+          "count_zero": 13040,
+          "count_one": 6960,
+          "total_updates": 20000,
+          "zero_percentage": 65.20,
+          "one_percentage": 34.80,
+          "covered": true,
+          "status": "ZO"
+        },
+        {
+          "bit": 3,
+          "hit_zero": true,
+          "hit_one": true,
+          "count_zero": 18260,
+          "count_one": 1740,
+          "total_updates": 20000,
+          "zero_percentage": 91.30,
+          "one_percentage": 8.70,
+          "covered": true,
+          "status": "ZO"
+        }
       ]
     },
     {
@@ -101,14 +189,103 @@
       "bins_total": 16,
       "coverage_percent": 93.75000000000000000,
       "bit_details": [
-        {"bit": 0, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
-        {"bit": 1, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
-        {"bit": 2, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
-        {"bit": 3, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
-        {"bit": 4, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
-        {"bit": 5, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
-        {"bit": 6, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
-        {"bit": 7, "hit_zero": true, "hit_one": false, "covered": false, "status": "Z!", "missing": "MISSING_1"}
+        {
+          "bit": 0,
+          "hit_zero": true,
+          "hit_one": true,
+          "count_zero": 11400,
+          "count_one": 8600,
+          "total_updates": 20000,
+          "zero_percentage": 57.00,
+          "one_percentage": 43.00,
+          "covered": true,
+          "status": "ZO"
+        },
+        {
+          "bit": 1,
+          "hit_zero": true,
+          "hit_one": true,
+          "count_zero": 11400,
+          "count_one": 8600,
+          "total_updates": 20000,
+          "zero_percentage": 57.00,
+          "one_percentage": 43.00,
+          "covered": true,
+          "status": "ZO"
+        },
+        {
+          "bit": 2,
+          "hit_zero": true,
+          "hit_one": true,
+          "count_zero": 11400,
+          "count_one": 8600,
+          "total_updates": 20000,
+          "zero_percentage": 57.00,
+          "one_percentage": 43.00,
+          "covered": true,
+          "status": "ZO"
+        },
+        {
+          "bit": 3,
+          "hit_zero": true,
+          "hit_one": true,
+          "count_zero": 12000,
+          "count_one": 8000,
+          "total_updates": 20000,
+          "zero_percentage": 60.00,
+          "one_percentage": 40.00,
+          "covered": true,
+          "status": "ZO"
+        },
+        {
+          "bit": 4,
+          "hit_zero": true,
+          "hit_one": true,
+          "count_zero": 12200,
+          "count_one": 7800,
+          "total_updates": 20000,
+          "zero_percentage": 61.00,
+          "one_percentage": 39.00,
+          "covered": true,
+          "status": "ZO"
+        },
+        {
+          "bit": 5,
+          "hit_zero": true,
+          "hit_one": true,
+          "count_zero": 13600,
+          "count_one": 6400,
+          "total_updates": 20000,
+          "zero_percentage": 68.00,
+          "one_percentage": 32.00,
+          "covered": true,
+          "status": "ZO"
+        },
+        {
+          "bit": 6,
+          "hit_zero": true,
+          "hit_one": true,
+          "count_zero": 15400,
+          "count_one": 4600,
+          "total_updates": 20000,
+          "zero_percentage": 77.00,
+          "one_percentage": 23.00,
+          "covered": true,
+          "status": "ZO"
+        },
+        {
+          "bit": 7,
+          "hit_zero": true,
+          "hit_one": false,
+          "count_zero": 20000,
+          "count_one": 0,
+          "total_updates": 20000,
+          "zero_percentage": 100.00,
+          "one_percentage": 0.00,
+          "covered": false,
+          "status": "Z!",
+          "missing": "MISSING_1"
+        }
       ]
     },
     {
@@ -118,14 +295,102 @@
       "bins_total": 16,
       "coverage_percent": 100.00000000000000000,
       "bit_details": [
-        {"bit": 0, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
-        {"bit": 1, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
-        {"bit": 2, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
-        {"bit": 3, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
-        {"bit": 4, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
-        {"bit": 5, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
-        {"bit": 6, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
-        {"bit": 7, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"}
+        {
+          "bit": 0,
+          "hit_zero": true,
+          "hit_one": true,
+          "count_zero": 8736,
+          "count_one": 11264,
+          "total_updates": 20000,
+          "zero_percentage": 43.68,
+          "one_percentage": 56.32,
+          "covered": true,
+          "status": "ZO"
+        },
+        {
+          "bit": 1,
+          "hit_zero": true,
+          "hit_one": true,
+          "count_zero": 8736,
+          "count_one": 11264,
+          "total_updates": 20000,
+          "zero_percentage": 43.68,
+          "one_percentage": 56.32,
+          "covered": true,
+          "status": "ZO"
+        },
+        {
+          "bit": 2,
+          "hit_zero": true,
+          "hit_one": true,
+          "count_zero": 8736,
+          "count_one": 11264,
+          "total_updates": 20000,
+          "zero_percentage": 43.68,
+          "one_percentage": 56.32,
+          "covered": true,
+          "status": "ZO"
+        },
+        {
+          "bit": 3,
+          "hit_zero": true,
+          "hit_one": true,
+          "count_zero": 8736,
+          "count_one": 11264,
+          "total_updates": 20000,
+          "zero_percentage": 43.68,
+          "one_percentage": 56.32,
+          "covered": true,
+          "status": "ZO"
+        },
+        {
+          "bit": 4,
+          "hit_zero": true,
+          "hit_one": true,
+          "count_zero": 8736,
+          "count_one": 11264,
+          "total_updates": 20000,
+          "zero_percentage": 43.68,
+          "one_percentage": 56.32,
+          "covered": true,
+          "status": "ZO"
+        },
+        {
+          "bit": 5,
+          "hit_zero": true,
+          "hit_one": true,
+          "count_zero": 8736,
+          "count_one": 11264,
+          "total_updates": 20000,
+          "zero_percentage": 43.68,
+          "one_percentage": 56.32,
+          "covered": true,
+          "status": "ZO"
+        },
+        {
+          "bit": 6,
+          "hit_zero": true,
+          "hit_one": true,
+          "count_zero": 8736,
+          "count_one": 11264,
+          "total_updates": 20000,
+          "zero_percentage": 43.68,
+          "one_percentage": 56.32,
+          "covered": true,
+          "status": "ZO"
+        },
+        {
+          "bit": 7,
+          "hit_zero": true,
+          "hit_one": true,
+          "count_zero": 11270,
+          "count_one": 8730,
+          "total_updates": 20000,
+          "zero_percentage": 56.35,
+          "one_percentage": 43.65,
+          "covered": true,
+          "status": "ZO"
+        }
       ]
     },
     {
@@ -135,7 +400,18 @@
       "bins_total": 2,
       "coverage_percent": 100.00000000000000000,
       "bit_details": [
-        {"bit": 0, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"}
+        {
+          "bit": 0,
+          "hit_zero": true,
+          "hit_one": true,
+          "count_zero": 8701,
+          "count_one": 11299,
+          "total_updates": 20000,
+          "zero_percentage": 43.51,
+          "one_percentage": 56.49,
+          "covered": true,
+          "status": "ZO"
+        }
       ]
     },
     {
@@ -145,7 +421,18 @@
       "bins_total": 2,
       "coverage_percent": 100.00000000000000000,
       "bit_details": [
-        {"bit": 0, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"}
+        {
+          "bit": 0,
+          "hit_zero": true,
+          "hit_one": true,
+          "count_zero": 2600,
+          "count_one": 17400,
+          "total_updates": 20000,
+          "zero_percentage": 13.00,
+          "one_percentage": 87.00,
+          "covered": true,
+          "status": "ZO"
+        }
       ]
     },
     {
@@ -155,7 +442,18 @@
       "bins_total": 2,
       "coverage_percent": 100.00000000000000000,
       "bit_details": [
-        {"bit": 0, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"}
+        {
+          "bit": 0,
+          "hit_zero": true,
+          "hit_one": true,
+          "count_zero": 19980,
+          "count_one": 20,
+          "total_updates": 20000,
+          "zero_percentage": 99.90,
+          "one_percentage": 0.10,
+          "covered": true,
+          "status": "ZO"
+        }
       ]
     },
     {
@@ -165,8 +463,30 @@
       "bins_total": 4,
       "coverage_percent": 100.00000000000000000,
       "bit_details": [
-        {"bit": 0, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"},
-        {"bit": 1, "hit_zero": true, "hit_one": true, "covered": true, "status": "ZO"}
+        {
+          "bit": 0,
+          "hit_zero": true,
+          "hit_one": true,
+          "count_zero": 16520,
+          "count_one": 3480,
+          "total_updates": 20000,
+          "zero_percentage": 82.60,
+          "one_percentage": 17.40,
+          "covered": true,
+          "status": "ZO"
+        },
+        {
+          "bit": 1,
+          "hit_zero": true,
+          "hit_one": true,
+          "count_zero": 4340,
+          "count_one": 15660,
+          "total_updates": 20000,
+          "zero_percentage": 21.70,
+          "one_percentage": 78.30,
+          "covered": true,
+          "status": "ZO"
+        }
       ]
     }
   ]

@@ -349,8 +349,6 @@ object SignalPropagator {
 
   /** 转换单个模块，添加信号输出端口（如果需要）并连接相关信号。
     *
-    * (此函数内部逻辑保持不变，仅作为 SignalPropagator.transform 的一部分被调用)
-    *
     * @param module
     *   当前要转换的 `Module` 对象。
     * @param moduleMap
@@ -553,24 +551,18 @@ object SignalPropagator {
           DefWire(NoInfo, wireName, resolvedType)
       }.toSeq
 
-    // === 步骤 8: 生成中间线默认连接 (Bool/UInt<1>) ===
+    // === 步骤 8: 生成中间线默认无效化语句 ===
     val intermediateWireDefaultConnects: Seq[Statement] =
-      localSignalsNeedingIntermediateWire.values.flatMap {
+      localSignalsNeedingIntermediateWire.values.map {
         case (_, resolvedWireType, wireName) =>
-          resolvedWireType match {
-            case t if t == BoolType || (t match {
-                  case UIntType(w) => w == IntWidth(1)
-                  case _           => false
-                }) =>
-              Some(
-                Connect(
-                  NoInfo,
-                  Reference(wireName, resolvedWireType),
-                  UIntLiteral(0, IntWidth(1))
-                )
-              )
-            case _ => None
-          }
+          // 为所有需要中间线的信号添加默认 IsInvalid 语句
+          IsInvalid(
+            NoInfo,
+            Reference(
+              wireName,
+              resolvedWireType
+            ) // Target the wire to invalidate
+          )
       }.toSeq
 
     // === 步骤 9: 修改 Body，插入到中间线的连接 ===
@@ -587,6 +579,35 @@ object SignalPropagator {
               nodeConnectedToIntermediateWire += nodeName
               Seq(nodeDef, connectStmt)
             case _ => Seq(nodeDef)
+          }
+        case regDef @ DefRegister(info, regName, regType, clock) =>
+          localSignalsNeedingIntermediateWire.get(regName) match {
+            case Some((_, resolvedWireType, wireName))
+                if !nodeConnectedToIntermediateWire.contains(regName) =>
+              val intermediateWireRef = Reference(wireName, resolvedWireType)
+              val regRef = Reference(regName, regType)
+              val connectStmt = Connect(info, intermediateWireRef, regRef)
+              nodeConnectedToIntermediateWire += regName
+              Seq(regDef, connectStmt)
+            case _ => Seq(regDef)
+          }
+        case regResetDef @ DefRegisterWithReset(
+              info,
+              regName,
+              regType,
+              clock,
+              reset,
+              init
+            ) =>
+          localSignalsNeedingIntermediateWire.get(regName) match {
+            case Some((_, resolvedWireType, wireName))
+                if !nodeConnectedToIntermediateWire.contains(regName) =>
+              val intermediateWireRef = Reference(wireName, resolvedWireType)
+              val regRef = Reference(regName, regType)
+              val connectStmt = Connect(info, intermediateWireRef, regRef)
+              nodeConnectedToIntermediateWire += regName
+              Seq(regResetDef, connectStmt)
+            case _ => Seq(regResetDef)
           }
         case block @ Block(stmts) =>
           Seq(block.copy(stmts = stmts.flatMap(addIntermediateConnects)))

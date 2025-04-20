@@ -17,16 +17,16 @@ circuit UART_rx :
     wire _cond_pred_prop_wire_UART_rx__I__local__I___T_11 : UInt<1>
     wire _cond_pred_prop_wire_UART_rx__I__local__I___T_1 : UInt<1>
     wire _cond_pred_prop_wire_UART_rx__I__local__I___T_10 : UInt<1>
-    connect _cond_pred_prop_wire_UART_rx__I__local__I___T_6, UInt<1>(0h0)
-    connect _cond_pred_prop_wire_UART_rx__I__local__I___T_8, UInt<1>(0h0)
-    connect _cond_pred_prop_wire_UART_rx__I__local__I___T_9, UInt<1>(0h0)
-    connect _cond_pred_prop_wire_UART_rx__I__local__I___T_2, UInt<1>(0h0)
-    connect _cond_pred_prop_wire_UART_rx__I__local__I___T_3, UInt<1>(0h0)
-    connect _cond_pred_prop_wire_UART_rx__I__local__I___T_4, UInt<1>(0h0)
-    connect _cond_pred_prop_wire_UART_rx__I__local__I___T_5, UInt<1>(0h0)
-    connect _cond_pred_prop_wire_UART_rx__I__local__I___T_11, UInt<1>(0h0)
-    connect _cond_pred_prop_wire_UART_rx__I__local__I___T_1, UInt<1>(0h0)
-    connect _cond_pred_prop_wire_UART_rx__I__local__I___T_10, UInt<1>(0h0)
+    invalidate _cond_pred_prop_wire_UART_rx__I__local__I___T_6
+    invalidate _cond_pred_prop_wire_UART_rx__I__local__I___T_8
+    invalidate _cond_pred_prop_wire_UART_rx__I__local__I___T_9
+    invalidate _cond_pred_prop_wire_UART_rx__I__local__I___T_2
+    invalidate _cond_pred_prop_wire_UART_rx__I__local__I___T_3
+    invalidate _cond_pred_prop_wire_UART_rx__I__local__I___T_4
+    invalidate _cond_pred_prop_wire_UART_rx__I__local__I___T_5
+    invalidate _cond_pred_prop_wire_UART_rx__I__local__I___T_11
+    invalidate _cond_pred_prop_wire_UART_rx__I__local__I___T_1
+    invalidate _cond_pred_prop_wire_UART_rx__I__local__I___T_10
     regreset clkCnterReg : UInt<9>, clock, reset, UInt<9>(0h0) @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\modules\\Uart.scala 23:28]
     regreset bitCnterReg : UInt<4>, clock, reset, UInt<4>(0h0) @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\modules\\Uart.scala 24:28]
     wire _outDataReg_WIRE : UInt<1>[8] @[D:\\projs\\fuzz\\learn_chisel_phase\\src\\main\\scala\\modules\\Uart.scala 27:12]
