@@ -14,6 +14,7 @@ object TransformOutputData {
   var coverageCollectorHeader: String = ""
   var simMainCpp: String = ""
   var coverageBashScript: String = ""
+  var portInfoList: List[TopLevelExportInfo] = Nil // <-- 新增字段
 
   def reset(): Unit = {
     mainModuleName = ""
@@ -22,10 +23,11 @@ object TransformOutputData {
     coverageCollectorHeader = ""
     simMainCpp = ""
     coverageBashScript = ""
+    portInfoList = Nil // <-- 重置新增字段
   }
 }
 
-class CustomTransform extends firrtl.options.Phase {
+class CoverageTransform extends firrtl.options.Phase {
   override def invalidates(a: firrtl.options.Phase) = false
 
   override def transform(
@@ -65,12 +67,109 @@ class CustomTransform extends firrtl.options.Phase {
     TransformOutputData.coverageCollectorHeader = coverageHeaderCode
     TransformOutputData.simMainCpp = simMainCode
     TransformOutputData.coverageBashScript = coverageBashCode
+    TransformOutputData.portInfoList = port_info_list // <-- 存储端口信息
 
     firrtl.stage.FirrtlCircuitAnnotation(new_reg_circuit) +: otherAnnos
   }
 }
 
 object CoverageTool {
+
+  /** 辅助函数：转义 JSON 字符串中的特殊字符 */
+  private def escapeJsonString(s: String): String = {
+    s.replace("\\", "\\\\")
+      .replace("\"", "\\\"")
+      .replace("\b", "\\b")
+      .replace("\f", "\\f")
+      .replace("\n", "\\n")
+      .replace("\r", "\\r")
+      .replace("\t", "\\t")
+  }
+
+  /** 递归地将向量/数组信号展开为标量信号信息 */
+  private def flattenSignalInfo(
+      baseFieldName: String,
+      fieldType: Type,
+      originalInfo: Info
+  ): Seq[ExportedSignalInfo] = {
+    fieldType match {
+      case VectorType(elementType, size) =>
+        if (size > 0) {
+          (0 until size).flatMap { i =>
+            // 递归调用，为每个元素生成新的字段名
+            flattenSignalInfo(s"${baseFieldName}_$i", elementType, originalInfo)
+          }
+        } else {
+          // 零长度向量，不生成任何信号
+          Seq.empty
+        }
+      case _: BundleType =>
+        // 明确忽略 Bundle 类型，因为覆盖率通常不直接应用于整个 Bundle
+        // 可以选择性地添加警告日志
+        // println(s"[WARN] Skipping BundleType '$baseFieldName' during JSON generation.")
+        Seq.empty
+      case groundType: GroundType =>
+        // 基本情况：遇到标量类型，生成一个 ExportedSignalInfo
+        Seq(
+          ExportedSignalInfo(
+            fieldName = baseFieldName,
+            fieldtype = groundType, // 类型是展开后的标量类型
+            info = originalInfo // Info 保持不变
+          )
+        )
+      case otherType =>
+        // 处理其他未预期的类型，可以选择性地记录警告或错误
+        println(
+          s"[WARN] Encountered unexpected type '${otherType.serialize}' for field '$baseFieldName' during JSON generation. Skipping."
+        )
+        Seq.empty
+    }
+  }
+
+  /** 生成包含 TopLevelExportInfo 信息的 JSON 字符串 */
+  private def generateCoverageInfoJson(
+      topModuleName: String,
+      exportInfos: List[TopLevelExportInfo]
+  ): String = {
+    val portsJson = exportInfos
+      .map { portInfo =>
+        // 对每个端口中的信号列表进行 flatMap 操作，应用 flattenSignalInfo
+        val flattenedSignals = portInfo.exportedSignals.flatMap { signal =>
+          flattenSignalInfo(signal.fieldName, signal.fieldtype, signal.info)
+        }
+
+        // 为展开后的每个标量信号生成 JSON 条目
+        val signalsJson = flattenedSignals
+          .sortBy(_.fieldName) // 按名称排序以保持一致性
+          .map { flatSignal =>
+            s"""      {
+               |        "fieldName": "${escapeJsonString(
+                flatSignal.fieldName
+              )}",
+               |        "type": "${escapeJsonString(
+                flatSignal.fieldtype.serialize
+              )}",
+               |        "info": "${escapeJsonString(flatSignal.info.serialize)}"
+               |      }""".stripMargin
+          }
+          .mkString(",\n")
+
+        s"""    {
+           |      "portName": "${escapeJsonString(portInfo.portName)}",
+           |      "signals": [
+           |$signalsJson
+           |      ]
+           |    }""".stripMargin
+      }
+      .mkString(",\n")
+
+    s"""{
+       |  "topModuleName": "${escapeJsonString(topModuleName)}",
+       |  "exportedPorts": [
+       |$portsJson
+       |  ]
+       |}""".stripMargin
+  }
 
   /** 处理单个 Chisel 模块，执行转换并生成输出文件。
     *
@@ -112,7 +211,7 @@ object CoverageTool {
 
     // 实例化 CustomStage (包含 CustomTransform)
     val stage = new CustomStage(
-      customPhases = Seq(new CustomTransform)
+      customPhases = Seq(new CoverageTransform)
     )
 
     // 1. (可选) 生成原始 SystemVerilog (old.sv)
@@ -139,6 +238,7 @@ object CoverageTool {
     // 2. 通过 CustomStage 运行，触发 CustomTransform 并尝试生成转换后的 SV
     var transformedSvOption: Option[String] = None
     var moduleName: String = ""
+    var retrievedPortInfoList: List[TopLevelExportInfo] = Nil // 用于存储端口信息
     try {
       println(s"  运行 CustomStage (转换并尝试生成 .sv)...")
       val transformed_sv = stage.emitSystemVerilog(
@@ -146,7 +246,10 @@ object CoverageTool {
         firtoolOpts = firtoolOpts
       )
       transformedSvOption = Some(transformed_sv)
-      moduleName = TransformOutputData.mainModuleName
+      moduleName = TransformOutputData.mainModuleName // 获取模块名
+      // 注意：这里获取的 portInfoList 仍然是 SignalPropagator 输出的原始列表
+      // JSON 生成函数内部会处理展开逻辑
+      retrievedPortInfoList = TransformOutputData.portInfoList
       if (moduleName.isEmpty) {
         println(s"  警告: CustomTransform 未能设置模块名。")
       }
@@ -156,7 +259,9 @@ object CoverageTool {
         println(
           s"  运行 CustomStage (生成 .sv) 时出错: ${e.getMessage}"
         )
+        // 即使 SV 生成失败，仍然尝试获取模块名和端口信息
         moduleName = TransformOutputData.mainModuleName
+        retrievedPortInfoList = TransformOutputData.portInfoList
         if (moduleName.nonEmpty) {
           println(s"  虽然 SV 生成失败，但获取到模块名: $moduleName")
         } else {
@@ -164,10 +269,10 @@ object CoverageTool {
         }
     }
 
-    // 3. 尝试写入其他文件 (FIRRTL, C++, Bash)，特别是当 enableDevOutput 为 true 时
+    // 3. 尝试写入其他文件 (FIRRTL, C++, Bash, JSON)，特别是当 enableDevOutput 为 true 时
     if (moduleName.nonEmpty) {
       try {
-        println(s"  尝试写入 FIRRTL, C++, Bash 文件...")
+        println(s"  尝试写入 FIRRTL, C++, Bash, JSON 文件...")
 
         // 写入转换后的 SV (如果成功生成)
         transformedSvOption match {
@@ -197,6 +302,24 @@ object CoverageTool {
         println(s"  成功写入 $objDir/sim_main.cpp (如果不存在)")
         println(s"  成功写入 $specificOutputDir/coverage.bash")
 
+        // 写入 Coverage Info JSON 文件
+        if (retrievedPortInfoList.nonEmpty) {
+          try {
+            // 调用更新后的 generateCoverageInfoJson 函数
+            val coverageInfoJson =
+              generateCoverageInfoJson(moduleName, retrievedPortInfoList)
+            val jsonPath =
+              s"$specificOutputDir/${moduleName}_coverage_info.json"
+            FileUtil.writeToFile(jsonPath, coverageInfoJson)
+            println(s"  成功写入 $jsonPath")
+          } catch {
+            case e: Exception =>
+              println(s"   生成或写入 Coverage Info JSON 时出错: ${e.getMessage}")
+          }
+        } else {
+          println(s"  跳过写入 Coverage Info JSON (端口信息为空)")
+        }
+
         // 写入开发 FIRRTL 文件 (如果启用)
         if (enableDevOutput) {
           println(s"  写入开发 FIRRTL 文件...")
@@ -221,11 +344,11 @@ object CoverageTool {
         }
       } catch {
         case e: Exception =>
-          println(s"  写入 FIRRTL/C++/Bash 文件时出错: ${e.getMessage}")
+          println(s"  写入 FIRRTL/C++/Bash/JSON 文件时出错: ${e.getMessage}")
       }
     } else {
       println(
-        s"  警告: 未能获取模块名，无法写入 FIRRTL/C++/Bash 文件。"
+        s"  警告: 未能获取模块名，无法写入 FIRRTL/C++/Bash/JSON 文件。"
       )
     }
 

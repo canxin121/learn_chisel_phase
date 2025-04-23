@@ -13,10 +13,25 @@ VRegModule::VRegModule(VerilatedContext* _vcontextp__, const char* _vcname__)
     , clock{vlSymsp->TOP.clock}
     , reset{vlSymsp->TOP.reset}
     , io_sel{vlSymsp->TOP.io_sel}
-    , io_out{vlSymsp->TOP.io_out}
+    , io_out_0_0{vlSymsp->TOP.io_out_0_0}
+    , io_out_0_1{vlSymsp->TOP.io_out_0_1}
+    , io_out_0_2{vlSymsp->TOP.io_out_0_2}
+    , io_out_1_0{vlSymsp->TOP.io_out_1_0}
+    , io_out_1_1{vlSymsp->TOP.io_out_1_1}
+    , io_out_1_2{vlSymsp->TOP.io_out_1_2}
     , _cond_pred_RegModule___05FI___05Flocal___05FI___05F_T{vlSymsp->TOP._cond_pred_RegModule___05FI___05Flocal___05FI___05F_T}
-    , _reg_signals_RegModule___05FI___05Flocal___05FI___05FregA{vlSymsp->TOP._reg_signals_RegModule___05FI___05Flocal___05FI___05FregA}
-    , _reg_signals_RegModule___05FI___05Flocal___05FI___05FregB{vlSymsp->TOP._reg_signals_RegModule___05FI___05Flocal___05FI___05FregB}
+    , _reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_0_0{vlSymsp->TOP._reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_0_0}
+    , _reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_0_1{vlSymsp->TOP._reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_0_1}
+    , _reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_0_2{vlSymsp->TOP._reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_0_2}
+    , _reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_1_0{vlSymsp->TOP._reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_1_0}
+    , _reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_1_1{vlSymsp->TOP._reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_1_1}
+    , _reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_1_2{vlSymsp->TOP._reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_1_2}
+    , _reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_0_0{vlSymsp->TOP._reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_0_0}
+    , _reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_0_1{vlSymsp->TOP._reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_0_1}
+    , _reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_0_2{vlSymsp->TOP._reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_0_2}
+    , _reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_1_0{vlSymsp->TOP._reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_1_0}
+    , _reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_1_1{vlSymsp->TOP._reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_1_1}
+    , _reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_1_2{vlSymsp->TOP._reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_1_2}
     , rootp{&(vlSymsp->TOP)}
 {
     // Register model with the context

@@ -1,0 +1,45 @@
+{
+  "topModuleName": "ComplexExample",
+  "exportedPorts": [
+    {
+      "portName": "_cond_pred",
+      "signals": [
+      {
+        "fieldName": "ComplexExample__I__anotherSub__I__local__I___T",
+        "type": "UInt<1>",
+        "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\AnotherSubModule.scala 17:23]"
+      },
+      {
+        "fieldName": "ComplexExample__I__sub__I__local__I___T",
+        "type": "UInt<1>",
+        "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\SubModule.scala 20:18]"
+      },
+      {
+        "fieldName": "ComplexExample__I__sub__I__local__I___T_1",
+        "type": "UInt<1>",
+        "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\SubModule.scala 20:18]"
+      },
+      {
+        "fieldName": "ComplexExample__I__sub__I__local__I___T_2",
+        "type": "UInt<1>",
+        "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\SubModule.scala 20:18]"
+      }
+      ]
+    },
+    {
+      "portName": "_reg_signals",
+      "signals": [
+      {
+        "fieldName": "ComplexExample__I__anotherSub__I__local__I__delayedIn",
+        "type": "UInt",
+        "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\AnotherSubModule.scala 12:26]"
+      },
+      {
+        "fieldName": "ComplexExample__I__sub__I__local__I__stateReg",
+        "type": "UInt<8>",
+        "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\SubModule.scala 14:25]"
+      }
+      ]
+    }
+  ]
+}

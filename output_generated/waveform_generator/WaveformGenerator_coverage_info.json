@@ -1,0 +1,50 @@
+{
+  "topModuleName": "WaveformGenerator",
+  "exportedPorts": [
+    {
+      "portName": "_mux_cond",
+      "signals": [
+      {
+        "fieldName": "WaveformGenerator__I__local__I___io_output_T_4",
+        "type": "UInt<1>",
+        "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\WaveformGenerator.scala 53:23]"
+      }
+      ]
+    },
+    {
+      "portName": "_cond_pred",
+      "signals": [
+      {
+        "fieldName": "WaveformGenerator__I__local__I___T",
+        "type": "UInt<1>",
+        "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\WaveformGenerator.scala 42:23]"
+      },
+      {
+        "fieldName": "WaveformGenerator__I__local__I___T_1",
+        "type": "UInt<1>",
+        "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\WaveformGenerator.scala 42:23]"
+      },
+      {
+        "fieldName": "WaveformGenerator__I__local__I___T_2",
+        "type": "UInt<1>",
+        "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\WaveformGenerator.scala 42:23]"
+      },
+      {
+        "fieldName": "WaveformGenerator__I__local__I___T_3",
+        "type": "UInt<1>",
+        "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\WaveformGenerator.scala 42:23]"
+      }
+      ]
+    },
+    {
+      "portName": "_reg_signals",
+      "signals": [
+      {
+        "fieldName": "WaveformGenerator__I__local__I__phaseAcc",
+        "type": "UInt<16>",
+        "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\WaveformGenerator.scala 17:25]"
+      }
+      ]
+    }
+  ]
+}

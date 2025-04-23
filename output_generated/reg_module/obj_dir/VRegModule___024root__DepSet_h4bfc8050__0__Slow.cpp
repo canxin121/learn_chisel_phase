@@ -13,10 +13,31 @@ VL_ATTR_COLD void VRegModule___024root___eval_static(VRegModule___024root* vlSel
     vlSelfRef.__Vtrigprevexpr___TOP__clock__0 = vlSelfRef.clock;
 }
 
+VL_ATTR_COLD void VRegModule___024root___eval_initial__TOP(VRegModule___024root* vlSelf);
+
 VL_ATTR_COLD void VRegModule___024root___eval_initial(VRegModule___024root* vlSelf) {
     VL_DEBUG_IF(VL_DBG_MSGF("+    VRegModule___024root___eval_initial\n"); );
     VRegModule__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     auto& vlSelfRef = std::ref(*vlSelf).get();
+    // Body
+    VRegModule___024root___eval_initial__TOP(vlSelf);
+}
+
+VL_ATTR_COLD void VRegModule___024root___eval_initial__TOP(VRegModule___024root* vlSelf) {
+    VL_DEBUG_IF(VL_DBG_MSGF("+    VRegModule___024root___eval_initial__TOP\n"); );
+    VRegModule__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
+    auto& vlSelfRef = std::ref(*vlSelf).get();
+    // Body
+    vlSelfRef._reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_0_1 = 0U;
+    vlSelfRef._reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_0_2 = 0U;
+    vlSelfRef._reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_1_0 = 0U;
+    vlSelfRef._reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_1_1 = 0U;
+    vlSelfRef._reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_1_2 = 0U;
+    vlSelfRef._reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_0_0 = 0x64U;
+    vlSelfRef._reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_0_1 = 0x65U;
+    vlSelfRef._reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_0_2 = 0x66U;
+    vlSelfRef._reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_1_0 = 0x6eU;
+    vlSelfRef._reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_1_1 = 0x6fU;
 }
 
 VL_ATTR_COLD void VRegModule___024root___eval_final(VRegModule___024root* vlSelf) {
@@ -89,14 +110,27 @@ VL_ATTR_COLD void VRegModule___024root___stl_sequent__TOP__0(VRegModule___024roo
     VRegModule__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     auto& vlSelfRef = std::ref(*vlSelf).get();
     // Body
+    if (vlSelfRef.io_sel) {
+        vlSelfRef.io_out_0_1 = 0x65U;
+        vlSelfRef.io_out_0_2 = 0x66U;
+        vlSelfRef.io_out_1_0 = 0x6eU;
+        vlSelfRef.io_out_1_1 = 0x6fU;
+        vlSelfRef.io_out_0_0 = 0x64U;
+        vlSelfRef.io_out_1_2 = vlSelfRef.RegModule__DOT__regB_1_2;
+    } else {
+        vlSelfRef.io_out_0_1 = 0U;
+        vlSelfRef.io_out_0_2 = 0U;
+        vlSelfRef.io_out_1_0 = 0U;
+        vlSelfRef.io_out_1_1 = 0U;
+        vlSelfRef.io_out_0_0 = vlSelfRef.RegModule__DOT__regA_0_0;
+        vlSelfRef.io_out_1_2 = 0U;
+    }
     vlSelfRef._cond_pred_RegModule___05FI___05Flocal___05FI___05F_T 
         = (1U & (~ (IData)(vlSelfRef.io_sel)));
-    vlSelfRef._reg_signals_RegModule___05FI___05Flocal___05FI___05FregA 
-        = vlSelfRef.RegModule__DOT__regA;
-    vlSelfRef._reg_signals_RegModule___05FI___05Flocal___05FI___05FregB 
-        = vlSelfRef.RegModule__DOT__regB;
-    vlSelfRef.io_out = ((IData)(vlSelfRef.io_sel) ? (IData)(vlSelfRef.RegModule__DOT__regB)
-                         : (IData)(vlSelfRef.RegModule__DOT__regA));
+    vlSelfRef._reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_0_0 
+        = vlSelfRef.RegModule__DOT__regA_0_0;
+    vlSelfRef._reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_1_2 
+        = vlSelfRef.RegModule__DOT__regB_1_2;
 }
 
 VL_ATTR_COLD void VRegModule___024root___eval_triggers__stl(VRegModule___024root* vlSelf);
@@ -169,11 +203,26 @@ VL_ATTR_COLD void VRegModule___024root___ctor_var_reset(VRegModule___024root* vl
     vlSelf->clock = VL_RAND_RESET_I(1);
     vlSelf->reset = VL_RAND_RESET_I(1);
     vlSelf->io_sel = VL_RAND_RESET_I(1);
-    vlSelf->io_out = VL_RAND_RESET_I(8);
+    vlSelf->io_out_0_0 = VL_RAND_RESET_I(8);
+    vlSelf->io_out_0_1 = VL_RAND_RESET_I(8);
+    vlSelf->io_out_0_2 = VL_RAND_RESET_I(8);
+    vlSelf->io_out_1_0 = VL_RAND_RESET_I(8);
+    vlSelf->io_out_1_1 = VL_RAND_RESET_I(8);
+    vlSelf->io_out_1_2 = VL_RAND_RESET_I(8);
     vlSelf->_cond_pred_RegModule___05FI___05Flocal___05FI___05F_T = VL_RAND_RESET_I(1);
-    vlSelf->_reg_signals_RegModule___05FI___05Flocal___05FI___05FregA = VL_RAND_RESET_I(8);
-    vlSelf->_reg_signals_RegModule___05FI___05Flocal___05FI___05FregB = VL_RAND_RESET_I(8);
-    vlSelf->RegModule__DOT__regA = VL_RAND_RESET_I(8);
-    vlSelf->RegModule__DOT__regB = VL_RAND_RESET_I(8);
+    vlSelf->_reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_0_0 = VL_RAND_RESET_I(8);
+    vlSelf->_reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_0_1 = VL_RAND_RESET_I(8);
+    vlSelf->_reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_0_2 = VL_RAND_RESET_I(8);
+    vlSelf->_reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_1_0 = VL_RAND_RESET_I(8);
+    vlSelf->_reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_1_1 = VL_RAND_RESET_I(8);
+    vlSelf->_reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_1_2 = VL_RAND_RESET_I(8);
+    vlSelf->_reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_0_0 = VL_RAND_RESET_I(8);
+    vlSelf->_reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_0_1 = VL_RAND_RESET_I(8);
+    vlSelf->_reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_0_2 = VL_RAND_RESET_I(8);
+    vlSelf->_reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_1_0 = VL_RAND_RESET_I(8);
+    vlSelf->_reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_1_1 = VL_RAND_RESET_I(8);
+    vlSelf->_reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_1_2 = VL_RAND_RESET_I(8);
+    vlSelf->RegModule__DOT__regA_0_0 = VL_RAND_RESET_I(8);
+    vlSelf->RegModule__DOT__regB_1_2 = VL_RAND_RESET_I(8);
     vlSelf->__Vtrigprevexpr___TOP__clock__0 = VL_RAND_RESET_I(1);
 }

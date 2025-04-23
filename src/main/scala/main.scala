@@ -10,6 +10,7 @@ import modules.UART_rx
 import modules.UART_tx
 import chisel3.Reg
 import modules.RegModule
+import modules.ComplexExample
 
 object ExampleMain extends App {
   val baseOutputDir = "output_generated"
@@ -27,7 +28,8 @@ object ExampleMain extends App {
       () => new UART_tx(),
       "uart_tx"
     ),
-    (() => new RegModule(), "reg_module")
+    (() => new RegModule(), "reg_module"),
+    (() => new ComplexExample(), "complex_example")
   )
 
   modulesToProcess.foreach { case (moduleGenerator, outputSubDir) =>

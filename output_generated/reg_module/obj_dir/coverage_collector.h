@@ -383,10 +383,20 @@ inline void CoverageCollector::initialize(VRegModule *top) {
   } catch (...) {
     std::cerr << "Error adding cond point _cond_pred_RegModule___05FI___05Flocal___05FI___05F_T" << std::endl;
   }
-  // Register signal: _reg_signals_RegModule__I__local__I__regA (UInt<8>)
-        register_points.emplace_back("_reg_signals_RegModule__I__local__I__regA", 8, reinterpret_cast<const void*>(&top->_reg_signals_RegModule___05FI___05Flocal___05FI___05FregA));
-  // Register signal: _reg_signals_RegModule__I__local__I__regB (UInt<8>)
-        register_points.emplace_back("_reg_signals_RegModule__I__local__I__regB", 8, reinterpret_cast<const void*>(&top->_reg_signals_RegModule___05FI___05Flocal___05FI___05FregB));
+  // Register signal: _reg_signals_RegModule__I__local__I__regA (UInt<8>[3][2])
+        register_points.emplace_back("_reg_signals_RegModule__I__local__I__regA_0_0", 8, reinterpret_cast<const void*>(&top->_reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_0_0));
+        register_points.emplace_back("_reg_signals_RegModule__I__local__I__regA_0_1", 8, reinterpret_cast<const void*>(&top->_reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_0_1));
+        register_points.emplace_back("_reg_signals_RegModule__I__local__I__regA_0_2", 8, reinterpret_cast<const void*>(&top->_reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_0_2));
+        register_points.emplace_back("_reg_signals_RegModule__I__local__I__regA_1_0", 8, reinterpret_cast<const void*>(&top->_reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_1_0));
+        register_points.emplace_back("_reg_signals_RegModule__I__local__I__regA_1_1", 8, reinterpret_cast<const void*>(&top->_reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_1_1));
+        register_points.emplace_back("_reg_signals_RegModule__I__local__I__regA_1_2", 8, reinterpret_cast<const void*>(&top->_reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_1_2));
+  // Register signal: _reg_signals_RegModule__I__local__I__regB (UInt<8>[3][2])
+        register_points.emplace_back("_reg_signals_RegModule__I__local__I__regB_0_0", 8, reinterpret_cast<const void*>(&top->_reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_0_0));
+        register_points.emplace_back("_reg_signals_RegModule__I__local__I__regB_0_1", 8, reinterpret_cast<const void*>(&top->_reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_0_1));
+        register_points.emplace_back("_reg_signals_RegModule__I__local__I__regB_0_2", 8, reinterpret_cast<const void*>(&top->_reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_0_2));
+        register_points.emplace_back("_reg_signals_RegModule__I__local__I__regB_1_0", 8, reinterpret_cast<const void*>(&top->_reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_1_0));
+        register_points.emplace_back("_reg_signals_RegModule__I__local__I__regB_1_1", 8, reinterpret_cast<const void*>(&top->_reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_1_1));
+        register_points.emplace_back("_reg_signals_RegModule__I__local__I__regB_1_2", 8, reinterpret_cast<const void*>(&top->_reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_1_2));
 
   // --- End of generated emplace_back calls ---
 
@@ -396,7 +406,7 @@ inline void CoverageCollector::initialize(VRegModule *top) {
             << " (target: " << condition_points.size() << ")" << std::endl;
   std::cout << "  - Mux Conditions Registered:         " << 0
             << " (target: " << mux_condition_points.size() << ")" << std::endl;
-  std::cout << "  - Register Coverage Points Registered: " << 2
+  std::cout << "  - Register Coverage Points Registered: " << 12
             << " (target: " << register_points.size() << ")" << std::endl;
   std::cout << "----------------------------------------" << std::endl;
 }

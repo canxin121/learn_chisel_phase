@@ -5,6 +5,7 @@ package ir
 
 // 导入 firrtl.Utils 中的辅助函数和类型定义
 import firrtl.Utils.{throwInternalError, BoolType} // 导入 BoolType, IntWidth
+import firrtl.ir.Info
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
@@ -14,17 +15,15 @@ import scala.collection.mutable.ListBuffer
   *
   * @param fieldName
   *   该信号在导出 Bundle 中的唯一字段名 (例如 "Top__I__sub__I__local__I__myNode")。
-  * @param typeName
-  *   信号的基本类型名称 (例如 "UInt", "SInt", "Bool", "Clock", "Analog", "Fixed",
-  *   "Bundle", "Vector", "Unknown")。
-  * @param width
-  *   信号的位宽，如果适用 (例如 对于 UInt<8>, SInt<16>, Fixed<10><<2>>, Analog<1>, Bool 是
-  *   Some(8), Some(16), Some(10), Some(1), Some(1))。 对于 Bundle, Vector, Clock,
-  *   Reset 等类型，则为 None。对于Vector，可以考虑用 Some(size) 表示其元素个数。
+  * @param fieldtype
+  *   信号的类型 (`Type`)。
+  * @param info
+  *   该信号来源的原始信息 (`Info`)。
   */
 case class ExportedSignalInfo(
     fieldName: String,
-    fieldtype: Type
+    fieldtype: Type,
+    info: Info
 )
 
 /** 描述添加到顶层模块的整个导出端口的信息
@@ -56,9 +55,9 @@ case class TopLevelExportInfo(
   *   "_cond_pred_prop_wire_", "_mux_cond_prop_wire_")。
   *   这确保了即使信号定义在条件块内部，也能被连接到输出端口。
   * @param localSignalExtractor
-  *   一个函数，它接收一个 `Circuit` 对象，并返回一个 `Map[String, Seq[Expression]]`。 这个 Map
-  *   的键是模块名称，值是该模块内部直接定义的、需要向上级传播的信号表达式列表。 例如，对于谓词传播，它会提取 `Conditionally` 语句的
-  *   `pred` 表达式。
+  *   一个函数，它接收一个 `Circuit` 对象，并返回一个 `Map[String, Seq[(Expression, Info)]]`。 这个
+  *   Map 的键是模块名称，值是该模块内部直接定义的、需要向上级传播的信号表达式及其原始 Info 的列表。 例如，对于谓词传播，它会提取
+  *   `Conditionally` 语句的 `pred` 表达式和 `Conditionally` 语句的 `Info`。
   * @param defaultTypeForUnknown
   *   一个可选的 `Type`。当 `localSignalExtractor` 提取出的信号表达式类型为 `UnknownType` 时， 将使用此
   *   `defaultTypeForUnknown` 指定的类型作为该信号在传播过程中的类型（例如，在创建输出端口字段或中间线时）。
@@ -70,7 +69,7 @@ case class PropagatorConfig(
     signalName: String,
     outputPortName: String,
     intermediateWirePrefix: String,
-    localSignalExtractor: Circuit => Map[String, Seq[Expression]],
+    localSignalExtractor: Circuit => Map[String, Seq[(Expression, Info)]],
     defaultTypeForUnknown: Option[Type] = None // 默认为 None
 )
 
@@ -104,25 +103,32 @@ object SignalPropagator {
   // --- 通用数据结构 ---
   case class SignalOriginInfo(
       sourceExpression: Expression,
-      signalType: Type
+      signalType: Type,
+      originInfo: Info
   )
 
-  sealed trait SignalSource
+  sealed trait SignalSource {
+    def getOriginInfo: Info
+  }
 
   case class LocalSignalSource(
       propagatedFieldName: String,
       originInfo: SignalOriginInfo
-  ) extends SignalSource
+  ) extends SignalSource {
+    override def getOriginInfo: Info = originInfo.originInfo
+  }
 
   case class ChildSignalSource(
       instanceName: String,
       propagatedFieldName: String,
       originInfo: SignalOriginInfo
-  ) extends SignalSource
+  ) extends SignalSource {
+    override def getOriginInfo: Info = originInfo.originInfo
+  }
 
   case class ModuleTransformResult(
       transformedModule: DefModule,
-      signalPortInfo: Option[(String, BundleType)]
+      signalPortInfo: Option[(String, BundleType, Map[String, Info])]
   )
 
   // --- 辅助函数 ---
@@ -194,20 +200,16 @@ object SignalPropagator {
   def transform(
       circuit: Circuit,
       config: PropagatorConfig
-  ): (Circuit, Option[TopLevelExportInfo]) = { // **** 修改返回类型 ****
-    // 1. 提取本地信号
-    val internalSignalsMap: Map[String, Seq[Expression]] =
+  ): (Circuit, Option[TopLevelExportInfo]) = {
+    val internalSignalsMap: Map[String, Seq[(Expression, Info)]] =
       config.localSignalExtractor(circuit)
 
-    // 2. 创建模块映射
     val moduleMap: Map[String, DefModule] =
       circuit.modules.map(m => m.name -> m).toMap
 
-    // 3. 缓存实例处理结果
     val processedModuleInstancesCache =
       mutable.Map[(String, Seq[String]), ModuleTransformResult]()
 
-    // 4. 预计算顶层名称
     val topLevelNamesMap = mutable.Map[String, Set[String]]()
     circuit.modules.foreach {
       case module: Module =>
@@ -223,7 +225,6 @@ object SignalPropagator {
       case _ =>
     }
 
-    // 递归处理模块实例函数 (保持不变)
     def processModule(
         moduleName: String,
         instancePath: Seq[String]
@@ -295,11 +296,8 @@ object SignalPropagator {
       }
     }
 
-    // 5. 从主模块开始递归处理
-    // **** 获取主模块的处理结果 ****
     val mainModuleResult = processModule(circuit.main, Seq(circuit.main))
 
-    // 6. 收集所有处理过的模块定义 (保持不变)
     val finalModulesMap = mutable.Map[String, DefModule]()
     processedModuleInstancesCache.values.foreach { result =>
       val moduleName = result.transformedModule.name
@@ -314,99 +312,81 @@ object SignalPropagator {
       }
     }
 
-    // 7. 添加未处理的模块 (保持不变)
     circuit.modules.foreach { originalMod =>
       if (!finalModulesMap.contains(originalMod.name)) {
         finalModulesMap(originalMod.name) = originalMod
       }
     }
 
-    // 8. 重建模块列表 (保持不变)
     val finalOrderedModules = circuit.modules.map(m => finalModulesMap(m.name))
 
-    // 9. 创建新电路 (保持不变)
     val finalCircuit = circuit.copy(modules = finalOrderedModules)
 
-    // **** 10. (新增) 提取顶层模块的导出端口信息 ****
     val topLevelExportInfo: Option[TopLevelExportInfo] =
-      // 检查主模块的处理结果中是否有 signalPortInfo
-      mainModuleResult.signalPortInfo.map { case (portName, bundleType) =>
-        // 如果有，遍历 Bundle 中的每个字段
-        val exportedSignals = bundleType.fields.map { field =>
-          // 创建 ExportedSignalInfo 对象
-          ExportedSignalInfo(field.name, field.tpe)
-        }
-        // 创建 TopLevelExportInfo 对象
-        TopLevelExportInfo(
-          portName,
-          exportedSignals
-        ) // 按字段名排序
+      mainModuleResult.signalPortInfo.map {
+        case (portName, bundleType, infoMap) =>
+          val exportedSignals = bundleType.fields
+            .map { field =>
+              val originInfo = infoMap.getOrElse(
+                field.name, {
+                  println(
+                    s"[WARN] SignalPropagator: 在顶层模块 ${circuit.main} 的 infoMap 中找不到字段 ${field.name} 的 Info，使用 NoInfo。"
+                  )
+                  NoInfo
+                }
+              )
+              ExportedSignalInfo(field.name, field.tpe, originInfo)
+            }
+            .sortBy(_.fieldName)
+          TopLevelExportInfo(portName, exportedSignals)
       }
 
-    // **** 11. (修改) 返回包含电路和顶层端口信息的元组 ****
     (finalCircuit, topLevelExportInfo)
   }
 
-  /** 转换单个模块，添加信号输出端口（如果需要）并连接相关信号。
-    *
-    * @param module
-    *   当前要转换的 `Module` 对象。
-    * @param moduleMap
-    *   电路中所有模块名称到定义的映射。
-    * @param internalSignalsMap
-    *   包含每个模块本地信号的映射（来自 `localSignalExtractor`）。
-    * @param topLevelNames
-    *   当前模块顶层定义的名称集合 (来自 `collectTopLevelNames`)。
-    * @param currentInstancePath
-    *   到达当前模块实例的路径。
-    * @param processFunc
-    *   对子模块进行递归处理的函数 (即 `processModule`)。
-    * @param config
-    *   信号传播器的配置。
-    * @return
-    *   `ModuleTransformResult`，包含转换后的模块和（可能存在的）新信号端口信息。
-    */
   private def transformModule(
       module: Module,
       moduleMap: Map[String, DefModule],
-      internalSignalsMap: Map[String, Seq[Expression]],
+      internalSignalsMap: Map[String, Seq[(Expression, Info)]],
       topLevelNames: Set[String],
       currentInstancePath: Seq[String],
       processFunc: (String, Seq[String]) => ModuleTransformResult,
       config: PropagatorConfig
   ): ModuleTransformResult = {
 
-    // === 步骤 1: 收集本地信号源 ===
     val localSignalSources: List[LocalSignalSource] =
       internalSignalsMap
         .get(module.name)
-        .map { moduleSignalExpressions =>
-          moduleSignalExpressions.distinctBy(_.serialize).map { signalExpr =>
-            if (getRootReferenceName(signalExpr).isEmpty) {
-              throwInternalError(
-                s"SignalPropagator.transformModule: 在模块 ${module.name} 中发现不符合假设的 ${config.signalName}: ${signalExpr.serialize}. " +
-                  "无法获取根引用名称。"
+        .map { moduleSignalExprInfoPairs =>
+          moduleSignalExprInfoPairs
+            .distinctBy { case (expr, info) =>
+              (expr.serialize, info.serialize)
+            }
+            .map { case (signalExpr, originInfo) =>
+              if (getRootReferenceName(signalExpr).isEmpty) {
+                throwInternalError(
+                  s"SignalPropagator.transformModule: 在模块 ${module.name} 中发现不符合假设的 ${config.signalName}: ${signalExpr.serialize}. " +
+                    "无法获取根引用名称。"
+                )
+              }
+              val originalSignalType = signalExpr.tpe
+              val signalBaseId = getSignalBaseIdentifier(
+                signalExpr,
+                config.signalName
+              )
+              val instancePathPrefix =
+                currentInstancePath.mkString(InstanceSeparator)
+              val uniqueFieldName =
+                s"${instancePathPrefix}${InstanceSeparator}${LocalMarker}${InstanceSeparator}$signalBaseId"
+              LocalSignalSource(
+                uniqueFieldName,
+                SignalOriginInfo(signalExpr, originalSignalType, originInfo)
               )
             }
-            val originalSignalType = signalExpr.tpe
-            val signalBaseId = getSignalBaseIdentifier(
-              signalExpr,
-              config.signalName
-            )
-            val instancePathPrefix =
-              currentInstancePath.mkString(InstanceSeparator)
-            val uniqueFieldName =
-              s"${instancePathPrefix}${InstanceSeparator}${LocalMarker}${InstanceSeparator}$signalBaseId"
-            LocalSignalSource(
-              uniqueFieldName,
-              SignalOriginInfo(signalExpr, originalSignalType)
-            )
-          }
         }
         .getOrElse(Nil)
         .toList
 
-    // === 步骤 2: 处理子模块实例并收集子信号源 ===
     val childSignalSources = mutable.ListBuffer[ChildSignalSource]()
     val childInstanceResults = mutable.Map[String, ModuleTransformResult]()
 
@@ -423,22 +403,34 @@ object SignalPropagator {
           )
 
           childTransformResult.signalPortInfo match {
-            case Some((childPortName, childBundleType))
+            case Some((childPortName, childBundleType, childInfoMap))
                 if childPortName == config.outputPortName =>
               val instanceRef = Reference(
                 inst.name,
                 UnknownType
-              ) // Instance type is often Unknown here
+              )
               val childSignalPortAccess = SubField(
                 instanceRef,
                 childPortName,
-                childBundleType // Port type *is* known
+                childBundleType
               )
 
               childBundleType.fields.foreach { field =>
                 val fieldAccessExpr =
                   SubField(childSignalPortAccess, field.name, field.tpe)
-                val originInfo = SignalOriginInfo(fieldAccessExpr, field.tpe)
+                val originInfoForField = childInfoMap.getOrElse(
+                  field.name, {
+                    println(
+                      s"[WARN] SignalPropagator: 在子模块 ${childModuleName} (实例 ${inst.name}) 的 infoMap 中找不到字段 ${field.name} 的 Info，使用 NoInfo。"
+                    )
+                    NoInfo
+                  }
+                )
+                val originInfo = SignalOriginInfo(
+                  fieldAccessExpr,
+                  field.tpe,
+                  originInfoForField
+                )
                 childSignalSources += ChildSignalSource(
                   inst.name,
                   field.name,
@@ -456,7 +448,6 @@ object SignalPropagator {
       }
     findInstancesAndCollectChildSignals(module.body)
 
-    // === 步骤 3: 合并信号源 ===
     val allSignalSources: List[SignalSource] =
       localSignalSources ++ childSignalSources.toList
 
@@ -464,11 +455,12 @@ object SignalPropagator {
       return ModuleTransformResult(module, None)
     }
 
-    // === 步骤 4: 构建 Bundle 类型 ===
-    val bundleFields: Seq[Field] = allSignalSources.map { source =>
-      val (propagatedFieldName, originalType) = source match {
-        case LocalSignalSource(pfname, origin)    => (pfname, origin.signalType)
-        case ChildSignalSource(_, pfname, origin) => (pfname, origin.signalType)
+    val fieldInfoPairs: Seq[(Field, Info)] = allSignalSources.map { source =>
+      val (propagatedFieldName, originalType, originInfo) = source match {
+        case LocalSignalSource(pfname, sigOrigin) =>
+          (pfname, sigOrigin.signalType, sigOrigin.originInfo)
+        case ChildSignalSource(_, pfname, sigOrigin) =>
+          (pfname, sigOrigin.signalType, sigOrigin.originInfo)
       }
 
       val finalFieldType = originalType match {
@@ -486,22 +478,26 @@ object SignalPropagator {
           }
         case validTpe => validTpe
       }
-      Field(propagatedFieldName, Default, finalFieldType)
+      (Field(propagatedFieldName, Default, finalFieldType), originInfo)
+    }
+
+    val finalUniqueFieldInfoMap = mutable.LinkedHashMap[String, (Field, Info)]()
+    fieldInfoPairs.foreach { case (field, info) =>
+      if (finalUniqueFieldInfoMap.contains(field.name)) {
+        println(
+          s"[WARN] SignalPropagator: 在模块 ${module.name} 的输出 Bundle ${config.outputPortName} 中检测到重复字段名 '${field.name}'。将保留第一个遇到的版本及其 Info。"
+        )
+      } else {
+        finalUniqueFieldInfoMap(field.name) = (field, info)
+      }
     }
 
     val finalUniqueBundleFields: Seq[Field] =
-      bundleFields
-        .groupBy(_.name)
-        .map { case (name, fields) =>
-          if (fields.length > 1) {
-            println(
-              s"[WARN] SignalPropagator: 在模块 ${module.name} 的输出 Bundle ${config.outputPortName} 中检测到重复字段名 '$name'。"
-            )
-          }
-          fields.head
-        }
-        .toSeq
-        .sortBy(_.name)
+      finalUniqueFieldInfoMap.values.map(_._1).toSeq.sortBy(_.name)
+    val finalInfoMap: Map[String, Info] =
+      finalUniqueFieldInfoMap.map { case (name, (_, info)) =>
+        name -> info
+      }.toMap
 
     if (finalUniqueBundleFields.isEmpty) {
       println(
@@ -512,19 +508,17 @@ object SignalPropagator {
 
     val combinedBundleType = BundleType(finalUniqueBundleFields)
 
-    // === 步骤 5: 创建新输出端口 ===
     val newOutputSignalPort =
       Port(module.info, config.outputPortName, Output, combinedBundleType)
     val updatedPorts = module.ports.filterNot(
       _.name == config.outputPortName
     ) :+ newOutputSignalPort
 
-    // === 步骤 6: 处理需要中间线的本地信号 ===
     val localSignalsNeedingIntermediateWire =
       mutable.Map[String, (Expression, Type, String)]()
 
     localSignalSources.foreach {
-      case LocalSignalSource(pfname, SignalOriginInfo(expr, originalType)) =>
+      case LocalSignalSource(pfname, SignalOriginInfo(expr, originalType, _)) =>
         getRootReferenceName(expr) match {
           case Some(rootRefName) if !topLevelNames.contains(rootRefName) =>
             val resolvedWireType = originalType match {
@@ -540,32 +534,28 @@ object SignalPropagator {
               s"${config.intermediateWirePrefix}${pfname}"
             localSignalsNeedingIntermediateWire(rootRefName) =
               (expr, resolvedWireType, intermediateWireName)
-          case _ => // Top-level or no root ref, no wire needed or error already thrown
+          case _ =>
         }
     }
 
-    // === 步骤 7: 生成中间线定义 ===
     val intermediateWireDefs: Seq[DefWire] =
       localSignalsNeedingIntermediateWire.values.map {
         case (_, resolvedType, wireName) =>
           DefWire(NoInfo, wireName, resolvedType)
       }.toSeq
 
-    // === 步骤 8: 生成中间线默认无效化语句 ===
     val intermediateWireDefaultConnects: Seq[Statement] =
       localSignalsNeedingIntermediateWire.values.map {
         case (_, resolvedWireType, wireName) =>
-          // 为所有需要中间线的信号添加默认 IsInvalid 语句
           IsInvalid(
             NoInfo,
             Reference(
               wireName,
               resolvedWireType
-            ) // Target the wire to invalidate
+            )
           )
       }.toSeq
 
-    // === 步骤 9: 修改 Body，插入到中间线的连接 ===
     val nodeConnectedToIntermediateWire = mutable.Set[String]()
     def addIntermediateConnects(statement: Statement): Seq[Statement] =
       statement match {
@@ -636,7 +626,6 @@ object SignalPropagator {
     val bodyWithIntermediateConnectsAdded: Seq[Statement] =
       existingBodyStmts.flatMap(addIntermediateConnects)
 
-    // === 步骤 10: 生成到输出端口字段的连接 ===
     val finalPortFieldConnects: Seq[Connect] = finalUniqueBundleFields.map {
       field =>
         val portFieldAccess = SubField(
@@ -657,7 +646,7 @@ object SignalPropagator {
           )
 
         val connectSourceExpression: Expression = sourceInfo match {
-          case LocalSignalSource(_, origin) =>
+          case LocalSignalSource(_, origin @ SignalOriginInfo(_, _, _)) =>
             getRootReferenceName(origin.sourceExpression) match {
               case Some(rootRefName)
                   if localSignalsNeedingIntermediateWire.contains(
@@ -682,21 +671,18 @@ object SignalPropagator {
         Connect(NoInfo, portFieldAccess, connectSourceExpression)
     }
 
-    // === 步骤 11: 组合所有新语句 ===
     val finalBodyStmts: Seq[Statement] =
       intermediateWireDefs ++
         intermediateWireDefaultConnects ++
         bodyWithIntermediateConnectsAdded ++
         finalPortFieldConnects
 
-    // === 步骤 12: 创建转换后的模块 ===
     val transformedModule =
       module.copy(ports = updatedPorts, body = Block(finalBodyStmts))
 
-    // === 步骤 13: 返回结果 ===
     ModuleTransformResult(
       transformedModule,
-      Some((config.outputPortName, combinedBundleType))
+      Some((config.outputPortName, combinedBundleType, finalInfoMap))
     )
   }
 }
@@ -713,23 +699,25 @@ object SignalPropagator {
 object ConditionallyPredPropagator {
   private object Extractor {
     private val cache =
-      mutable.WeakHashMap[Circuit, Map[String, Seq[Expression]]]()
-    def extract(circuit: Circuit): Map[String, Seq[Expression]] =
+      mutable.WeakHashMap[Circuit, Map[String, Seq[(Expression, Info)]]]()
+    def extract(circuit: Circuit): Map[String, Seq[(Expression, Info)]] =
       cache.getOrElseUpdate(circuit, compute(circuit))
-    private def compute(circuit: Circuit): Map[String, Seq[Expression]] = {
+    private def compute(
+        circuit: Circuit
+    ): Map[String, Seq[(Expression, Info)]] = {
       val modulePredicatesMap =
-        mutable.Map[String, mutable.ListBuffer[Expression]]()
+        mutable.Map[String, mutable.ListBuffer[(Expression, Info)]]()
       var currentModuleName: String = ""
       def findPredsInStmt(statement: Statement): Unit = statement match {
-        case Conditionally(_, pred, conseq, alt) =>
+        case cond @ Conditionally(info, pred, conseq, alt) =>
           pred match {
             case _: Literal => ()
             case p =>
               modulePredicatesMap
                 .getOrElseUpdate(
                   currentModuleName,
-                  mutable.ListBuffer[Expression]()
-                ) += p
+                  mutable.ListBuffer[(Expression, Info)]()
+                ) += ((p, info))
           }
           findPredsInStmt(conseq); findPredsInStmt(alt)
         case Block(stmts)           => stmts.foreach(findPredsInStmt)
@@ -745,7 +733,9 @@ object ConditionallyPredPropagator {
         }
       }
       modulePredicatesMap.map { case (name, buffer) =>
-        name -> buffer.distinctBy(_.serialize).toList
+        name -> buffer.distinctBy { case (e, i) =>
+          (e.serialize, i.serialize)
+        }.toList
       }.toMap
     }
   }
@@ -758,17 +748,10 @@ object ConditionallyPredPropagator {
     defaultTypeForUnknown = Some(BoolType)
   )
 
-  /** 应用谓词传播转换到电路。
-    *
-    * @param circuit
-    *   原始 FIRRTL 电路。
-    * @return
-    *   一个元组 `(Circuit, Option[TopLevelExportInfo])`: 包含转换后的电路和顶层模块新增端口的信息。
-    */
   def transform(
       circuit: Circuit
-  ): (Circuit, Option[TopLevelExportInfo]) = // **** 修改返回类型 ****
-    SignalPropagator.transform(circuit, config) // 直接返回通用框架的结果
+  ): (Circuit, Option[TopLevelExportInfo]) =
+    SignalPropagator.transform(circuit, config)
 }
 
 /** `Mux` 条件传播器
@@ -778,71 +761,86 @@ object ConditionallyPredPropagator {
 object MuxCondPropagator {
   private object Extractor {
     private val cache =
-      mutable.WeakHashMap[Circuit, Map[String, Seq[Expression]]]()
-    def extract(circuit: Circuit): Map[String, Seq[Expression]] =
+      mutable.WeakHashMap[Circuit, Map[String, Seq[(Expression, Info)]]]()
+    def extract(circuit: Circuit): Map[String, Seq[(Expression, Info)]] =
       cache.getOrElseUpdate(circuit, compute(circuit))
-    private def compute(circuit: Circuit): Map[String, Seq[Expression]] = {
+    private def compute(
+        circuit: Circuit
+    ): Map[String, Seq[(Expression, Info)]] = {
       val moduleConditionsMap =
-        mutable.Map[String, mutable.ListBuffer[Expression]]()
+        mutable.Map[String, mutable.ListBuffer[(Expression, Info)]]()
       var currentModuleName: String = ""
-      val currentModuleConditionsBuffer = mutable.ListBuffer[Expression]()
+      val currentModuleConditionsBuffer =
+        mutable.ListBuffer[(Expression, Info)]()
 
-      def findMuxCondsInExpr(expression: Expression): Unit = expression match {
-        case Mux(cond, tval, fval, _) =>
-          cond match {
-            case _: Literal => (); case c => currentModuleConditionsBuffer += c
-          }
-          findMuxCondsInExpr(cond); findMuxCondsInExpr(tval);
-          findMuxCondsInExpr(fval)
-        case SubField(expr, _, _) => findMuxCondsInExpr(expr)
-        case SubIndex(expr, _, _) => findMuxCondsInExpr(expr)
-        case SubAccess(expr, index, _) =>
-          findMuxCondsInExpr(expr); findMuxCondsInExpr(index)
-        case ValidIf(cond, value, _) =>
-          findMuxCondsInExpr(cond); findMuxCondsInExpr(value)
-        case DoPrim(_, args, _, _)        => args.foreach(findMuxCondsInExpr)
-        case PropExpr(_, _, _, args)      => args.foreach(findMuxCondsInExpr)
-        case ProbeExpr(expr, _)           => findMuxCondsInExpr(expr)
-        case RWProbeExpr(expr, _)         => findMuxCondsInExpr(expr)
-        case ProbeRead(expr, _)           => findMuxCondsInExpr(expr)
-        case SequencePropertyValue(_, vs) => vs.foreach(findMuxCondsInExpr)
-        case _                            => ()
-      }
+      def findMuxCondsInExpr(expression: Expression, stmtInfo: Info): Unit =
+        expression match {
+          case Mux(cond, tval, fval, _) =>
+            cond match {
+              case _: Literal => ()
+              case c => currentModuleConditionsBuffer += ((c, stmtInfo))
+            }
+            findMuxCondsInExpr(cond, stmtInfo);
+            findMuxCondsInExpr(tval, stmtInfo);
+            findMuxCondsInExpr(fval, stmtInfo)
+          case SubField(expr, _, _) => findMuxCondsInExpr(expr, stmtInfo)
+          case SubIndex(expr, _, _) => findMuxCondsInExpr(expr, stmtInfo)
+          case SubAccess(expr, index, _) =>
+            findMuxCondsInExpr(expr, stmtInfo);
+            findMuxCondsInExpr(index, stmtInfo)
+          case ValidIf(cond, value, _) =>
+            findMuxCondsInExpr(cond, stmtInfo);
+            findMuxCondsInExpr(value, stmtInfo)
+          case DoPrim(_, args, _, _) =>
+            args.foreach(findMuxCondsInExpr(_, stmtInfo))
+          case PropExpr(_, _, _, args) =>
+            args.foreach(findMuxCondsInExpr(_, stmtInfo))
+          case ProbeExpr(expr, _)   => findMuxCondsInExpr(expr, stmtInfo)
+          case RWProbeExpr(expr, _) => findMuxCondsInExpr(expr, stmtInfo)
+          case ProbeRead(expr, _)   => findMuxCondsInExpr(expr, stmtInfo)
+          case SequencePropertyValue(_, vs) =>
+            vs.foreach(findMuxCondsInExpr(_, stmtInfo))
+          case _ => ()
+        }
       def findMuxCondsInStmt(statement: Statement): Unit = statement match {
-        case DefNode(_, _, value)        => findMuxCondsInExpr(value)
-        case Connect(_, _, expr)         => findMuxCondsInExpr(expr)
-        case DefRegister(_, _, _, clock) => findMuxCondsInExpr(clock)
-        case DefRegisterWithReset(_, _, _, clock, reset, init) =>
-          findMuxCondsInExpr(clock); findMuxCondsInExpr(reset);
-          findMuxCondsInExpr(init)
-        case Stop(_, _, clk, en) =>
-          findMuxCondsInExpr(clk); findMuxCondsInExpr(en)
-        case Print(_, _, args, clk, en) =>
-          args.foreach(findMuxCondsInExpr); findMuxCondsInExpr(clk);
-          findMuxCondsInExpr(en)
-        case Verification(_, _, clk, pred, en, _) =>
-          findMuxCondsInExpr(clk); findMuxCondsInExpr(pred);
-          findMuxCondsInExpr(en)
-        case PropAssign(_, loc, expr) =>
-          findMuxCondsInExpr(loc); findMuxCondsInExpr(expr)
-        case Attach(_, exprs) => exprs.foreach(findMuxCondsInExpr)
-        case ProbeDefine(_, sink, probeExpr) =>
-          findMuxCondsInExpr(sink); findMuxCondsInExpr(probeExpr)
-        case ProbeForceInitial(_, probe, value) =>
-          findMuxCondsInExpr(probe); findMuxCondsInExpr(value)
-        case ProbeReleaseInitial(_, probe) => findMuxCondsInExpr(probe)
-        case ProbeForce(_, clock, cond, probe, value) =>
-          findMuxCondsInExpr(clock); findMuxCondsInExpr(cond);
-          findMuxCondsInExpr(probe); findMuxCondsInExpr(value)
-        case ProbeRelease(_, clock, cond, probe) =>
-          findMuxCondsInExpr(clock); findMuxCondsInExpr(cond);
-          findMuxCondsInExpr(probe)
+        case stmt @ DefNode(info, _, value) => findMuxCondsInExpr(value, info)
+        case stmt @ Connect(info, _, expr)  => findMuxCondsInExpr(expr, info)
+        case stmt @ DefRegister(info, _, _, clock) =>
+          findMuxCondsInExpr(clock, info)
+        case stmt @ DefRegisterWithReset(info, _, _, clock, reset, init) =>
+          findMuxCondsInExpr(clock, info); findMuxCondsInExpr(reset, info);
+          findMuxCondsInExpr(init, info)
+        case stmt @ Stop(info, _, clk, en) =>
+          findMuxCondsInExpr(clk, info); findMuxCondsInExpr(en, info)
+        case stmt @ Print(info, _, args, clk, en) =>
+          args.foreach(findMuxCondsInExpr(_, info));
+          findMuxCondsInExpr(clk, info);
+          findMuxCondsInExpr(en, info)
+        case stmt @ Verification(op, info, clk, pred, en, msg) =>
+          findMuxCondsInExpr(clk, info); findMuxCondsInExpr(pred, info);
+          findMuxCondsInExpr(en, info)
+        case stmt @ PropAssign(info, loc, expr) =>
+          findMuxCondsInExpr(loc, info); findMuxCondsInExpr(expr, info)
+        case stmt @ Attach(info, exprs) =>
+          exprs.foreach(findMuxCondsInExpr(_, info))
+        case stmt @ ProbeDefine(info, sink, probeExpr) =>
+          findMuxCondsInExpr(sink, info); findMuxCondsInExpr(probeExpr, info)
+        case stmt @ ProbeForceInitial(info, probe, value) =>
+          findMuxCondsInExpr(probe, info); findMuxCondsInExpr(value, info)
+        case stmt @ ProbeReleaseInitial(info, probe) =>
+          findMuxCondsInExpr(probe, info)
+        case stmt @ ProbeForce(info, clock, cond, probe, value) =>
+          findMuxCondsInExpr(clock, info); findMuxCondsInExpr(cond, info);
+          findMuxCondsInExpr(probe, info); findMuxCondsInExpr(value, info)
+        case stmt @ ProbeRelease(info, clock, cond, probe) =>
+          findMuxCondsInExpr(clock, info); findMuxCondsInExpr(cond, info);
+          findMuxCondsInExpr(probe, info)
         case Block(stmts) => stmts.foreach(findMuxCondsInStmt)
-        case Conditionally(_, pred, conseq, alt) =>
-          findMuxCondsInExpr(pred); findMuxCondsInStmt(conseq);
+        case stmt @ Conditionally(info, pred, conseq, alt) =>
+          findMuxCondsInExpr(pred, info); findMuxCondsInStmt(conseq);
           findMuxCondsInStmt(alt)
-        case LayerBlock(_, _, body) => findMuxCondsInStmt(body)
-        case _                      => ()
+        case stmt @ LayerBlock(info, _, body) => findMuxCondsInStmt(body)
+        case _                                => ()
       }
       circuit.modules.foreach { moduleDef =>
         currentModuleName = moduleDef.name
@@ -853,8 +851,11 @@ object MuxCondPropagator {
           case _             => ()
         }
         if (currentModuleConditionsBuffer.nonEmpty) {
-          moduleConditionsMap(currentModuleName) =
-            currentModuleConditionsBuffer.distinctBy(_.serialize).clone()
+          moduleConditionsMap(currentModuleName) = currentModuleConditionsBuffer
+            .distinctBy { case (e, i) =>
+              (e.serialize, i.serialize)
+            }
+            .clone()
         }
       }
       moduleConditionsMap.map { case (name, buffer) =>
@@ -871,17 +872,10 @@ object MuxCondPropagator {
     defaultTypeForUnknown = Some(BoolType)
   )
 
-  /** 应用 Mux 条件传播转换到电路。
-    *
-    * @param circuit
-    *   原始 FIRRTL 电路。
-    * @return
-    *   一个元组 `(Circuit, Option[TopLevelExportInfo])`: 包含转换后的电路和顶层模块新增端口的信息。
-    */
   def transform(
       circuit: Circuit
-  ): (Circuit, Option[TopLevelExportInfo]) = // **** 修改返回类型 ****
-    SignalPropagator.transform(circuit, config) // 直接返回通用框架的结果
+  ): (Circuit, Option[TopLevelExportInfo]) =
+    SignalPropagator.transform(circuit, config)
 }
 
 /** 寄存器信号传播器
@@ -892,26 +886,28 @@ object MuxCondPropagator {
 object RegisterSignalPropagator {
   private object RegisterExtractor {
     private val cache =
-      mutable.WeakHashMap[Circuit, Map[String, Seq[Expression]]]()
-    def extract(circuit: Circuit): Map[String, Seq[Expression]] =
+      mutable.WeakHashMap[Circuit, Map[String, Seq[(Expression, Info)]]]()
+    def extract(circuit: Circuit): Map[String, Seq[(Expression, Info)]] =
       cache.getOrElseUpdate(circuit, compute(circuit))
-    private def compute(circuit: Circuit): Map[String, Seq[Expression]] = {
+    private def compute(
+        circuit: Circuit
+    ): Map[String, Seq[(Expression, Info)]] = {
       val moduleRegistersMap =
-        mutable.Map[String, mutable.ListBuffer[Expression]]()
+        mutable.Map[String, mutable.ListBuffer[(Expression, Info)]]()
       var currentModuleName: String = ""
       def findRegistersInStmt(statement: Statement): Unit = statement match {
-        case reg: DefRegister =>
+        case reg @ DefRegister(info, name, tpe, _) =>
           moduleRegistersMap
             .getOrElseUpdate(
               currentModuleName,
-              mutable.ListBuffer[Expression]()
-            ) += Reference(reg.name, reg.tpe)
-        case regReset: DefRegisterWithReset =>
+              mutable.ListBuffer[(Expression, Info)]()
+            ) += ((Reference(name, tpe), info))
+        case regReset @ DefRegisterWithReset(info, name, tpe, _, _, _) =>
           moduleRegistersMap
             .getOrElseUpdate(
               currentModuleName,
-              mutable.ListBuffer[Expression]()
-            ) += Reference(regReset.name, regReset.tpe)
+              mutable.ListBuffer[(Expression, Info)]()
+            ) += ((Reference(name, tpe), info))
         case Block(stmts) => stmts.foreach(findRegistersInStmt)
         case Conditionally(_, _, conseq, alt) =>
           findRegistersInStmt(conseq); findRegistersInStmt(alt)
@@ -927,7 +923,9 @@ object RegisterSignalPropagator {
         }
       }
       moduleRegistersMap.map { case (name, buffer) =>
-        name -> buffer.toList
+        name -> buffer.distinctBy { case (e, i) =>
+          (e.serialize, i.serialize)
+        }.toList
       }.toMap
     }
   }
@@ -937,18 +935,11 @@ object RegisterSignalPropagator {
     outputPortName = "_reg_signals",
     intermediateWirePrefix = "_reg_prop_wire_",
     localSignalExtractor = RegisterExtractor.extract,
-    defaultTypeForUnknown = None // 寄存器类型必须已知
+    defaultTypeForUnknown = None
   )
 
-  /** 应用寄存器信号传播转换到电路。
-    *
-    * @param circuit
-    *   原始 FIRRTL 电路。
-    * @return
-    *   一个元组 `(Circuit, Option[TopLevelExportInfo])`: 包含转换后的电路和顶层模块新增端口的信息。
-    */
   def transform(
       circuit: Circuit
-  ): (Circuit, Option[TopLevelExportInfo]) = // **** 修改返回类型 ****
-    SignalPropagator.transform(circuit, config) // 直接返回通用框架的结果
+  ): (Circuit, Option[TopLevelExportInfo]) =
+    SignalPropagator.transform(circuit, config)
 }

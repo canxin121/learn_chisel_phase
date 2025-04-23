@@ -32,10 +32,25 @@ class alignas(VL_CACHE_LINE_BYTES) VRegModule VL_NOT_FINAL : public VerilatedMod
     VL_IN8(&clock,0,0);
     VL_IN8(&reset,0,0);
     VL_IN8(&io_sel,0,0);
-    VL_OUT8(&io_out,7,0);
+    VL_OUT8(&io_out_0_0,7,0);
+    VL_OUT8(&io_out_0_1,7,0);
+    VL_OUT8(&io_out_0_2,7,0);
+    VL_OUT8(&io_out_1_0,7,0);
+    VL_OUT8(&io_out_1_1,7,0);
+    VL_OUT8(&io_out_1_2,7,0);
     VL_OUT8(&_cond_pred_RegModule___05FI___05Flocal___05FI___05F_T,0,0);
-    VL_OUT8(&_reg_signals_RegModule___05FI___05Flocal___05FI___05FregA,7,0);
-    VL_OUT8(&_reg_signals_RegModule___05FI___05Flocal___05FI___05FregB,7,0);
+    VL_OUT8(&_reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_0_0,7,0);
+    VL_OUT8(&_reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_0_1,7,0);
+    VL_OUT8(&_reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_0_2,7,0);
+    VL_OUT8(&_reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_1_0,7,0);
+    VL_OUT8(&_reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_1_1,7,0);
+    VL_OUT8(&_reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_1_2,7,0);
+    VL_OUT8(&_reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_0_0,7,0);
+    VL_OUT8(&_reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_0_1,7,0);
+    VL_OUT8(&_reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_0_2,7,0);
+    VL_OUT8(&_reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_1_0,7,0);
+    VL_OUT8(&_reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_1_1,7,0);
+    VL_OUT8(&_reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_1_2,7,0);
 
     // CELLS
     // Public to allow access to /* verilator public */ items.

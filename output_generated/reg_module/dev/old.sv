@@ -3,21 +3,31 @@ module RegModule(
   input        clock,
                reset,
                io_sel,
-  output [7:0] io_out
+  output [7:0] io_out_0_0,
+               io_out_0_1,
+               io_out_0_2,
+               io_out_1_0,
+               io_out_1_1,
+               io_out_1_2
 );
 
-  reg [7:0] regA;
-  reg [7:0] regB;
+  reg [7:0] regA_0_0;
+  reg [7:0] regB_1_2;
   always @(posedge clock) begin
     if (reset) begin
-      regA <= 8'h0;
-      regB <= 8'h64;
+      regA_0_0 <= 8'h0;
+      regB_1_2 <= 8'h70;
     end
     else begin
-      regA <= regA + 8'h1;
-      regB <= regB - 8'h1;
+      regA_0_0 <= regA_0_0 + 8'h1;
+      regB_1_2 <= regB_1_2 - 8'h1;
     end
   end // always @(posedge)
-  assign io_out = io_sel ? regB : regA;
+  assign io_out_0_0 = io_sel ? 8'h64 : regA_0_0;
+  assign io_out_0_1 = io_sel ? 8'h65 : 8'h0;
+  assign io_out_0_2 = io_sel ? 8'h66 : 8'h0;
+  assign io_out_1_0 = io_sel ? 8'h6E : 8'h0;
+  assign io_out_1_1 = io_sel ? 8'h6F : 8'h0;
+  assign io_out_1_2 = io_sel ? regB_1_2 : 8'h0;
 endmodule
 

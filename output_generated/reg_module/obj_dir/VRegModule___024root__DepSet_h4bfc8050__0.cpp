@@ -22,10 +22,23 @@ VL_INLINE_OPT void VRegModule___024root___ico_sequent__TOP__0(VRegModule___024ro
     VRegModule__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     auto& vlSelfRef = std::ref(*vlSelf).get();
     // Body
+    if (vlSelfRef.io_sel) {
+        vlSelfRef.io_out_0_1 = 0x65U;
+        vlSelfRef.io_out_0_2 = 0x66U;
+        vlSelfRef.io_out_1_0 = 0x6eU;
+        vlSelfRef.io_out_1_1 = 0x6fU;
+        vlSelfRef.io_out_0_0 = 0x64U;
+        vlSelfRef.io_out_1_2 = vlSelfRef.RegModule__DOT__regB_1_2;
+    } else {
+        vlSelfRef.io_out_0_1 = 0U;
+        vlSelfRef.io_out_0_2 = 0U;
+        vlSelfRef.io_out_1_0 = 0U;
+        vlSelfRef.io_out_1_1 = 0U;
+        vlSelfRef.io_out_0_0 = vlSelfRef.RegModule__DOT__regA_0_0;
+        vlSelfRef.io_out_1_2 = 0U;
+    }
     vlSelfRef._cond_pred_RegModule___05FI___05Flocal___05FI___05F_T 
         = (1U & (~ (IData)(vlSelfRef.io_sel)));
-    vlSelfRef.io_out = ((IData)(vlSelfRef.io_sel) ? (IData)(vlSelfRef.RegModule__DOT__regB)
-                         : (IData)(vlSelfRef.RegModule__DOT__regA));
 }
 
 void VRegModule___024root___eval_triggers__ico(VRegModule___024root* vlSelf);
@@ -69,20 +82,27 @@ VL_INLINE_OPT void VRegModule___024root___nba_sequent__TOP__0(VRegModule___024ro
     auto& vlSelfRef = std::ref(*vlSelf).get();
     // Body
     if (vlSelfRef.reset) {
-        vlSelfRef.RegModule__DOT__regA = 0U;
-        vlSelfRef.RegModule__DOT__regB = 0x64U;
+        vlSelfRef.RegModule__DOT__regA_0_0 = 0U;
+        vlSelfRef.RegModule__DOT__regB_1_2 = 0x70U;
     } else {
-        vlSelfRef.RegModule__DOT__regA = (0xffU & ((IData)(1U) 
-                                                   + (IData)(vlSelfRef.RegModule__DOT__regA)));
-        vlSelfRef.RegModule__DOT__regB = (0xffU & ((IData)(vlSelfRef.RegModule__DOT__regB) 
-                                                   - (IData)(1U)));
+        vlSelfRef.RegModule__DOT__regA_0_0 = (0xffU 
+                                              & ((IData)(1U) 
+                                                 + (IData)(vlSelfRef.RegModule__DOT__regA_0_0)));
+        vlSelfRef.RegModule__DOT__regB_1_2 = (0xffU 
+                                              & ((IData)(vlSelfRef.RegModule__DOT__regB_1_2) 
+                                                 - (IData)(1U)));
     }
-    vlSelfRef._reg_signals_RegModule___05FI___05Flocal___05FI___05FregA 
-        = vlSelfRef.RegModule__DOT__regA;
-    vlSelfRef._reg_signals_RegModule___05FI___05Flocal___05FI___05FregB 
-        = vlSelfRef.RegModule__DOT__regB;
-    vlSelfRef.io_out = ((IData)(vlSelfRef.io_sel) ? (IData)(vlSelfRef.RegModule__DOT__regB)
-                         : (IData)(vlSelfRef.RegModule__DOT__regA));
+    vlSelfRef._reg_signals_RegModule___05FI___05Flocal___05FI___05FregA_0_0 
+        = vlSelfRef.RegModule__DOT__regA_0_0;
+    if (vlSelfRef.io_sel) {
+        vlSelfRef.io_out_0_0 = 0x64U;
+        vlSelfRef.io_out_1_2 = vlSelfRef.RegModule__DOT__regB_1_2;
+    } else {
+        vlSelfRef.io_out_0_0 = vlSelfRef.RegModule__DOT__regA_0_0;
+        vlSelfRef.io_out_1_2 = 0U;
+    }
+    vlSelfRef._reg_signals_RegModule___05FI___05Flocal___05FI___05FregB_1_2 
+        = vlSelfRef.RegModule__DOT__regB_1_2;
 }
 
 void VRegModule___024root___eval_triggers__act(VRegModule___024root* vlSelf);

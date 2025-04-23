@@ -26,9 +26,14 @@ void VRegModule___024root__trace_chg_0_sub_0(VRegModule___024root* vlSelf, Veril
     bufp->chgBit(oldp+0,(vlSelfRef.clock));
     bufp->chgBit(oldp+1,(vlSelfRef.reset));
     bufp->chgBit(oldp+2,(vlSelfRef.io_sel));
-    bufp->chgCData(oldp+3,(vlSelfRef.io_out),8);
-    bufp->chgCData(oldp+4,(vlSelfRef.RegModule__DOT__regA),8);
-    bufp->chgCData(oldp+5,(vlSelfRef.RegModule__DOT__regB),8);
+    bufp->chgCData(oldp+3,(vlSelfRef.io_out_0_0),8);
+    bufp->chgCData(oldp+4,(vlSelfRef.io_out_0_1),8);
+    bufp->chgCData(oldp+5,(vlSelfRef.io_out_0_2),8);
+    bufp->chgCData(oldp+6,(vlSelfRef.io_out_1_0),8);
+    bufp->chgCData(oldp+7,(vlSelfRef.io_out_1_1),8);
+    bufp->chgCData(oldp+8,(vlSelfRef.io_out_1_2),8);
+    bufp->chgCData(oldp+9,(vlSelfRef.RegModule__DOT__regA_0_0),8);
+    bufp->chgCData(oldp+10,(vlSelfRef.RegModule__DOT__regB_1_2),8);
 }
 
 void VRegModule___024root__trace_cleanup(void* voidSelf, VerilatedVcd* /*unused*/) {

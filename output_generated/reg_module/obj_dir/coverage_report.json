@@ -1,8 +1,8 @@
 {
   "summary": {
-    "overall_coverage_percent": 100.00000000000000000,
-    "total_bins_hit": 34,
-    "total_bins": 34
+    "overall_coverage_percent": 58.76288659793814873,
+    "total_bins_hit": 114,
+    "total_bins": 194
   },
   "conditional_predicates": [
     {
@@ -23,7 +23,7 @@
   ],
   "register_coverage": [
     {
-      "name": "_reg_signals_RegModule__I__local__I__regA",
+      "name": "_reg_signals_RegModule__I__local__I__regA_0_0",
       "width": 8,
       "bins_hit": 16,
       "bins_total": 16,
@@ -40,7 +40,177 @@
       ]
     },
     {
-      "name": "_reg_signals_RegModule__I__local__I__regB",
+      "name": "_reg_signals_RegModule__I__local__I__regA_0_1",
+      "width": 8,
+      "bins_hit": 8,
+      "bins_total": 16,
+      "coverage_percent": 50.00000000000000000,
+      "bit_details": [
+        {"bit": 0, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 1, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 2, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 3, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 4, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 5, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 6, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 7, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"}
+      ]
+    },
+    {
+      "name": "_reg_signals_RegModule__I__local__I__regA_0_2",
+      "width": 8,
+      "bins_hit": 8,
+      "bins_total": 16,
+      "coverage_percent": 50.00000000000000000,
+      "bit_details": [
+        {"bit": 0, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 1, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 2, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 3, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 4, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 5, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 6, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 7, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"}
+      ]
+    },
+    {
+      "name": "_reg_signals_RegModule__I__local__I__regA_1_0",
+      "width": 8,
+      "bins_hit": 8,
+      "bins_total": 16,
+      "coverage_percent": 50.00000000000000000,
+      "bit_details": [
+        {"bit": 0, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 1, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 2, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 3, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 4, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 5, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 6, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 7, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"}
+      ]
+    },
+    {
+      "name": "_reg_signals_RegModule__I__local__I__regA_1_1",
+      "width": 8,
+      "bins_hit": 8,
+      "bins_total": 16,
+      "coverage_percent": 50.00000000000000000,
+      "bit_details": [
+        {"bit": 0, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 1, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 2, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 3, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 4, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 5, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 6, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 7, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"}
+      ]
+    },
+    {
+      "name": "_reg_signals_RegModule__I__local__I__regA_1_2",
+      "width": 8,
+      "bins_hit": 8,
+      "bins_total": 16,
+      "coverage_percent": 50.00000000000000000,
+      "bit_details": [
+        {"bit": 0, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 1, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 2, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 3, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 4, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 5, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 6, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 7, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"}
+      ]
+    },
+    {
+      "name": "_reg_signals_RegModule__I__local__I__regB_0_0",
+      "width": 8,
+      "bins_hit": 8,
+      "bins_total": 16,
+      "coverage_percent": 50.00000000000000000,
+      "bit_details": [
+        {"bit": 0, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 1, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 2, "hit_zero": false, "hit_one": true, "count_zero": 0, "count_one": 9995, "total_updates": 9995, "zero_percentage": 0.00, "one_percentage": 100.00, "covered": false, "status": "!O", "missing": "MISSING_0"},
+        {"bit": 3, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 4, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 5, "hit_zero": false, "hit_one": true, "count_zero": 0, "count_one": 9995, "total_updates": 9995, "zero_percentage": 0.00, "one_percentage": 100.00, "covered": false, "status": "!O", "missing": "MISSING_0"},
+        {"bit": 6, "hit_zero": false, "hit_one": true, "count_zero": 0, "count_one": 9995, "total_updates": 9995, "zero_percentage": 0.00, "one_percentage": 100.00, "covered": false, "status": "!O", "missing": "MISSING_0"},
+        {"bit": 7, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"}
+      ]
+    },
+    {
+      "name": "_reg_signals_RegModule__I__local__I__regB_0_1",
+      "width": 8,
+      "bins_hit": 8,
+      "bins_total": 16,
+      "coverage_percent": 50.00000000000000000,
+      "bit_details": [
+        {"bit": 0, "hit_zero": false, "hit_one": true, "count_zero": 0, "count_one": 9995, "total_updates": 9995, "zero_percentage": 0.00, "one_percentage": 100.00, "covered": false, "status": "!O", "missing": "MISSING_0"},
+        {"bit": 1, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 2, "hit_zero": false, "hit_one": true, "count_zero": 0, "count_one": 9995, "total_updates": 9995, "zero_percentage": 0.00, "one_percentage": 100.00, "covered": false, "status": "!O", "missing": "MISSING_0"},
+        {"bit": 3, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 4, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 5, "hit_zero": false, "hit_one": true, "count_zero": 0, "count_one": 9995, "total_updates": 9995, "zero_percentage": 0.00, "one_percentage": 100.00, "covered": false, "status": "!O", "missing": "MISSING_0"},
+        {"bit": 6, "hit_zero": false, "hit_one": true, "count_zero": 0, "count_one": 9995, "total_updates": 9995, "zero_percentage": 0.00, "one_percentage": 100.00, "covered": false, "status": "!O", "missing": "MISSING_0"},
+        {"bit": 7, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"}
+      ]
+    },
+    {
+      "name": "_reg_signals_RegModule__I__local__I__regB_0_2",
+      "width": 8,
+      "bins_hit": 8,
+      "bins_total": 16,
+      "coverage_percent": 50.00000000000000000,
+      "bit_details": [
+        {"bit": 0, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 1, "hit_zero": false, "hit_one": true, "count_zero": 0, "count_one": 9995, "total_updates": 9995, "zero_percentage": 0.00, "one_percentage": 100.00, "covered": false, "status": "!O", "missing": "MISSING_0"},
+        {"bit": 2, "hit_zero": false, "hit_one": true, "count_zero": 0, "count_one": 9995, "total_updates": 9995, "zero_percentage": 0.00, "one_percentage": 100.00, "covered": false, "status": "!O", "missing": "MISSING_0"},
+        {"bit": 3, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 4, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 5, "hit_zero": false, "hit_one": true, "count_zero": 0, "count_one": 9995, "total_updates": 9995, "zero_percentage": 0.00, "one_percentage": 100.00, "covered": false, "status": "!O", "missing": "MISSING_0"},
+        {"bit": 6, "hit_zero": false, "hit_one": true, "count_zero": 0, "count_one": 9995, "total_updates": 9995, "zero_percentage": 0.00, "one_percentage": 100.00, "covered": false, "status": "!O", "missing": "MISSING_0"},
+        {"bit": 7, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"}
+      ]
+    },
+    {
+      "name": "_reg_signals_RegModule__I__local__I__regB_1_0",
+      "width": 8,
+      "bins_hit": 8,
+      "bins_total": 16,
+      "coverage_percent": 50.00000000000000000,
+      "bit_details": [
+        {"bit": 0, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 1, "hit_zero": false, "hit_one": true, "count_zero": 0, "count_one": 9995, "total_updates": 9995, "zero_percentage": 0.00, "one_percentage": 100.00, "covered": false, "status": "!O", "missing": "MISSING_0"},
+        {"bit": 2, "hit_zero": false, "hit_one": true, "count_zero": 0, "count_one": 9995, "total_updates": 9995, "zero_percentage": 0.00, "one_percentage": 100.00, "covered": false, "status": "!O", "missing": "MISSING_0"},
+        {"bit": 3, "hit_zero": false, "hit_one": true, "count_zero": 0, "count_one": 9995, "total_updates": 9995, "zero_percentage": 0.00, "one_percentage": 100.00, "covered": false, "status": "!O", "missing": "MISSING_0"},
+        {"bit": 4, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 5, "hit_zero": false, "hit_one": true, "count_zero": 0, "count_one": 9995, "total_updates": 9995, "zero_percentage": 0.00, "one_percentage": 100.00, "covered": false, "status": "!O", "missing": "MISSING_0"},
+        {"bit": 6, "hit_zero": false, "hit_one": true, "count_zero": 0, "count_one": 9995, "total_updates": 9995, "zero_percentage": 0.00, "one_percentage": 100.00, "covered": false, "status": "!O", "missing": "MISSING_0"},
+        {"bit": 7, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"}
+      ]
+    },
+    {
+      "name": "_reg_signals_RegModule__I__local__I__regB_1_1",
+      "width": 8,
+      "bins_hit": 8,
+      "bins_total": 16,
+      "coverage_percent": 50.00000000000000000,
+      "bit_details": [
+        {"bit": 0, "hit_zero": false, "hit_one": true, "count_zero": 0, "count_one": 9995, "total_updates": 9995, "zero_percentage": 0.00, "one_percentage": 100.00, "covered": false, "status": "!O", "missing": "MISSING_0"},
+        {"bit": 1, "hit_zero": false, "hit_one": true, "count_zero": 0, "count_one": 9995, "total_updates": 9995, "zero_percentage": 0.00, "one_percentage": 100.00, "covered": false, "status": "!O", "missing": "MISSING_0"},
+        {"bit": 2, "hit_zero": false, "hit_one": true, "count_zero": 0, "count_one": 9995, "total_updates": 9995, "zero_percentage": 0.00, "one_percentage": 100.00, "covered": false, "status": "!O", "missing": "MISSING_0"},
+        {"bit": 3, "hit_zero": false, "hit_one": true, "count_zero": 0, "count_one": 9995, "total_updates": 9995, "zero_percentage": 0.00, "one_percentage": 100.00, "covered": false, "status": "!O", "missing": "MISSING_0"},
+        {"bit": 4, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"},
+        {"bit": 5, "hit_zero": false, "hit_one": true, "count_zero": 0, "count_one": 9995, "total_updates": 9995, "zero_percentage": 0.00, "one_percentage": 100.00, "covered": false, "status": "!O", "missing": "MISSING_0"},
+        {"bit": 6, "hit_zero": false, "hit_one": true, "count_zero": 0, "count_one": 9995, "total_updates": 9995, "zero_percentage": 0.00, "one_percentage": 100.00, "covered": false, "status": "!O", "missing": "MISSING_0"},
+        {"bit": 7, "hit_zero": true, "hit_one": false, "count_zero": 9995, "count_one": 0, "total_updates": 9995, "zero_percentage": 100.00, "one_percentage": 0.00, "covered": false, "status": "Z!", "missing": "MISSING_1"}
+      ]
+    },
+    {
+      "name": "_reg_signals_RegModule__I__local__I__regB_1_2",
       "width": 8,
       "bins_hit": 16,
       "bins_total": 16,
@@ -48,10 +218,10 @@
       "bit_details": [
         {"bit": 0, "hit_zero": true, "hit_one": true, "count_zero": 4998, "count_one": 4997, "total_updates": 9995, "zero_percentage": 50.01, "one_percentage": 49.99, "covered": true, "status": "ZO"},
         {"bit": 1, "hit_zero": true, "hit_one": true, "count_zero": 4997, "count_one": 4998, "total_updates": 9995, "zero_percentage": 49.99, "one_percentage": 50.01, "covered": true, "status": "ZO"},
-        {"bit": 2, "hit_zero": true, "hit_one": true, "count_zero": 4998, "count_one": 4997, "total_updates": 9995, "zero_percentage": 50.01, "one_percentage": 49.99, "covered": true, "status": "ZO"},
-        {"bit": 3, "hit_zero": true, "hit_one": true, "count_zero": 4997, "count_one": 4998, "total_updates": 9995, "zero_percentage": 49.99, "one_percentage": 50.01, "covered": true, "status": "ZO"},
-        {"bit": 4, "hit_zero": true, "hit_one": true, "count_zero": 4997, "count_one": 4998, "total_updates": 9995, "zero_percentage": 49.99, "one_percentage": 50.01, "covered": true, "status": "ZO"},
-        {"bit": 5, "hit_zero": true, "hit_one": true, "count_zero": 4998, "count_one": 4997, "total_updates": 9995, "zero_percentage": 50.01, "one_percentage": 49.99, "covered": true, "status": "ZO"},
+        {"bit": 2, "hit_zero": true, "hit_one": true, "count_zero": 4997, "count_one": 4998, "total_updates": 9995, "zero_percentage": 49.99, "one_percentage": 50.01, "covered": true, "status": "ZO"},
+        {"bit": 3, "hit_zero": true, "hit_one": true, "count_zero": 4995, "count_one": 5000, "total_updates": 9995, "zero_percentage": 49.97, "one_percentage": 50.03, "covered": true, "status": "ZO"},
+        {"bit": 4, "hit_zero": true, "hit_one": true, "count_zero": 5002, "count_one": 4993, "total_updates": 9995, "zero_percentage": 50.05, "one_percentage": 49.95, "covered": true, "status": "ZO"},
+        {"bit": 5, "hit_zero": true, "hit_one": true, "count_zero": 4992, "count_one": 5003, "total_updates": 9995, "zero_percentage": 49.94, "one_percentage": 50.06, "covered": true, "status": "ZO"},
         {"bit": 6, "hit_zero": true, "hit_one": true, "count_zero": 4992, "count_one": 5003, "total_updates": 9995, "zero_percentage": 49.94, "one_percentage": 50.06, "covered": true, "status": "ZO"},
         {"bit": 7, "hit_zero": true, "hit_one": true, "count_zero": 5003, "count_one": 4992, "total_updates": 9995, "zero_percentage": 50.06, "one_percentage": 49.94, "covered": true, "status": "ZO"}
       ]

@@ -1,0 +1,82 @@
+{
+  "summary": {
+    "overall_coverage_percent": 100.00000000000000000,
+    "total_bins_hit": 24,
+    "total_bins": 24
+  },
+  "conditional_predicates": [
+    {
+      "name": "_cond_pred_ComplexExample__I__anotherSub__I__local__I___T",
+      "hit_true": true,
+      "hit_false": true,
+      "count_true": 5428,
+      "count_false": 4572,
+      "total_updates": 10000,
+      "true_percentage": 54.28,
+      "false_percentage": 45.72,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00
+    },
+    {
+      "name": "_cond_pred_ComplexExample__I__sub__I__local__I___T",
+      "hit_true": true,
+      "hit_false": true,
+      "count_true": 2437,
+      "count_false": 7563,
+      "total_updates": 10000,
+      "true_percentage": 24.37,
+      "false_percentage": 75.63,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00
+    },
+    {
+      "name": "_cond_pred_ComplexExample__I__sub__I__local__I___T_1",
+      "hit_true": true,
+      "hit_false": true,
+      "count_true": 2633,
+      "count_false": 7367,
+      "total_updates": 10000,
+      "true_percentage": 26.33,
+      "false_percentage": 73.67,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00
+    },
+    {
+      "name": "_cond_pred_ComplexExample__I__sub__I__local__I___T_2",
+      "hit_true": true,
+      "hit_false": true,
+      "count_true": 2449,
+      "count_false": 7551,
+      "total_updates": 10000,
+      "true_percentage": 24.49,
+      "false_percentage": 75.51,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00
+    }
+  ],
+  "mux_conditions": [
+  ],
+  "register_coverage": [
+    {
+      "name": "_reg_signals_ComplexExample__I__sub__I__local__I__stateReg",
+      "width": 8,
+      "bins_hit": 16,
+      "bins_total": 16,
+      "coverage_percent": 100.00000000000000000,
+      "bit_details": [
+        {"bit": 0, "hit_zero": true, "hit_one": true, "count_zero": 5930, "count_one": 4070, "total_updates": 10000, "zero_percentage": 59.30, "one_percentage": 40.70, "covered": true, "status": "ZO"},
+        {"bit": 1, "hit_zero": true, "hit_one": true, "count_zero": 5794, "count_one": 4206, "total_updates": 10000, "zero_percentage": 57.94, "one_percentage": 42.06, "covered": true, "status": "ZO"},
+        {"bit": 2, "hit_zero": true, "hit_one": true, "count_zero": 5904, "count_one": 4096, "total_updates": 10000, "zero_percentage": 59.04, "one_percentage": 40.96, "covered": true, "status": "ZO"},
+        {"bit": 3, "hit_zero": true, "hit_one": true, "count_zero": 5849, "count_one": 4151, "total_updates": 10000, "zero_percentage": 58.49, "one_percentage": 41.51, "covered": true, "status": "ZO"},
+        {"bit": 4, "hit_zero": true, "hit_one": true, "count_zero": 5848, "count_one": 4152, "total_updates": 10000, "zero_percentage": 58.48, "one_percentage": 41.52, "covered": true, "status": "ZO"},
+        {"bit": 5, "hit_zero": true, "hit_one": true, "count_zero": 5885, "count_one": 4115, "total_updates": 10000, "zero_percentage": 58.85, "one_percentage": 41.15, "covered": true, "status": "ZO"},
+        {"bit": 6, "hit_zero": true, "hit_one": true, "count_zero": 5870, "count_one": 4130, "total_updates": 10000, "zero_percentage": 58.70, "one_percentage": 41.30, "covered": true, "status": "ZO"},
+        {"bit": 7, "hit_zero": true, "hit_one": true, "count_zero": 5936, "count_one": 4064, "total_updates": 10000, "zero_percentage": 59.36, "one_percentage": 40.64, "covered": true, "status": "ZO"}
+      ]
+    }
+  ]
+}
