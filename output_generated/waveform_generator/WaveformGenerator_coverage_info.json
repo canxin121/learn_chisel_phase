@@ -1,6 +1,6 @@
 {
   "topModuleName": "WaveformGenerator",
-  "currentWorkingDirectory": "/home/canxin/Documents/git/chisel_coverage_tool/.",
+  "currentWorkingDirectory": "D:\\projs\\fuzz\\chisel_coverage_tool\\.",
   "exportedPorts": [
     {
       "portName": "_mux_cond",
@@ -8,7 +8,7 @@
       {
         "fieldName": "WaveformGenerator__I__local__I___io_output_T_4",
         "type": "UInt<1>",
-        "info": " @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 53:23]"
+        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\WaveformGenerator.scala 53:23]"
       }
       ]
     },
@@ -18,22 +18,22 @@
       {
         "fieldName": "WaveformGenerator__I__local__I___T",
         "type": "UInt<1>",
-        "info": " @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 42:23]"
+        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\WaveformGenerator.scala 42:23]"
       },
       {
         "fieldName": "WaveformGenerator__I__local__I___T_1",
         "type": "UInt<1>",
-        "info": " @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 42:23]"
+        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\WaveformGenerator.scala 42:23]"
       },
       {
         "fieldName": "WaveformGenerator__I__local__I___T_2",
         "type": "UInt<1>",
-        "info": " @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 42:23]"
+        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\WaveformGenerator.scala 42:23]"
       },
       {
         "fieldName": "WaveformGenerator__I__local__I___T_3",
         "type": "UInt<1>",
-        "info": " @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 42:23]"
+        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\WaveformGenerator.scala 42:23]"
       }
       ]
     },
@@ -43,7 +43,7 @@
       {
         "fieldName": "WaveformGenerator__I__local__I__phaseAcc",
         "type": "UInt<16>",
-        "info": " @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 17:25]"
+        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\WaveformGenerator.scala 17:25]"
       }
       ]
     }

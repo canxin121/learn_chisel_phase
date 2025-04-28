@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
+use std::path::Path;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -29,7 +30,7 @@ pub struct ExportedPort {
 pub struct CoverageInfo {
     pub top_module_name: String,
     pub exported_ports: Vec<ExportedPort>,
-    pub currentWorkingDirectory: String,
+    pub current_working_directory: String,
     #[serde(default)]
     pub source_files: HashMap<String, String>,
 }
@@ -37,6 +38,7 @@ pub struct CoverageInfo {
 impl CoverageInfo {
     pub fn process_source_info(&mut self) {
         let mut files_to_read = HashMap::new();
+        let base_path = Path::new(&self.current_working_directory);
 
         for port in self.exported_ports.iter_mut() {
             for signal in port.signals.iter_mut() {
@@ -45,8 +47,15 @@ impl CoverageInfo {
                         let content = &signal.info[start_index + 3..end_index];
 
                         if let Some(last_space_index) = content.rfind(' ') {
-                            let file_path_str = &content[..last_space_index];
+                            let relative_path_str = &content[..last_space_index];
                             let location_str = &content[last_space_index + 1..];
+
+                            let cleaned_relative_path = relative_path_str
+                                .strip_prefix("\\\\")
+                                .unwrap_or(relative_path_str);
+
+                            let absolute_path = base_path.join(cleaned_relative_path);
+                            let absolute_path_str = absolute_path.to_string_lossy().to_string();
 
                             if let Some(colon_index) = location_str.find(':') {
                                 let line_str = &location_str[..colon_index];
@@ -54,14 +63,13 @@ impl CoverageInfo {
 
                                 let line = line_str.parse::<u32>().ok();
                                 let column = col_str.parse::<u32>().ok();
-                                let file_path = file_path_str.to_string();
 
-                                signal.file_path = Some(file_path.clone());
+                                signal.file_path = Some(absolute_path_str.clone());
                                 signal.line = line;
                                 signal.column = column;
 
-                                if !self.source_files.contains_key(&file_path) {
-                                    files_to_read.entry(file_path).or_insert(());
+                                if !self.source_files.contains_key(&absolute_path_str) {
+                                    files_to_read.entry(absolute_path_str).or_insert(());
                                 }
                             }
                         }
@@ -76,6 +84,7 @@ impl CoverageInfo {
                     self.source_files.insert(file_path, content);
                 }
                 Err(e) => {
+                    eprintln!("Error reading file {}: {}", file_path, e);
                     self.source_files
                         .insert(file_path, format!("Error reading file: {}", e));
                 }
