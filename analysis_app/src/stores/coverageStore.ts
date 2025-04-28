@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { message, type UploadFile } from 'ant-design-vue'
+// 导入 Tauri invoke API
+import { invoke } from '@tauri-apps/api/core'
 
 import type { CoverageReport } from '../types/CoverageReport'
-import type { CoverageInfo, } from '../types/CoverageInfo'
-import { parseCoverageInfo } from '../types/CoverageInfo'
+import type { CoverageInfo } from '../types/CoverageInfo'
 import type { TreeNode } from '../types/TreeNode'
 import { buildCoverageTrees } from '../utils/coverageUtils'
 
@@ -15,6 +16,9 @@ export const useCoverageStore = defineStore('coverageStore', () => {
   const predicateTreeData = ref<TreeNode[]>([])
   const muxTreeData = ref<TreeNode[]>([])
   const registerTreeData = ref<TreeNode[]>([])
+
+  // 新增：用户定义的根目录映射
+  const userDefinedRootDirs = ref<Record<string, string>>({})
 
   // 文件上传状态
   const reportFileList = ref<UploadFile[]>([])
@@ -65,6 +69,37 @@ export const useCoverageStore = defineStore('coverageStore', () => {
   })
 
   // --- 动作 ---
+
+  // Helper to rebuild trees and potentially update selection
+  function rebuildTreesAndUpdateState() {
+    if (coverageReport.value && coverageInfo.value) {
+      try {
+        console.log("Rebuilding coverage trees...");
+        const trees = buildCoverageTrees(coverageReport.value, coverageInfo.value);
+        predicateTreeData.value = trees.predicates;
+        muxTreeData.value = trees.mux;
+        registerTreeData.value = trees.registers;
+        console.log("Coverage trees rebuilt.");
+
+        // Check if the currently selected source file path still exists
+        if (selectedSourcePath.value && coverageInfo.value?.sourceFiles && !coverageInfo.value.sourceFiles[selectedSourcePath.value]) {
+          console.log(`Selected source path "${selectedSourcePath.value}" no longer exists after update. Clearing selection.`);
+          selectedSourcePath.value = null;
+          selectedSourceContent.value = null;
+          highlightLine.value = null;
+        } else if (selectedSourcePath.value && coverageInfo.value?.sourceFiles) {
+          // Refresh content in case it changed (e.g., from error to content)
+          selectedSourceContent.value = coverageInfo.value.sourceFiles[selectedSourcePath.value];
+          console.log(`Refreshed content for "${selectedSourcePath.value}".`);
+        }
+
+      } catch (error) {
+        console.error("Error rebuilding coverage trees:", error);
+        message.error(`Failed to update coverage data view: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+  }
+
   function processReportFile(file: File) {
     const isJson = file.type === 'application/json'
     if (!isJson) {
@@ -101,20 +136,7 @@ export const useCoverageStore = defineStore('coverageStore', () => {
         message.success(`${file.name} 上传并解析成功!`)
 
         // 构建树数据
-        if (coverageReport.value) {
-          try {
-            const trees = buildCoverageTrees(coverageReport.value, coverageInfo.value)
-            predicateTreeData.value = trees.predicates
-            muxTreeData.value = trees.mux
-            registerTreeData.value = trees.registers
-          } catch (error) {
-            console.error("构建覆盖率树时出错:", error)
-            message.error(`处理覆盖率数据失败: ${error instanceof Error ? error.message : String(error)}`)
-            predicateTreeData.value = []
-            muxTreeData.value = []
-            registerTreeData.value = []
-          }
-        }
+        rebuildTreesAndUpdateState(); // Use helper
       } catch (error: any) {
         message.error(`解析 ${file.name} 失败: ${error.message || '无效的 JSON。'}`)
         coverageReport.value = null
@@ -143,6 +165,8 @@ export const useCoverageStore = defineStore('coverageStore', () => {
 
     isLoadingInfo.value = true
     coverageInfo.value = null
+    // 重置用户定义的根目录
+    userDefinedRootDirs.value = {}
     // 重置依赖状态
     selectedSourcePath.value = null
     selectedSourceContent.value = null
@@ -157,24 +181,15 @@ export const useCoverageStore = defineStore('coverageStore', () => {
         }
 
         const rawInfoData = JSON.parse(jsonContent)
-        const processedInfoData = await parseCoverageInfo(rawInfoData)
+        const processedInfoData: CoverageInfo = await invoke("parse_coverage_info", { coverageInfo: rawInfoData });
         coverageInfo.value = processedInfoData
         message.success(`${file.name} 上传并处理成功!`)
 
         // 如果报告已加载，则重建树
-        if (coverageReport.value) {
-          try {
-            const trees = buildCoverageTrees(coverageReport.value, coverageInfo.value)
-            predicateTreeData.value = trees.predicates
-            muxTreeData.value = trees.mux
-            registerTreeData.value = trees.registers
-          } catch (error) {
-            console.error("构建覆盖率树时出错:", error)
-            message.error(`处理覆盖率数据失败: ${error instanceof Error ? error.message : String(error)}`)
-          }
-        }
+        rebuildTreesAndUpdateState(); // Use helper
+
       } catch (error: any) {
-        message.error(`处理 ${file.name} 失败: ${error.message || '处理信息出错。'}`)
+        message.error(`处理 ${file.name} 失败: ${error instanceof Error ? error.message : String(error)}`)
         coverageInfo.value = null
       } finally {
         infoFileList.value = []
@@ -192,6 +207,40 @@ export const useCoverageStore = defineStore('coverageStore', () => {
     reader.readAsText(file)
   }
 
+  // 修改：更新文件的根目录，调用后端处理文件重读
+  async function updateFileRoot(filePathKey: string, newRootDir: string) {
+    if (!coverageInfo.value) {
+      message.error("Coverage info not loaded.");
+      return;
+    }
+    console.log(`Updating root directory for "${filePathKey}" to "${newRootDir}"`);
+    message.loading({ content: `Processing root directory change for ${filePathKey}...`, key: 'updateRoot' });
+
+    // 更新用户定义的根目录映射 (用于 UI)
+    userDefinedRootDirs.value[filePathKey] = newRootDir;
+
+    try {
+      // 调用后端命令来处理文件重读和更新 CoverageInfo
+      const updatedCoverageInfo: CoverageInfo = await invoke("reread_file_with_new_root", {
+        coverageInfo: coverageInfo.value, // Pass current state
+        filePathKey: filePathKey,
+        newRootDir: newRootDir
+      });
+
+      // 使用后端返回的更新后的 CoverageInfo 更新 store
+      coverageInfo.value = updatedCoverageInfo;
+
+      message.success({ content: `Root directory updated and file re-processed for ${filePathKey}.`, key: 'updateRoot', duration: 3 });
+
+      // 重建树并更新状态
+      rebuildTreesAndUpdateState();
+
+    } catch (error) {
+      console.error(`Error updating root directory via backend for "${filePathKey}":`, error);
+      message.error({ content: `Failed to update root directory: ${error instanceof Error ? error.message : String(error)}`, key: 'updateRoot', duration: 5 });
+    }
+  }
+
   function selectNode(nodeData: TreeNode) {
     selectionTrigger.value++; // 更新触发器以强制 watcher 运行
     if (nodeData.sourceLocation) {
@@ -203,6 +252,7 @@ export const useCoverageStore = defineStore('coverageStore', () => {
           selectedSourcePath.value = filePath
           selectedSourceContent.value = sourceCode
           highlightLine.value = line
+          console.log(`Selected node: ${nodeData.key}, Source: ${filePath}:${line}`); // Added log
         } else {
           message.warning(`覆盖率信息中找不到 ${filePath} 的源代码。`)
           selectedSourcePath.value = filePath
@@ -230,6 +280,7 @@ export const useCoverageStore = defineStore('coverageStore', () => {
     predicateTreeData,
     muxTreeData,
     registerTreeData,
+    userDefinedRootDirs, // 导出新状态
     reportFileList,
     infoFileList,
     isLoadingReport,
@@ -251,6 +302,7 @@ export const useCoverageStore = defineStore('coverageStore', () => {
     // 动作
     processReportFile,
     processInfoFile,
+    updateFileRoot, // 导出新动作
     selectNode
   }
 })

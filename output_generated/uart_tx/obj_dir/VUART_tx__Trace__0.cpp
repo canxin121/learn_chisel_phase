@@ -17,28 +17,28 @@ void VUART_tx___024root__trace_chg_0(void* voidSelf, VerilatedVcd::Buffer* bufp)
 }
 
 void VUART_tx___024root__trace_chg_0_sub_0(VUART_tx___024root* vlSelf, VerilatedVcd::Buffer* bufp) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root__trace_chg_0_sub_0\n"); );
+    if (false && vlSelf) {}  // Prevent unused
     VUART_tx__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    auto& vlSelfRef = std::ref(*vlSelf).get();
+    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root__trace_chg_0_sub_0\n"); );
     // Init
     uint32_t* const oldp VL_ATTR_UNUSED = bufp->oldp(vlSymsp->__Vm_baseCode + 1);
     // Body
-    if (VL_UNLIKELY((vlSelfRef.__Vm_traceActivity[1U]))) {
-        bufp->chgCData(oldp+0,(vlSelfRef.UART_tx__DOT__clkCnterReg),8);
-        bufp->chgCData(oldp+1,(vlSelfRef.UART_tx__DOT__bitCnterReg),4);
-        bufp->chgCData(oldp+2,(vlSelfRef.UART_tx__DOT__inDataReg),8);
-        bufp->chgBit(oldp+3,(vlSelfRef.UART_tx__DOT__outDataReg));
-        bufp->chgBit(oldp+4,(vlSelfRef.UART_tx__DOT__outTxBusyReg));
-        bufp->chgBit(oldp+5,(vlSelfRef.UART_tx__DOT__outTxDoneReg));
-        bufp->chgCData(oldp+6,(vlSelfRef.UART_tx__DOT__stateReg),2);
+    if (VL_UNLIKELY(vlSelf->__Vm_traceActivity[1U])) {
+        bufp->chgCData(oldp+0,(vlSelf->UART_tx__DOT__clkCnterReg),8);
+        bufp->chgCData(oldp+1,(vlSelf->UART_tx__DOT__bitCnterReg),4);
+        bufp->chgCData(oldp+2,(vlSelf->UART_tx__DOT__inDataReg),8);
+        bufp->chgBit(oldp+3,(vlSelf->UART_tx__DOT__outDataReg));
+        bufp->chgBit(oldp+4,(vlSelf->UART_tx__DOT__outTxBusyReg));
+        bufp->chgBit(oldp+5,(vlSelf->UART_tx__DOT__outTxDoneReg));
+        bufp->chgCData(oldp+6,(vlSelf->UART_tx__DOT__stateReg),2);
     }
-    bufp->chgBit(oldp+7,(vlSelfRef.clock));
-    bufp->chgBit(oldp+8,(vlSelfRef.reset));
-    bufp->chgBit(oldp+9,(vlSelfRef.io_i_tx_trig));
-    bufp->chgCData(oldp+10,(vlSelfRef.io_i_data),8);
-    bufp->chgBit(oldp+11,(vlSelfRef.io_o_tx_busy));
-    bufp->chgBit(oldp+12,(vlSelfRef.io_o_tx_done));
-    bufp->chgBit(oldp+13,(vlSelfRef.io_o_serial_data));
+    bufp->chgBit(oldp+7,(vlSelf->clock));
+    bufp->chgBit(oldp+8,(vlSelf->reset));
+    bufp->chgBit(oldp+9,(vlSelf->io_i_tx_trig));
+    bufp->chgCData(oldp+10,(vlSelf->io_i_data),8);
+    bufp->chgBit(oldp+11,(vlSelf->io_o_tx_busy));
+    bufp->chgBit(oldp+12,(vlSelf->io_o_tx_done));
+    bufp->chgBit(oldp+13,(vlSelf->io_o_serial_data));
 }
 
 void VUART_tx___024root__trace_cleanup(void* voidSelf, VerilatedVcd* /*unused*/) {

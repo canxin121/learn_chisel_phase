@@ -5,9 +5,9 @@
 
 
 VL_ATTR_COLD void VUART_tx___024root__trace_init_sub__TOP__0(VUART_tx___024root* vlSelf, VerilatedVcd* tracep) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root__trace_init_sub__TOP__0\n"); );
+    if (false && vlSelf) {}  // Prevent unused
     VUART_tx__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    auto& vlSelfRef = std::ref(*vlSelf).get();
+    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root__trace_init_sub__TOP__0\n"); );
     // Init
     const int c = vlSymsp->__Vm_baseCode;
     // Body
@@ -37,9 +37,9 @@ VL_ATTR_COLD void VUART_tx___024root__trace_init_sub__TOP__0(VUART_tx___024root*
 }
 
 VL_ATTR_COLD void VUART_tx___024root__trace_init_top(VUART_tx___024root* vlSelf, VerilatedVcd* tracep) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root__trace_init_top\n"); );
+    if (false && vlSelf) {}  // Prevent unused
     VUART_tx__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    auto& vlSelfRef = std::ref(*vlSelf).get();
+    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root__trace_init_top\n"); );
     // Body
     VUART_tx___024root__trace_init_sub__TOP__0(vlSelf, tracep);
 }
@@ -50,9 +50,9 @@ void VUART_tx___024root__trace_chg_0(void* voidSelf, VerilatedVcd::Buffer* bufp)
 void VUART_tx___024root__trace_cleanup(void* voidSelf, VerilatedVcd* /*unused*/);
 
 VL_ATTR_COLD void VUART_tx___024root__trace_register(VUART_tx___024root* vlSelf, VerilatedVcd* tracep) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root__trace_register\n"); );
+    if (false && vlSelf) {}  // Prevent unused
     VUART_tx__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    auto& vlSelfRef = std::ref(*vlSelf).get();
+    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root__trace_register\n"); );
     // Body
     tracep->addConstCb(&VUART_tx___024root__trace_const_0, 0U, vlSelf);
     tracep->addFullCb(&VUART_tx___024root__trace_full_0, 0U, vlSelf);
@@ -79,24 +79,24 @@ VL_ATTR_COLD void VUART_tx___024root__trace_full_0(void* voidSelf, VerilatedVcd:
 }
 
 VL_ATTR_COLD void VUART_tx___024root__trace_full_0_sub_0(VUART_tx___024root* vlSelf, VerilatedVcd::Buffer* bufp) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root__trace_full_0_sub_0\n"); );
+    if (false && vlSelf) {}  // Prevent unused
     VUART_tx__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    auto& vlSelfRef = std::ref(*vlSelf).get();
+    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root__trace_full_0_sub_0\n"); );
     // Init
     uint32_t* const oldp VL_ATTR_UNUSED = bufp->oldp(vlSymsp->__Vm_baseCode);
     // Body
-    bufp->fullCData(oldp+1,(vlSelfRef.UART_tx__DOT__clkCnterReg),8);
-    bufp->fullCData(oldp+2,(vlSelfRef.UART_tx__DOT__bitCnterReg),4);
-    bufp->fullCData(oldp+3,(vlSelfRef.UART_tx__DOT__inDataReg),8);
-    bufp->fullBit(oldp+4,(vlSelfRef.UART_tx__DOT__outDataReg));
-    bufp->fullBit(oldp+5,(vlSelfRef.UART_tx__DOT__outTxBusyReg));
-    bufp->fullBit(oldp+6,(vlSelfRef.UART_tx__DOT__outTxDoneReg));
-    bufp->fullCData(oldp+7,(vlSelfRef.UART_tx__DOT__stateReg),2);
-    bufp->fullBit(oldp+8,(vlSelfRef.clock));
-    bufp->fullBit(oldp+9,(vlSelfRef.reset));
-    bufp->fullBit(oldp+10,(vlSelfRef.io_i_tx_trig));
-    bufp->fullCData(oldp+11,(vlSelfRef.io_i_data),8);
-    bufp->fullBit(oldp+12,(vlSelfRef.io_o_tx_busy));
-    bufp->fullBit(oldp+13,(vlSelfRef.io_o_tx_done));
-    bufp->fullBit(oldp+14,(vlSelfRef.io_o_serial_data));
+    bufp->fullCData(oldp+1,(vlSelf->UART_tx__DOT__clkCnterReg),8);
+    bufp->fullCData(oldp+2,(vlSelf->UART_tx__DOT__bitCnterReg),4);
+    bufp->fullCData(oldp+3,(vlSelf->UART_tx__DOT__inDataReg),8);
+    bufp->fullBit(oldp+4,(vlSelf->UART_tx__DOT__outDataReg));
+    bufp->fullBit(oldp+5,(vlSelf->UART_tx__DOT__outTxBusyReg));
+    bufp->fullBit(oldp+6,(vlSelf->UART_tx__DOT__outTxDoneReg));
+    bufp->fullCData(oldp+7,(vlSelf->UART_tx__DOT__stateReg),2);
+    bufp->fullBit(oldp+8,(vlSelf->clock));
+    bufp->fullBit(oldp+9,(vlSelf->reset));
+    bufp->fullBit(oldp+10,(vlSelf->io_i_tx_trig));
+    bufp->fullCData(oldp+11,(vlSelf->io_i_data),8);
+    bufp->fullBit(oldp+12,(vlSelf->io_o_tx_busy));
+    bufp->fullBit(oldp+13,(vlSelf->io_o_tx_done));
+    bufp->fullBit(oldp+14,(vlSelf->io_o_serial_data));
 }

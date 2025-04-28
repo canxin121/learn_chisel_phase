@@ -7,6 +7,7 @@ export interface SignalInfo {
     filePath?: string | null;
     line?: number | null;
     column?: number | null;
+    rootDir?: string | null;
 }
 
 export interface ExportedPort {
@@ -16,7 +17,6 @@ export interface ExportedPort {
 
 export interface CoverageInfo {
     topModuleName: string;
-    currentWorkingDirectory: string;
     exportedPorts: ExportedPort[];
     sourceFiles: Record<string, string>;
 }

@@ -129,8 +129,7 @@ object CoverageTool {
   /** 生成包含 TopLevelExportInfo 信息的 JSON 字符串 */
   private def generateCoverageInfoJson(
       topModuleName: String,
-      exportInfos: List[TopLevelExportInfo],
-      currentWorkingDirectory: String // <-- 新增参数
+      exportInfos: List[TopLevelExportInfo]
   ): String = {
     val portsJson = exportInfos
       .map { portInfo =>
@@ -166,7 +165,6 @@ object CoverageTool {
 
     s"""{
        |  "topModuleName": "${escapeJsonString(topModuleName)}",
-       |  "currentWorkingDirectory": "${escapeJsonString(currentWorkingDirectory)}",
        |  "exportedPorts": [
        |$portsJson
        |  ]
@@ -215,9 +213,6 @@ object CoverageTool {
     val stage = new CustomStage(
       customPhases = Seq(new CoverageTransform)
     )
-
-    // 获取当前工作目录
-    val currentWorkingDirectory = new File(".").getAbsolutePath() // <-- 获取当前工作目录
 
     // 1. (可选) 生成原始 SystemVerilog (old.sv)
     if (enableDevOutput) {
@@ -315,7 +310,6 @@ object CoverageTool {
               generateCoverageInfoJson(
                 moduleName,
                 retrievedPortInfoList,
-                currentWorkingDirectory // <-- 传递路径
               )
             val jsonPath =
               s"$specificOutputDir/${moduleName}_coverage_info.json"

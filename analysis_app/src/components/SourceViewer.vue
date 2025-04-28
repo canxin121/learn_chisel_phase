@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, watch, nextTick, reactive } from 'vue';
-import { FileTextOutlined, CaretRightOutlined, CaretDownOutlined } from "@ant-design/icons-vue";
-import { Card as ACard, Collapse as ACollapse, CollapsePanel as ACollapsePanel, Tag as ATag } from 'ant-design-vue';
+// Import EditOutlined and Modal
+import { FileTextOutlined, CaretRightOutlined, CaretDownOutlined, EditOutlined } from "@ant-design/icons-vue";
+import { Card as ACard, Collapse as ACollapse, CollapsePanel as ACollapsePanel, Tag as ATag, Modal as AModal, Input as AInput, Button as AButton, Tooltip as ATooltip } from 'ant-design-vue'; // Add Modal, Input, Button, Tooltip
 import { useCoverageStore } from "../stores/coverageStore";
 import { formatCoverage, getNodeStyle, getConditionTagColor, getBitTagColor, formatCount, formatPercent } from '../utils/coverageUtils';
 import type { CSSProperties } from 'vue';
@@ -176,6 +177,41 @@ const toggleLineExpansion = (filePath: string, lineNum: number) => {
 const isLineExpanded = (filePath: string, lineNum: number): boolean => {
   return !!expandedLines[filePath]?.has(lineNum);
 };
+// 新增：检查内容是否为错误消息
+const isErrorContent = (content: string | undefined): boolean => {
+  return typeof content === 'string' && content.startsWith("Error:");
+};
+// 新增：Modal 状态
+const isModalVisible = ref(false);
+const currentEditingFilePath = ref<string | null>(null);
+const newRootDirInput = ref('');
+
+// 新增：打开编辑根目录模态框
+const openEditRootModal = (filePath: string) => {
+  currentEditingFilePath.value = filePath;
+  // 从 store 获取当前用户定义的根目录（如果有）
+  newRootDirInput.value = coverageStore.userDefinedRootDirs[filePath] || '';
+  isModalVisible.value = true;
+};
+
+// 新增：处理模态框确认
+const handleModalOk = () => {
+  if (currentEditingFilePath.value) {
+    // 调用 store action 更新根目录
+    coverageStore.updateFileRoot(currentEditingFilePath.value, newRootDirInput.value);
+  }
+  isModalVisible.value = false;
+  currentEditingFilePath.value = null;
+  newRootDirInput.value = '';
+};
+
+// 新增：处理模态框取消
+const handleModalCancel = () => {
+  isModalVisible.value = false;
+  currentEditingFilePath.value = null;
+  newRootDirInput.value = '';
+};
+
 watch([() => coverageStore.selectedSourcePath, () => coverageStore.highlightLine, () => coverageStore.selectionTrigger],
   ([newPath, newLine], []) => {
     if (newPath && newLine !== null) {
@@ -236,22 +272,45 @@ watch(() => coverageStore.coverageInfo?.sourceFiles, () => {
   Object.keys(expandedLines).forEach(key => {
     expandedLines[key] = new Set<number>();
   });
-});
+  // Check if active keys still exist, remove if not
+  activeFileKeys.value = activeFileKeys.value.filter(key => coverageStore.coverageInfo?.sourceFiles[key] !== undefined);
+
+}, { deep: true }); // Use deep watch if necessary, though keys changing might be enough
 </script>
 <template>
   <a-card title="Source Code Viewer" style="width: 100%;">
     <div ref="sourceViewerContainerRef" class="multi-source-viewer-container">
       <div
         v-if="coverageStore.coverageInfo && coverageStore.coverageInfo.sourceFiles && Object.keys(coverageStore.coverageInfo.sourceFiles).length > 0">
+        <!-- Use filePath as key for v-for and collapse panel -->
         <a-collapse v-model:activeKey="activeFileKeys">
-          <a-collapse-panel v-for="(content, filePath) in coverageStore.coverageInfo.sourceFiles" :key="filePath"
-            :header="filePath">
+          <a-collapse-panel v-for="(content, filePath) in coverageStore.coverageInfo.sourceFiles" :key="filePath">
+            <!-- Custom Header Slot -->
+            <template #header>
+              <div class="panel-header">
+                <span class="file-path-text">{{ filePath }}</span>
+                <!-- Edit Root Directory Button -->
+                <a-tooltip title="Edit Root Directory for this File">
+                  <a-button type="text" size="small" class="edit-root-button" @click.stop="openEditRootModal(filePath)">
+                    <template #icon><EditOutlined /></template>
+                  </a-button>
+                </a-tooltip>
+              </div>
+            </template>
+            <!-- Panel Content -->
             <div :ref="el => setFileRef(el, filePath)">
-              <pre class="source-code-viewer hljs"><code
-                ><div v-for="line in getAnnotatedLines(filePath, content)" :key="line.lineNum"
-                  :class="['code-line', `line-${line.lineNum}`, { 'highlighted-line': line.isHighlighted }]" 
+              <!-- 新增：检查内容是否为错误 -->
+              <div v-if="isErrorContent(content)" class="error-content-message">
+                <p>无法读取或解析此文件。</p>
+                <p>{{ content }}</p>
+                <p>请点击标题栏中的 <EditOutlined /> 图标设置正确的根目录。</p>
+              </div>
+              <!-- 否则，显示源代码 -->
+              <pre v-else class="source-code-viewer hljs"><code
+                ><div v-for="line in getAnnotatedLines(filePath, content || '')" :key="line.lineNum"
+                  :class="['code-line', `line-${line.lineNum}`, { 'highlighted-line': line.isHighlighted }]"
                   ><div class="line-content-wrapper"
-                    ><span v-if="line.coveragePoints.length > 0" class="expand-button" 
+                    ><span v-if="line.coveragePoints.length > 0" class="expand-button"
                         @click="toggleLineExpansion(filePath, line.lineNum)"
                       ><caret-right-outlined v-if="!isLineExpanded(filePath, line.lineNum)" /><caret-down-outlined v-else /></span
                     ><span v-else class="expand-placeholder"></span
@@ -262,7 +321,7 @@ watch(() => coverageStore.coverageInfo?.sourceFiles, () => {
                         :style="line.annotationStyle"
                         :title="`Coverage: ${formatCoverage(line.aggregateCoverage)}, Points: ${line.coveragePoints.length}`"
                       >{{ formatCoverage(line.aggregateCoverage) }}</span></div
-                  ><div v-if="isLineExpanded(filePath, line.lineNum) && line.coveragePoints.length > 0" 
+                  ><div v-if="isLineExpanded(filePath, line.lineNum) && line.coveragePoints.length > 0"
                        class="coverage-points-details"
                     ><div v-for="point in line.coveragePoints" :key="point.id" class="coverage-point"
                       ><div class="coverage-point-header"
@@ -316,6 +375,18 @@ watch(() => coverageStore.coverageInfo?.sourceFiles, () => {
         </p>
       </div>
     </div>
+
+    <!-- Edit Root Directory Modal -->
+    <a-modal v-model:open="isModalVisible" title="Edit Root Directory" @ok="handleModalOk" @cancel="handleModalCancel">
+      <p v-if="currentEditingFilePath">Enter the correct root directory for file:</p>
+      <p><strong>{{ currentEditingFilePath }}</strong></p>
+      <a-input v-model:value="newRootDirInput" placeholder="/path/to/your/project/root" />
+      <template #footer>
+        <a-button key="back" @click="handleModalCancel">Cancel</a-button>
+        <a-button key="submit" type="primary" @click="handleModalOk">Update Root</a-button>
+      </template>
+    </a-modal>
+
   </a-card>
 </template>
 <style scoped>
@@ -357,22 +428,50 @@ watch(() => coverageStore.coverageInfo?.sourceFiles, () => {
 }
 
 .multi-source-viewer-container :deep(.ant-collapse-item > .ant-collapse-header) {
+  /* Adjust padding to accommodate the button */
+  padding: 8px 36px 8px 12px; /* Add padding on the right */
+  position: relative; /* Needed for absolute positioning of the button */
   background-color: #fafafa;
   border-bottom: 1px solid #e8e8e8;
-  border-radius: 0; /* Remove border radius */
+  border-radius: 0;
   font-weight: bold;
   color: #555;
-  padding: 8px 12px;
   /* Add sticky positioning */
   position: sticky;
   top: 0;
-  z-index: 1; /* Ensure header stays above content */
+  z-index: 1;
 }
 
-.multi-source-viewer-container :deep(.ant-collapse-content) {
-  padding: 0;
-  background-color: #fff;
-  border-radius: 0;
+/* Style the custom header content */
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Pushes button to the right */
+  width: 100%;
+}
+
+.file-path-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-grow: 1; /* Allow text to take available space */
+  margin-right: 8px; /* Space before button */
+}
+
+.edit-root-button {
+  position: absolute; /* Position relative to header */
+  right: 12px; /* Position from the right edge */
+  top: 50%;
+  transform: translateY(-50%); /* Center vertically */
+  color: #888;
+  padding: 2px 4px; /* Smaller padding */
+  line-height: 1; /* Adjust line height */
+  height: auto; /* Adjust height */
+}
+
+.edit-root-button:hover {
+  color: #1890ff;
+  background-color: #e6f7ff;
 }
 
 .source-code-viewer {
@@ -606,5 +705,24 @@ watch(() => coverageStore.coverageInfo?.sourceFiles, () => {
 
 .empty-source-view p {
   margin-bottom: 5px;
+}
+
+/* 新增：错误消息样式 */
+.error-content-message {
+  padding: 20px;
+  text-align: center;
+  color: #faad14; /* Warning color */
+  background-color: #fffbe6; /* Light warning background */
+  border: 1px solid #ffe58f; /* Warning border */
+  margin: 10px;
+  border-radius: 4px;
+}
+
+.error-content-message p {
+  margin-bottom: 8px;
+}
+
+.error-content-message .anticon {
+  color: #1890ff; /* Match button color */
 }
 </style>

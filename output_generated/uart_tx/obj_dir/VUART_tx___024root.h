@@ -44,13 +44,9 @@ class alignas(VL_CACHE_LINE_BYTES) VUART_tx___024root final : public VerilatedMo
     CData/*0:0*/ UART_tx__DOT__outTxBusyReg;
     CData/*0:0*/ UART_tx__DOT__outTxDoneReg;
     CData/*1:0*/ UART_tx__DOT__stateReg;
-    CData/*0:0*/ UART_tx__DOT___GEN;
-    CData/*0:0*/ UART_tx__DOT___GEN_0;
-    CData/*0:0*/ UART_tx__DOT___GEN_1;
-    CData/*0:0*/ UART_tx__DOT___GEN_3;
-    IData/*31:0*/ UART_tx__DOT__unnamedblk1__DOT___GEN_5;
-    CData/*7:0*/ UART_tx__DOT__unnamedblk1__DOT___GEN_6;
-    CData/*7:0*/ UART_tx__DOT__unnamedblk1__DOT__unnamedblk2__DOT___GEN_7;
+    IData/*31:0*/ UART_tx__DOT__unnamedblk1__DOT___GEN_0;
+    CData/*7:0*/ UART_tx__DOT__unnamedblk1__DOT___GEN_1;
+    CData/*7:0*/ UART_tx__DOT__unnamedblk1__DOT__unnamedblk2__DOT___GEN_2;
     CData/*7:0*/ UART_tx__DOT__unnamedblk1__DOT__unnamedblk2__DOT__unnamedblk3__DOT___outDataReg_T;
     CData/*7:0*/ UART_tx__DOT__unnamedblk1__DOT__unnamedblk2__DOT__unnamedblk4__DOT___outDataReg_T_2;
     CData/*0:0*/ __VstlFirstIteration;

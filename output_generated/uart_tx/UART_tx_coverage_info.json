@@ -1,6 +1,6 @@
 {
   "topModuleName": "UART_tx",
-  "currentWorkingDirectory": "D:\\projs\\fuzz\\chisel_coverage_tool\\.",
+  "currentWorkingDirectory": "/home/canxin/Documents/git/chisel_coverage_tool/.",
   "exportedPorts": [
     {
       "portName": "_cond_pred",
@@ -8,47 +8,47 @@
       {
         "fieldName": "UART_tx__I__local__I___T",
         "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 134:20]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 134:20]"
       },
       {
         "fieldName": "UART_tx__I__local__I___T_1",
         "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 141:37]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 141:37]"
       },
       {
         "fieldName": "UART_tx__I__local__I___T_2",
         "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 134:20]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 134:20]"
       },
       {
         "fieldName": "UART_tx__I__local__I___T_3",
         "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 151:40]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 151:40]"
       },
       {
         "fieldName": "UART_tx__I__local__I___T_4",
         "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 134:20]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 134:20]"
       },
       {
         "fieldName": "UART_tx__I__local__I___T_5",
         "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 163:40]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 163:40]"
       },
       {
         "fieldName": "UART_tx__I__local__I___T_6",
         "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 168:43]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 168:43]"
       },
       {
         "fieldName": "UART_tx__I__local__I___T_7",
         "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 134:20]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 134:20]"
       },
       {
         "fieldName": "UART_tx__I__local__I___T_8",
         "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 182:40]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 182:40]"
       }
       ]
     },
@@ -58,37 +58,37 @@
       {
         "fieldName": "UART_tx__I__local__I__bitCnterReg",
         "type": "UInt<4>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 121:28]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 121:28]"
       },
       {
         "fieldName": "UART_tx__I__local__I__clkCnterReg",
         "type": "UInt<8>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 120:28]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 120:28]"
       },
       {
         "fieldName": "UART_tx__I__local__I__inDataReg",
         "type": "UInt<8>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 123:26]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 123:26]"
       },
       {
         "fieldName": "UART_tx__I__local__I__outDataReg",
         "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 124:27]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 124:27]"
       },
       {
         "fieldName": "UART_tx__I__local__I__outTxBusyReg",
         "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 125:29]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 125:29]"
       },
       {
         "fieldName": "UART_tx__I__local__I__outTxDoneReg",
         "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 126:29]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 126:29]"
       },
       {
         "fieldName": "UART_tx__I__local__I__stateReg",
         "type": "UInt<2>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 127:25]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 127:25]"
       }
       ]
     }

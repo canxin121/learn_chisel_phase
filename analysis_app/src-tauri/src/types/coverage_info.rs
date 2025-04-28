@@ -16,6 +16,8 @@ pub struct SignalInfo {
     pub line: Option<u32>,
     #[serde(default)]
     pub column: Option<u32>,
+    #[serde(default)]
+    pub root_dir: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -30,7 +32,6 @@ pub struct ExportedPort {
 pub struct CoverageInfo {
     pub top_module_name: String,
     pub exported_ports: Vec<ExportedPort>,
-    pub current_working_directory: String,
     #[serde(default)]
     pub source_files: HashMap<String, String>,
 }
@@ -38,41 +39,62 @@ pub struct CoverageInfo {
 impl CoverageInfo {
     pub fn process_source_info(&mut self) {
         let mut files_to_read = HashMap::new();
-        let base_path = Path::new(&self.current_working_directory);
 
         for port in self.exported_ports.iter_mut() {
             for signal in port.signals.iter_mut() {
-                if let Some(start_index) = signal.info.find(" @[") {
-                    if let Some(end_index) = signal.info.rfind(']') {
-                        let content = &signal.info[start_index + 3..end_index];
+                if signal.file_path.is_none() {
+                    if let Some(start_index) = signal.info.find(" @[") {
+                        if let Some(end_index) = signal.info.rfind(']') {
+                            let content = &signal.info[start_index + 3..end_index];
 
-                        if let Some(last_space_index) = content.rfind(' ') {
-                            let relative_path_str = &content[..last_space_index];
-                            let location_str = &content[last_space_index + 1..];
+                            if let Some(last_space_index) = content.rfind(' ') {
+                                let relative_path_str = &content[..last_space_index];
+                                let location_str = &content[last_space_index + 1..];
 
-                            let cleaned_relative_path = relative_path_str
-                                .strip_prefix("\\\\")
-                                .unwrap_or(relative_path_str);
+                                let cleaned_relative_path = relative_path_str
+                                    .strip_prefix("\\\\")
+                                    .unwrap_or(relative_path_str);
 
-                            let absolute_path = base_path.join(cleaned_relative_path);
-                            let absolute_path_str = absolute_path.to_string_lossy().to_string();
+                                let base_path_str = signal.root_dir.as_deref().unwrap_or(".");
+                                let base_path = Path::new(base_path_str);
 
-                            if let Some(colon_index) = location_str.find(':') {
-                                let line_str = &location_str[..colon_index];
-                                let col_str = &location_str[colon_index + 1..];
+                                let absolute_path = base_path.join(cleaned_relative_path);
+                                let absolute_path_str = absolute_path.to_string_lossy().to_string();
 
-                                let line = line_str.parse::<u32>().ok();
-                                let column = col_str.parse::<u32>().ok();
+                                if let Some(colon_index) = location_str.find(':') {
+                                    let line_str = &location_str[..colon_index];
+                                    let col_str = &location_str[colon_index + 1..];
 
-                                signal.file_path = Some(absolute_path_str.clone());
-                                signal.line = line;
-                                signal.column = column;
+                                    let line = line_str.parse::<u32>().ok();
+                                    let column = col_str.parse::<u32>().ok();
 
-                                if !self.source_files.contains_key(&absolute_path_str) {
-                                    files_to_read.entry(absolute_path_str).or_insert(());
+                                    signal.file_path = Some(absolute_path_str.clone());
+                                    signal.line = line;
+                                    signal.column = column;
+
+                                    if !self.source_files.contains_key(&absolute_path_str) {
+                                        if absolute_path.exists() {
+                                            files_to_read.entry(absolute_path_str).or_insert(());
+                                        } else {
+                                            eprintln!(
+                                                "Warning: Calculated path does not exist: {}",
+                                                absolute_path_str
+                                            );
+                                        }
+                                    }
                                 }
                             }
                         }
+                    }
+                } else if let Some(existing_path) = &signal.file_path {
+                    let path_obj = Path::new(existing_path);
+                    if !self.source_files.contains_key(existing_path) && path_obj.exists() {
+                        files_to_read.entry(existing_path.clone()).or_insert(());
+                    } else if !path_obj.exists() {
+                        eprintln!(
+                            "Warning: Provided file_path does not exist: {}",
+                            existing_path
+                        );
                     }
                 }
             }
@@ -90,20 +112,5 @@ impl CoverageInfo {
                 }
             }
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_process_source_info() {
-        let mut coverage_info: CoverageInfo =
-            serde_json::from_str(include_str!(r"../../test_data/UART_rx_coverage_info.json"))
-                .unwrap();
-        coverage_info.process_source_info();
-
-        println!("Coverage Info: {:#?}", coverage_info);
     }
 }
