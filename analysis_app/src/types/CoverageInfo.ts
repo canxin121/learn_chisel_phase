@@ -16,6 +16,7 @@ export interface ExportedPort {
 
 export interface CoverageInfo {
     topModuleName: string;
+    currentWorkingDirectory: string;
     exportedPorts: ExportedPort[];
     sourceFiles: Record<string, string>;
 }

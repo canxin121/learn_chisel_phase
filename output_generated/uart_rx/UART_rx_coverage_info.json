@@ -1,139 +1,140 @@
 {
   "topModuleName": "UART_rx",
+  "currentWorkingDirectory": "/home/canxin/Documents/git/chisel_coverage_tool/.",
   "exportedPorts": [
     {
       "portName": "_cond_pred",
       "signals": [
-        {
-          "fieldName": "UART_rx__I__local__I___T",
-          "type": "UInt<1>",
-          "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\Uart.scala 38:20]"
-        },
-        {
-          "fieldName": "UART_rx__I__local__I___T_1",
-          "type": "UInt<1>",
-          "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\Uart.scala 45:39]"
-        },
-        {
-          "fieldName": "UART_rx__I__local__I___T_10",
-          "type": "UInt<1>",
-          "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\Uart.scala 38:20]"
-        },
-        {
-          "fieldName": "UART_rx__I__local__I___T_11",
-          "type": "UInt<1>",
-          "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\Uart.scala 87:40]"
-        },
-        {
-          "fieldName": "UART_rx__I__local__I___T_2",
-          "type": "UInt<1>",
-          "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\Uart.scala 38:20]"
-        },
-        {
-          "fieldName": "UART_rx__I__local__I___T_3",
-          "type": "UInt<1>",
-          "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\Uart.scala 52:46]"
-        },
-        {
-          "fieldName": "UART_rx__I__local__I___T_4",
-          "type": "UInt<1>",
-          "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\Uart.scala 58:41]"
-        },
-        {
-          "fieldName": "UART_rx__I__local__I___T_5",
-          "type": "UInt<1>",
-          "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\Uart.scala 38:20]"
-        },
-        {
-          "fieldName": "UART_rx__I__local__I___T_6",
-          "type": "UInt<1>",
-          "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\Uart.scala 67:40]"
-        },
-        {
-          "fieldName": "UART_rx__I__local__I___T_8",
-          "type": "UInt<1>",
-          "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\Uart.scala 74:43]"
-        },
-        {
-          "fieldName": "UART_rx__I__local__I___T_9",
-          "type": "UInt<1>",
-          "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\Uart.scala 80:43]"
-        }
+      {
+        "fieldName": "UART_rx__I__local__I___T",
+        "type": "UInt<1>",
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 38:20]"
+      },
+      {
+        "fieldName": "UART_rx__I__local__I___T_1",
+        "type": "UInt<1>",
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 45:39]"
+      },
+      {
+        "fieldName": "UART_rx__I__local__I___T_10",
+        "type": "UInt<1>",
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 38:20]"
+      },
+      {
+        "fieldName": "UART_rx__I__local__I___T_11",
+        "type": "UInt<1>",
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 87:40]"
+      },
+      {
+        "fieldName": "UART_rx__I__local__I___T_2",
+        "type": "UInt<1>",
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 38:20]"
+      },
+      {
+        "fieldName": "UART_rx__I__local__I___T_3",
+        "type": "UInt<1>",
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 52:46]"
+      },
+      {
+        "fieldName": "UART_rx__I__local__I___T_4",
+        "type": "UInt<1>",
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 58:41]"
+      },
+      {
+        "fieldName": "UART_rx__I__local__I___T_5",
+        "type": "UInt<1>",
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 38:20]"
+      },
+      {
+        "fieldName": "UART_rx__I__local__I___T_6",
+        "type": "UInt<1>",
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 67:40]"
+      },
+      {
+        "fieldName": "UART_rx__I__local__I___T_8",
+        "type": "UInt<1>",
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 74:43]"
+      },
+      {
+        "fieldName": "UART_rx__I__local__I___T_9",
+        "type": "UInt<1>",
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 80:43]"
+      }
       ]
     },
     {
       "portName": "_reg_signals",
       "signals": [
-        {
-          "fieldName": "UART_rx__I__local__I__bitCnterReg",
-          "type": "UInt<4>",
-          "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\Uart.scala 24:28]"
-        },
-        {
-          "fieldName": "UART_rx__I__local__I__clkCnterReg",
-          "type": "UInt<9>",
-          "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\Uart.scala 23:28]"
-        },
-        {
-          "fieldName": "UART_rx__I__local__I__outDataReg_0",
-          "type": "UInt<1>",
-          "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\Uart.scala 26:27]"
-        },
-        {
-          "fieldName": "UART_rx__I__local__I__outDataReg_1",
-          "type": "UInt<1>",
-          "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\Uart.scala 26:27]"
-        },
-        {
-          "fieldName": "UART_rx__I__local__I__outDataReg_2",
-          "type": "UInt<1>",
-          "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\Uart.scala 26:27]"
-        },
-        {
-          "fieldName": "UART_rx__I__local__I__outDataReg_3",
-          "type": "UInt<1>",
-          "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\Uart.scala 26:27]"
-        },
-        {
-          "fieldName": "UART_rx__I__local__I__outDataReg_4",
-          "type": "UInt<1>",
-          "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\Uart.scala 26:27]"
-        },
-        {
-          "fieldName": "UART_rx__I__local__I__outDataReg_5",
-          "type": "UInt<1>",
-          "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\Uart.scala 26:27]"
-        },
-        {
-          "fieldName": "UART_rx__I__local__I__outDataReg_6",
-          "type": "UInt<1>",
-          "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\Uart.scala 26:27]"
-        },
-        {
-          "fieldName": "UART_rx__I__local__I__outDataReg_7",
-          "type": "UInt<1>",
-          "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\Uart.scala 26:27]"
-        },
-        {
-          "fieldName": "UART_rx__I__local__I__outRxDoneReg",
-          "type": "UInt<1>",
-          "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\Uart.scala 29:29]"
-        },
-        {
-          "fieldName": "UART_rx__I__local__I__serialDataReg",
-          "type": "UInt<1>",
-          "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\Uart.scala 33:30]"
-        },
-        {
-          "fieldName": "UART_rx__I__local__I__serialDataReg_REG",
-          "type": "UInt<1>",
-          "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\Uart.scala 33:38]"
-        },
-        {
-          "fieldName": "UART_rx__I__local__I__stateReg",
-          "type": "UInt<2>",
-          "info": " @[D:\\\\projs\\\\fuzz\\\\learn_chisel_phase\\\\src\\\\main\\\\scala\\\\modules\\\\Uart.scala 30:25]"
-        }
+      {
+        "fieldName": "UART_rx__I__local__I__bitCnterReg",
+        "type": "UInt<4>",
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 24:28]"
+      },
+      {
+        "fieldName": "UART_rx__I__local__I__clkCnterReg",
+        "type": "UInt<9>",
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 23:28]"
+      },
+      {
+        "fieldName": "UART_rx__I__local__I__outDataReg_0",
+        "type": "UInt<1>",
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 26:27]"
+      },
+      {
+        "fieldName": "UART_rx__I__local__I__outDataReg_1",
+        "type": "UInt<1>",
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 26:27]"
+      },
+      {
+        "fieldName": "UART_rx__I__local__I__outDataReg_2",
+        "type": "UInt<1>",
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 26:27]"
+      },
+      {
+        "fieldName": "UART_rx__I__local__I__outDataReg_3",
+        "type": "UInt<1>",
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 26:27]"
+      },
+      {
+        "fieldName": "UART_rx__I__local__I__outDataReg_4",
+        "type": "UInt<1>",
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 26:27]"
+      },
+      {
+        "fieldName": "UART_rx__I__local__I__outDataReg_5",
+        "type": "UInt<1>",
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 26:27]"
+      },
+      {
+        "fieldName": "UART_rx__I__local__I__outDataReg_6",
+        "type": "UInt<1>",
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 26:27]"
+      },
+      {
+        "fieldName": "UART_rx__I__local__I__outDataReg_7",
+        "type": "UInt<1>",
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 26:27]"
+      },
+      {
+        "fieldName": "UART_rx__I__local__I__outRxDoneReg",
+        "type": "UInt<1>",
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 29:29]"
+      },
+      {
+        "fieldName": "UART_rx__I__local__I__serialDataReg",
+        "type": "UInt<1>",
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 33:30]"
+      },
+      {
+        "fieldName": "UART_rx__I__local__I__serialDataReg_REG",
+        "type": "UInt<1>",
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 33:38]"
+      },
+      {
+        "fieldName": "UART_rx__I__local__I__stateReg",
+        "type": "UInt<2>",
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 30:25]"
+      }
       ]
     }
   ]

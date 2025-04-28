@@ -29,6 +29,7 @@ pub struct ExportedPort {
 pub struct CoverageInfo {
     pub top_module_name: String,
     pub exported_ports: Vec<ExportedPort>,
+    pub currentWorkingDirectory: String,
     #[serde(default)]
     pub source_files: HashMap<String, String>,
 }
