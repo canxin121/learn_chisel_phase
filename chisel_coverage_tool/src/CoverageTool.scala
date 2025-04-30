@@ -75,104 +75,6 @@ class CoverageTransform extends firrtl.options.Phase {
 
 object CoverageTool {
 
-  /** 辅助函数：转义 JSON 字符串中的特殊字符 */
-  private def escapeJsonString(s: String): String = {
-    s.replace("\\", "\\\\")
-      .replace("\"", "\\\"")
-      .replace("\b", "\\b")
-      .replace("\f", "\\f")
-      .replace("\n", "\\n")
-      .replace("\r", "\\r")
-      .replace("\t", "\\t")
-  }
-
-  /** 递归地将向量/数组信号展开为标量信号信息 */
-  private def flattenSignalInfo(
-      baseFieldName: String,
-      fieldType: Type,
-      originalInfo: Info
-  ): Seq[ExportedSignalInfo] = {
-    fieldType match {
-      case VectorType(elementType, size) =>
-        if (size > 0) {
-          (0 until size).flatMap { i =>
-            // 递归调用，为每个元素生成新的字段名
-            flattenSignalInfo(s"${baseFieldName}_$i", elementType, originalInfo)
-          }
-        } else {
-          // 零长度向量，不生成任何信号
-          Seq.empty
-        }
-      case _: BundleType =>
-        // 明确忽略 Bundle 类型，因为覆盖率通常不直接应用于整个 Bundle
-        // 可以选择性地添加警告日志
-        // println(s"[WARN] Skipping BundleType '$baseFieldName' during JSON generation.")
-        Seq.empty
-      case groundType: GroundType =>
-        // 基本情况：遇到标量类型，生成一个 ExportedSignalInfo
-        Seq(
-          ExportedSignalInfo(
-            fieldName = baseFieldName,
-            fieldtype = groundType, // 类型是展开后的标量类型
-            info = originalInfo // Info 保持不变
-          )
-        )
-      case otherType =>
-        // 处理其他未预期的类型，可以选择性地记录警告或错误
-        println(
-          s"[WARN] Encountered unexpected type '${otherType.serialize}' for field '$baseFieldName' during JSON generation. Skipping."
-        )
-        Seq.empty
-    }
-  }
-
-  /** 生成包含 TopLevelExportInfo 信息的 JSON 字符串 */
-  private def generateCoverageInfoJson(
-      topModuleName: String,
-      exportInfos: List[TopLevelExportInfo],
-      currentWorkingDirectory: String // <-- 新增参数
-  ): String = {
-    val portsJson = exportInfos
-      .map { portInfo =>
-        // 对每个端口中的信号列表进行 flatMap 操作，应用 flattenSignalInfo
-        val flattenedSignals = portInfo.exportedSignals.flatMap { signal =>
-          flattenSignalInfo(signal.fieldName, signal.fieldtype, signal.info)
-        }
-
-        // 为展开后的每个标量信号生成 JSON 条目
-        val signalsJson = flattenedSignals
-          .sortBy(_.fieldName) // 按名称排序以保持一致性
-          .map { flatSignal =>
-            s"""      {
-               |        "fieldName": "${escapeJsonString(
-                flatSignal.fieldName
-              )}",
-               |        "type": "${escapeJsonString(
-                flatSignal.fieldtype.serialize
-              )}",
-               |        "info": "${escapeJsonString(flatSignal.info.serialize)}"
-               |      }""".stripMargin
-          }
-          .mkString(",\n")
-
-        s"""    {
-           |      "portName": "${escapeJsonString(portInfo.portName)}",
-           |      "signals": [
-           |$signalsJson
-           |      ]
-           |    }""".stripMargin
-      }
-      .mkString(",\n")
-
-    s"""{
-       |  "topModuleName": "${escapeJsonString(topModuleName)}",
-       |  "currentWorkingDirectory": "${escapeJsonString(currentWorkingDirectory)}",
-       |  "exportedPorts": [
-       |$portsJson
-       |  ]
-       |}""".stripMargin
-  }
-
   /** 处理单个 Chisel 模块，执行转换并生成输出文件。
     *
     * @param moduleGenerator
@@ -215,9 +117,6 @@ object CoverageTool {
     val stage = new CustomStage(
       customPhases = Seq(new CoverageTransform)
     )
-
-    // 获取当前工作目录
-    val currentWorkingDirectory = new File(".").getAbsolutePath() // <-- 获取当前工作目录
 
     // 1. (可选) 生成原始 SystemVerilog (old.sv)
     if (enableDevOutput) {
@@ -310,12 +209,11 @@ object CoverageTool {
         // 写入 Coverage Info JSON 文件
         if (retrievedPortInfoList.nonEmpty) {
           try {
-            // 调用更新后的 generateCoverageInfoJson 函数，传入当前工作目录
+            // 调用 CoverageCollectorGenerator 中的方法
             val coverageInfoJson =
-              generateCoverageInfoJson(
+              CoverageCollectorGenerator.generateCoverageInfoJson( // <-- 调用移动后的方法
                 moduleName,
-                retrievedPortInfoList,
-                currentWorkingDirectory // <-- 传递路径
+                retrievedPortInfoList
               )
             val jsonPath =
               s"$specificOutputDir/${moduleName}_coverage_info.json"

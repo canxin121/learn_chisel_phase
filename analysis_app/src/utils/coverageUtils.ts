@@ -1,22 +1,27 @@
 import type { CSSProperties } from 'vue';
-import type { CoverageReport, } from "../types/CoverageReport";
-import type { CoverageInfo, SignalInfo } from "../types/CoverageInfo";
+import type { CoverageReport, ConditionCoveragePoint, RegisterCoveragePoint } from "../types/CoverageReport";
+// 导入 CoverageInfo, ModuleInfo, 和 InstanceSignalTree
+import type { CoverageInfo, SignalInfo, ModuleInfo, InstanceSignalTree } from "../types/CoverageInfo";
 import type { TreeNode } from "../types/TreeNode";
 
 // --- 常量 ---
 const InstanceSeparator = "__I__";
-const SubfieldSeparator = "__S__";
-const LocalMarker = "local";
+const ModuleMarker = "__M__";
+const SignalMarker = "__S__";
+const InternalSeparator = "__s__";
+const InternalSeparatorRegex = new RegExp(InternalSeparator, 'g');
+
 const CondPrefix = "_cond_pred_";
 const MuxPrefix = "_mux_cond_";
 const RegPrefix = "_reg_signals_";
 
-// --- 解析与构建 ---
-
-export function parseSignalName(rawName: string): { path: string[]; signal: string; type: 'predicate' | 'mux' | 'register' | 'unknown' } {
+// --- 解析 ---
+export function parseSignalName(rawName: string): { path: string[]; originatingModule: string; signal: string; type: 'predicate' | 'mux' | 'register' | 'unknown' } {
+  // 确保正确提取 originatingModule
   let name = rawName;
   let type: 'predicate' | 'mux' | 'register' | 'unknown' = 'unknown';
 
+  // 1. 提取类型前缀
   if (name.startsWith(CondPrefix)) {
     name = name.substring(CondPrefix.length);
     type = 'predicate';
@@ -28,242 +33,292 @@ export function parseSignalName(rawName: string): { path: string[]; signal: stri
     type = 'register';
   }
 
-  const parts = name.split(InstanceSeparator);
-  const localIndex = parts.indexOf(LocalMarker);
-
+  // 2. 初始化默认值
   let path: string[] = [];
-  let signal: string = "";
+  let originatingModule = "?";
+  let signal = name; // 如果解析失败，默认为修改后的名称
 
-  if (localIndex !== -1) {
-    path = parts.slice(0, localIndex);
-    const signalParts = parts.slice(localIndex + 1);
-    signal = signalParts.join(InstanceSeparator).replace(new RegExp(SubfieldSeparator, 'g'), '.');
-  } else {
-    if (parts.length > 0) {
-      path = [parts[0]];
-      signal = parts.slice(1).join(InstanceSeparator).replace(new RegExp(SubfieldSeparator, 'g'), '.');
-      if (!signal) signal = path[0];
+  // 3. 查找 *最后* 一个模块标记 (__M__)
+  const lastMIndex = name.lastIndexOf(ModuleMarker);
+
+  if (lastMIndex !== -1) {
+    const instancePathStr = name.substring(0, lastMIndex);
+    const rest = name.substring(lastMIndex + ModuleMarker.length);
+
+    // 4. 在最后一个模块标记之后查找信号标记 (__S__)
+    const sIndex = rest.indexOf(SignalMarker);
+
+    if (sIndex !== -1) {
+      // 5. 根据标记提取各部分
+      originatingModule = rest.substring(0, sIndex);
+      const signalPart = rest.substring(sIndex + SignalMarker.length);
+
+      // 6. 解析实例路径
+      path = instancePathStr.split(InstanceSeparator).filter(p => p.length > 0);
+
+      // 7. 最终确定信号名称
+      signal = signalPart.replace(InternalSeparatorRegex, '.');
+
     } else {
-      signal = name.replace(new RegExp(SubfieldSeparator, 'g'), '.');
+      console.warn(`[coverageUtils] Signal name format warning: Found '${ModuleMarker}' but no subsequent '${SignalMarker}' in '${rawName}'. Falling back.`);
+      signal = name;
+      path = [];
+      originatingModule = "?";
+    }
+  } else {
+    console.warn(`[coverageUtils] Signal name format warning: No '${ModuleMarker}' found in '${rawName}'. Attempting fallback parsing.`);
+    const sIndex = name.indexOf(SignalMarker);
+    if (sIndex !== -1) {
+      const possibleModuleOrPath = name.substring(0, sIndex);
+      const signalPart = name.substring(sIndex + SignalMarker.length);
+      if (possibleModuleOrPath.includes(InstanceSeparator)) {
+        path = possibleModuleOrPath.split(InstanceSeparator).filter(p => p.length > 0);
+        originatingModule = "?";
+        signal = signalPart.replace(InternalSeparatorRegex, '.');
+        console.warn(`[coverageUtils] Fallback: Interpreted '${possibleModuleOrPath}' as path. Module unknown.`);
+      } else if (possibleModuleOrPath.length > 0) {
+        originatingModule = possibleModuleOrPath;
+        signal = signalPart.replace(InternalSeparatorRegex, '.');
+        path = [];
+        console.warn(`[coverageUtils] Fallback: Interpreted '${possibleModuleOrPath}' as originating module.`);
+      } else {
+        signal = name;
+        path = [];
+        originatingModule = "?";
+        console.warn(`[coverageUtils] Fallback: Found '${SignalMarker}' at unexpected position.`);
+      }
+    } else {
+      signal = name.replace(InternalSeparatorRegex, '.');
+      path = [];
+      originatingModule = "?";
+      console.warn(`[coverageUtils] Fallback: No '${ModuleMarker}' or '${SignalMarker}' found. Treating '${signal}' as signal name.`);
     }
   }
 
-  if (path.length === 0 && signal.includes(InstanceSeparator)) {
-    const signalParts = signal.split(InstanceSeparator);
-    path = [signalParts[0]];
-    signal = signalParts.slice(1).join(InstanceSeparator);
+  if (!signal && rawName) {
+    signal = rawName;
   }
 
-  path = path.filter(p => p.length > 0);
-  if (path.length === 0 && parts.length > 1 && type !== 'unknown') {
-    path = [parts[0]];
-    signal = parts.slice(1).join(InstanceSeparator).replace(new RegExp(SubfieldSeparator, 'g'), '.');
-  } else if (path.length === 0 && parts.length === 1) {
-    path = [parts[0]];
-    signal = parts[0];
-  }
-
-  return { path, signal, type };
+  return { path, originatingModule, signal, type };
 }
 
-export function findSignalInfo(signalName: string, coverageInfo: CoverageInfo | null): SignalInfo | undefined {
-  if (!coverageInfo) return undefined;
-  console.log(`findSignalInfo: Searching for "${signalName}"`); // Log input name
 
-  // Direct match check
-  for (const port of coverageInfo.exportedPorts) {
-    const signal = port.signals.find(s => s.fieldName === signalName);
-    if (signal) {
-      console.log(`findSignalInfo: Direct match found for "${signalName}"`);
-      return signal;
-    }
+// 构建覆盖率树
+export function buildCoverageTrees(report: CoverageReport, instanceSignalMap: InstanceSignalTree | null): { predicates: TreeNode[], mux: TreeNode[], registers: TreeNode[] } {
+  const predicateSignals: TreeNode[] = [];
+  const muxSignals: TreeNode[] = [];
+  const registerSignals: TreeNode[] = [];
+
+  // 辅助函数：收集信号节点
+  const collectSignalsRecursive = (instanceNode: InstanceSignalTree, currentPath: string[]) => {
+    // 确保根实例名称包含在路径中
+    const currentInstancePath = [...currentPath, instanceNode.instanceName];
+
+    instanceNode.signals.forEach(signalInfo => {
+      const parsed = parseSignalName(signalInfo.name);
+      let coverageData: ConditionCoveragePoint | RegisterCoveragePoint | undefined = undefined;
+      let coveragePercent: number | undefined = undefined;
+      let targetList: TreeNode[] | null = null;
+
+      // 在报告中查找相应的覆盖率数据
+      switch (parsed.type) {
+        case 'predicate':
+          coverageData = report.conditional_predicates?.find(p => p.name === signalInfo.name);
+          targetList = predicateSignals;
+          break;
+        case 'mux':
+          coverageData = report.mux_conditions?.find(m => m.name === signalInfo.name);
+          targetList = muxSignals;
+          break;
+        case 'register':
+          coverageData = report.register_coverage?.find(r => r.name === signalInfo.name);
+          targetList = registerSignals;
+          break;
+        default:
+          console.warn(`[buildCoverageTrees] Unknown signal type for: ${signalInfo.name}`);
+          return; // 跳过未知类型
+      }
+
+      if (!coverageData) {
+        // console.warn(`[buildCoverageTrees] No coverage data found in report for signal: ${signalInfo.fieldName}`);
+        // 决定是否包含没有覆盖率数据的信号
+        // return; // 选项：跳过报告中没有的信号
+        coveragePercent = undefined; // 包含但标记为无覆盖率数据
+      } else {
+        coveragePercent = coverageData.coverage_percent;
+      }
+
+      // 确定源位置
+      const sourceLocation = signalInfo.filePath && signalInfo.line !== null && signalInfo.line !== undefined
+        ? { filePath: signalInfo.filePath, line: signalInfo.line, column: signalInfo.column ?? 0 }
+        : undefined;
+
+      // 为此信号创建 TreeNode
+      const signalNode: TreeNode = {
+        key: signalInfo.name, // 唯一键
+        label: parsed.signal, // 显示名称
+        isSignal: true,
+        coverage: coveragePercent,
+        originatingModule: instanceNode.moduleName, // 模块名称
+        sourceLocation: sourceLocation,
+        // 附加数据
+        data: {
+          ...(coverageData ?? {}), // 覆盖率数据
+          rawSignalInfo: signalInfo, // 原始信号信息
+          parsedName: parsed, // 解析后的名称
+          instancePath: currentInstancePath, // 实例路径
+          type: parsed.type, // 类型
+        },
+        // children: undefined,
+      };
+
+      if (targetList) {
+        targetList.push(signalNode);
+      }
+    });
+
+    // 递归处理子实例
+    instanceNode.subInstances.forEach(subInstance => {
+      collectSignalsRecursive(subInstance, currentInstancePath); // 传递路径
+    });
+  };
+
+  // 开始收集
+  if (instanceSignalMap) {
+    collectSignalsRecursive(instanceSignalMap, []); // 从根开始
+  } else {
+    console.warn("[buildCoverageTrees] instanceSignalMap is null, cannot build trees.");
   }
 
-  // Prefix check - 改进前缀处理逻辑
-  const prefixes = [CondPrefix, MuxPrefix, RegPrefix];
-  for (const prefix of prefixes) {
-    if (signalName.startsWith(prefix)) {
-      const strippedName = signalName.substring(prefix.length);
-      console.log(`findSignalInfo: Trying stripped name "${strippedName}" (from "${signalName}")`);
-      
-      for (const port of coverageInfo.exportedPorts) {
-        // 尝试精确匹配
-        const signal = port.signals.find(s => s.fieldName === strippedName);
-        if (signal) {
-          console.log(`findSignalInfo: Stripped name match found for "${strippedName}"`);
-          return signal;
-        }
-        
-        // 寄存器信号可能有特殊格式，尝试部分匹配
-        if (prefix === RegPrefix) {
-          const partialMatch = port.signals.find(s => 
-            strippedName.includes(s.fieldName) || s.fieldName.includes(strippedName));
-          if (partialMatch) {
-            console.log(`findSignalInfo: Partial match for register signal "${strippedName}" -> "${partialMatch.fieldName}"`);
-            return partialMatch;
+
+  // 辅助函数：构建分层树
+  const buildTreeFromSignalList = (signalNodes: TreeNode[]): TreeNode[] => {
+    const rootMap = new Map<string, TreeNode>(); // 顶层实例映射
+
+    signalNodes.forEach(signalNode => {
+      const instancePath = signalNode.data?.instancePath as string[] | undefined;
+      // 检查 instancePath
+      if (!instancePath || instancePath.length === 0) {
+        console.warn(`[buildTreeFromSignalList] Signal node ${signalNode.key} is missing a valid instancePath.`);
+        return; // 跳过
+      }
+
+      let currentChildrenMap: Map<string, TreeNode> | null = null;
+      let parentNode: TreeNode | null = null;
+      let nodeKeyPrefix = '';
+
+      // 遍历/创建实例路径
+      for (let i = 0; i < instancePath.length; i++) {
+        const part = instancePath[i]; // 实例名称
+        const isRootLevel = i === 0;
+        const currentLevelMap = isRootLevel ? rootMap : currentChildrenMap;
+        const nodeKey = i === 0 ? part : `${nodeKeyPrefix}${InstanceSeparator}${part}`; // 节点键
+
+        let currentNode: TreeNode;
+
+        if (!currentLevelMap || !currentLevelMap.has(part)) {
+          // 查找模块名称比较复杂，依赖信号节点信息
+          currentNode = {
+            key: nodeKey,
+            label: part, // 实例名称
+            children: [],
+            isSignal: false,
+            coverage: undefined,
+            originatingModule: undefined, // 实例节点
+            sourceLocation: undefined,
+            data: { instancePath: instancePath.slice(0, i + 1) } // 实例路径
+          };
+          if (parentNode) {
+            parentNode.children!.push(currentNode);
+          } else {
+            rootMap.set(part, currentNode); // 根实例节点
           }
+          if (currentLevelMap) currentLevelMap.set(part, currentNode); // 添加到 map
+        } else {
+          currentNode = currentLevelMap.get(part)!;
+          // 确保是实例节点并有 children
+          currentNode.isSignal = false;
+          if (!currentNode.children) currentNode.children = [];
+        }
+
+        parentNode = currentNode;
+        nodeKeyPrefix = nodeKey; // 更新前缀
+        // 更新 children map
+        if (i < instancePath.length - 1) {
+          currentChildrenMap = new Map(currentNode.children!.map(child => [child.label, child]));
         }
       }
+
+
+      // 添加信号节点
+      if (parentNode) {
+        // signalNode.key = `${parentNode.key}${SignalMarker}${signalNode.label}`;
+        if (!parentNode.children) parentNode.children = [];
+        parentNode.children!.push(signalNode);
+        // 排序子节点
+      } else {
+        console.error(`[buildTreeFromSignalList] Failed to find parent node for signal ${signalNode.key}. Path:`, instancePath);
+        rootMap.set(signalNode.key, signalNode); // 后备：添加到根
+      }
+    });
+
+    // 转换并排序
+    return Array.from(rootMap.values()).sort((a, b) => a.label.localeCompare(b.label));
+  };
+
+
+  // 构建树
+  const predicateTree = buildTreeFromSignalList(predicateSignals);
+  const muxTree = buildTreeFromSignalList(muxSignals);
+  const registerTree = buildTreeFromSignalList(registerSignals);
+
+
+  // --- 聚合覆盖率计算 ---
+  const aggregateCoverageRecursive = (node: TreeNode): number | undefined => {
+    if (node.isSignal) {
+      return node.coverage;
     }
-  }
-
-  console.log(`findSignalInfo: No match found for "${signalName}"`); // Log if no match
-  return undefined;
-}
-
-export function buildCoverageTrees(report: CoverageReport, info: CoverageInfo | null): { predicates: TreeNode[], mux: TreeNode[], registers: TreeNode[] } {
-  const predicateRootMap = new Map<string, TreeNode>();
-  const muxRootMap = new Map<string, TreeNode>();
-  const registerRootMap = new Map<string, TreeNode>();
-
-  function findOrCreateNode(path: string[], targetMap: Map<string, TreeNode>): TreeNode {
-    if (path.length === 0) {
-      throw new Error("Path cannot be empty when finding/creating node");
+    // 检查 children
+    if (node.children && node.children.length > 0) {
+      const childCoverages = node.children
+        .map(aggregateCoverageRecursive)
+        .filter((c): c is number => c !== undefined && !isNaN(c));
+      if (childCoverages.length > 0) {
+        const sum = childCoverages.reduce((acc, cur) => acc + cur, 0);
+        node.coverage = sum / childCoverages.length;
+        return node.coverage;
+      }
     }
-
-    const currentLevelName = path[0];
-    let node = targetMap.get(currentLevelName);
-
-    if (!node) {
-      const key = path.join(InstanceSeparator);
-      node = {
-        title: currentLevelName,
-        key: key,
-        children: [],
-        type: 'instance',
-        isLeaf: false,
-      };
-      targetMap.set(currentLevelName, node);
-    }
-
-    if (path.length === 1) {
-      return node;
-    } else {
-      if (!node.children) node.children = [];
-      // Use a map for efficient child lookup during creation
-      const childMap = new Map(node.children.map(child => [child.title, child]));
-      const nextNode = findOrCreateNode(path.slice(1), childMap);
-
-      // Ensure the child map reflects the potentially newly created/found node
-      childMap.set(nextNode.title, nextNode);
-
-      // Rebuild children array from the map to ensure correct structure
-      node.children = Array.from(childMap.values());
-
-      // Find the specific child node we were working on to return it
-      const foundChild = node.children.find(child => child.key === nextNode.key);
-      return foundChild || nextNode; // Should always find the child
-    }
-  }
-
-
-  const getSourceLoc = (signalName: string): { filePath: string; line: number; column: number } | undefined => {
-    if (!info) return undefined;
-    const sigInfo = findSignalInfo(signalName, info);
-    // Log the result specifically for getSourceLoc
-    console.log(`getSourceLoc for "${signalName}": Found SignalInfo:`, sigInfo ? { filePath: sigInfo.filePath, line: sigInfo.line } : undefined);
-    if (sigInfo?.filePath && sigInfo.line !== undefined && sigInfo.line !== null) {
-      return { filePath: sigInfo.filePath, line: sigInfo.line, column: sigInfo.column ?? 0 };
-    }
+    node.coverage = undefined; // 无有效覆盖率
     return undefined;
   };
 
-  report.conditional_predicates.forEach(point => {
-    const { path, signal } = parseSignalName(point.name);
-    if (path.length === 0 || !signal) { return; }
-    const parentNode = findOrCreateNode(path, predicateRootMap);
-    if (!parentNode.children) parentNode.children = [];
-    parentNode.children.push({
-      title: signal, key: point.name, coverage: point.coverage_percent,
-      type: 'predicate', details: point, isLeaf: true,
-      sourceLocation: getSourceLoc(point.name)
-    });
-  });
-
-  report.mux_conditions.forEach(point => {
-    const { path, signal } = parseSignalName(point.name);
-    if (path.length === 0 || !signal) { return; }
-    const parentNode = findOrCreateNode(path, muxRootMap);
-    if (!parentNode.children) parentNode.children = [];
-    parentNode.children.push({
-      title: signal, key: point.name, coverage: point.coverage_percent,
-      type: 'mux', details: point, isLeaf: true,
-      sourceLocation: getSourceLoc(point.name)
-    });
-  });
-
-  report.register_coverage.forEach(point => {
-    const { path, signal } = parseSignalName(point.name);
-    if (path.length === 0 || !signal) {
-      console.warn(`buildCoverageTrees: Skipping register due to invalid path/signal for name: ${point.name}`);
-      return;
-    }
-    const parentNode = findOrCreateNode(path, registerRootMap);
-    if (!parentNode.children) parentNode.children = [];
-
-    const sourceLocation = getSourceLoc(point.name); // Get source location
-    console.log(`buildCoverageTrees: Register "${point.name}" (parsed signal: "${signal}") -> SourceLoc:`, sourceLocation); // Log register source location
-
-    const registerNode: TreeNode = {
-      title: signal, key: point.name, coverage: point.coverage_percent,
-      type: 'register', details: point, isLeaf: false, children: [],
-      sourceLocation: sourceLocation // Assign source location
-    };
-
-    point.bit_details.forEach(bit => {
-      const bitCoverage = (bit.hit_zero ? 50 : 0) + (bit.hit_one ? 50 : 0);
-      // Ensure children array exists before pushing
-      if (!registerNode.children) registerNode.children = [];
-      registerNode.children.push({
-        title: `Bit ${bit.bit}`, key: `${point.name}_bit_${bit.bit}`, coverage: bitCoverage,
-        type: 'register_bit', details: bit, isLeaf: true,
-        sourceLocation: registerNode.sourceLocation // Bit inherits source location from register
-      });
-    });
-    if (registerNode.children?.length === 0) registerNode.isLeaf = true;
-    parentNode.children.push(registerNode);
-  });
-
-  // Helper function to sort tree nodes alphabetically, instances first
-  const sortTreeNodes = (nodes: TreeNode[]): TreeNode[] => {
-    nodes.sort((a, b) => {
-      // Instances come before leaves
-      const aIsInstance = a.type === 'instance';
-      const bIsInstance = b.type === 'instance';
-      if (aIsInstance && !bIsInstance) return -1;
-      if (!aIsInstance && bIsInstance) return 1;
-      // Otherwise, sort alphabetically by title
-      return a.title.localeCompare(b.title);
-    });
-    // Recursively sort children
-    nodes.forEach(node => {
-      if (node.children && node.children.length > 0) {
-        node.children = sortTreeNodes(node.children);
-      }
-    });
-    return nodes;
+  const applyAggregation = (treeNodes: TreeNode[]) => {
+    treeNodes.forEach(node => aggregateCoverageRecursive(node));
   };
 
+  applyAggregation(predicateTree);
+  applyAggregation(muxTree);
+  applyAggregation(registerTree);
+  // ---
+
   return {
-    predicates: sortTreeNodes(Array.from(predicateRootMap.values())),
-    mux: sortTreeNodes(Array.from(muxRootMap.values())),
-    registers: sortTreeNodes(Array.from(registerRootMap.values()))
+    predicates: predicateTree,
+    mux: muxTree,
+    registers: registerTree,
   };
 }
 
 
 // --- 格式化函数 ---
-
 export const formatCoverage = (coverage?: number): string => {
   if (coverage === undefined || coverage === null) return "-";
   return `${coverage.toFixed(1)}%`;
 };
-
 export const formatPercent = (value?: number): string => {
   if (value === undefined || value === null) return '-';
   return `${value.toFixed(1)}%`;
 };
-
 export const formatCount = (value?: number): string => {
   if (value === undefined || value === null) return '-';
   if (value >= 1e9) return (value / 1e9).toFixed(1) + 'G';
@@ -273,29 +328,19 @@ export const formatCount = (value?: number): string => {
 };
 
 // --- 样式函数 ---
-
 export const getNodeStyle = (coverage?: number): CSSProperties => {
   if (coverage === undefined || coverage === null || coverage === 100) {
     return {};
   }
   let color = '';
-  if (coverage < 50) {
-    color = 'hsl(0, 80%, 50%)'; // Red
-  } else if (coverage < 80) {
-    color = 'hsl(39, 100%, 50%)'; // Orange
-  } else {
-    color = 'hsl(60, 80%, 45%)'; // Yellow-ish
-  }
-  return {
-    color: color,
-    fontWeight: 'bold'
-  };
+  if (coverage < 50) color = 'hsl(0, 80%, 50%)'; // 红色
+  else if (coverage < 80) color = 'hsl(39, 100%, 50%)'; // 橙色
+  else color = 'hsl(60, 80%, 45%)'; // 黄色
+  return { color: color, fontWeight: 'bold' };
 };
-
 export const getConditionTagColor = (hit: boolean | undefined): string => {
   return hit === true ? 'success' : 'error';
 };
-
 export const getBitTagColor = (hit: boolean | undefined): string => {
   return hit === true ? 'success' : 'error';
 };

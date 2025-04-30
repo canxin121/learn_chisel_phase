@@ -6,23 +6,23 @@
 #include "VUART_tx___024root.h"
 
 VL_ATTR_COLD void VUART_tx___024root___eval_static(VUART_tx___024root* vlSelf) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root___eval_static\n"); );
+    if (false && vlSelf) {}  // Prevent unused
     VUART_tx__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    auto& vlSelfRef = std::ref(*vlSelf).get();
-    // Body
-    vlSelfRef.__Vtrigprevexpr___TOP__clock__0 = vlSelfRef.clock;
+    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root___eval_static\n"); );
 }
 
 VL_ATTR_COLD void VUART_tx___024root___eval_initial(VUART_tx___024root* vlSelf) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root___eval_initial\n"); );
+    if (false && vlSelf) {}  // Prevent unused
     VUART_tx__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    auto& vlSelfRef = std::ref(*vlSelf).get();
+    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root___eval_initial\n"); );
+    // Body
+    vlSelf->__Vtrigprevexpr___TOP__clock__0 = vlSelf->clock;
 }
 
 VL_ATTR_COLD void VUART_tx___024root___eval_final(VUART_tx___024root* vlSelf) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root___eval_final\n"); );
+    if (false && vlSelf) {}  // Prevent unused
     VUART_tx__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    auto& vlSelfRef = std::ref(*vlSelf).get();
+    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root___eval_final\n"); );
 }
 
 #ifdef VL_DEBUG
@@ -31,18 +31,18 @@ VL_ATTR_COLD void VUART_tx___024root___dump_triggers__stl(VUART_tx___024root* vl
 VL_ATTR_COLD bool VUART_tx___024root___eval_phase__stl(VUART_tx___024root* vlSelf);
 
 VL_ATTR_COLD void VUART_tx___024root___eval_settle(VUART_tx___024root* vlSelf) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root___eval_settle\n"); );
+    if (false && vlSelf) {}  // Prevent unused
     VUART_tx__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    auto& vlSelfRef = std::ref(*vlSelf).get();
+    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root___eval_settle\n"); );
     // Init
     IData/*31:0*/ __VstlIterCount;
     CData/*0:0*/ __VstlContinue;
     // Body
     __VstlIterCount = 0U;
-    vlSelfRef.__VstlFirstIteration = 1U;
+    vlSelf->__VstlFirstIteration = 1U;
     __VstlContinue = 1U;
     while (__VstlContinue) {
-        if (VL_UNLIKELY(((0x64U < __VstlIterCount)))) {
+        if (VL_UNLIKELY((0x64U < __VstlIterCount))) {
 #ifdef VL_DEBUG
             VUART_tx___024root___dump_triggers__stl(vlSelf);
 #endif
@@ -53,106 +53,89 @@ VL_ATTR_COLD void VUART_tx___024root___eval_settle(VUART_tx___024root* vlSelf) {
         if (VUART_tx___024root___eval_phase__stl(vlSelf)) {
             __VstlContinue = 1U;
         }
-        vlSelfRef.__VstlFirstIteration = 0U;
+        vlSelf->__VstlFirstIteration = 0U;
     }
 }
 
 #ifdef VL_DEBUG
 VL_ATTR_COLD void VUART_tx___024root___dump_triggers__stl(VUART_tx___024root* vlSelf) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root___dump_triggers__stl\n"); );
+    if (false && vlSelf) {}  // Prevent unused
     VUART_tx__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    auto& vlSelfRef = std::ref(*vlSelf).get();
+    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root___dump_triggers__stl\n"); );
     // Body
-    if ((1U & (~ vlSelfRef.__VstlTriggered.any()))) {
+    if ((1U & (~ (IData)(vlSelf->__VstlTriggered.any())))) {
         VL_DBG_MSGF("         No triggers active\n");
     }
-    if ((1ULL & vlSelfRef.__VstlTriggered.word(0U))) {
+    if ((1ULL & vlSelf->__VstlTriggered.word(0U))) {
         VL_DBG_MSGF("         'stl' region trigger index 0 is active: Internal 'stl' trigger - first iteration\n");
     }
 }
 #endif  // VL_DEBUG
 
-VL_ATTR_COLD void VUART_tx___024root___stl_sequent__TOP__0(VUART_tx___024root* vlSelf);
-
-VL_ATTR_COLD void VUART_tx___024root___eval_stl(VUART_tx___024root* vlSelf) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root___eval_stl\n"); );
+VL_ATTR_COLD void VUART_tx___024root___stl_sequent__TOP__0(VUART_tx___024root* vlSelf) {
+    if (false && vlSelf) {}  // Prevent unused
     VUART_tx__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    auto& vlSelfRef = std::ref(*vlSelf).get();
+    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root___stl_sequent__TOP__0\n"); );
     // Body
-    if ((1ULL & vlSelfRef.__VstlTriggered.word(0U))) {
-        VUART_tx___024root___stl_sequent__TOP__0(vlSelf);
-    }
+    vlSelf->_cond_pred_UART_tx___05FI___05Flocal___05FI___05F_T_1 
+        = vlSelf->io_i_tx_trig;
+    vlSelf->_cond_pred_UART_tx___05FI___05Flocal___05FI___05F_T 
+        = (0U == (IData)(vlSelf->UART_tx__DOT__stateReg));
+    vlSelf->_cond_pred_UART_tx___05FI___05Flocal___05FI___05F_T_2 
+        = (1U == (IData)(vlSelf->UART_tx__DOT__stateReg));
+    vlSelf->_cond_pred_UART_tx___05FI___05Flocal___05FI___05F_T_4 
+        = (2U == (IData)(vlSelf->UART_tx__DOT__stateReg));
+    vlSelf->_cond_pred_UART_tx___05FI___05Flocal___05FI___05F_T_7 
+        = (3U == (IData)(vlSelf->UART_tx__DOT__stateReg));
+    vlSelf->_reg_signals_UART_tx___05FI___05Flocal___05FI___05FstateReg 
+        = vlSelf->UART_tx__DOT__stateReg;
+    vlSelf->_reg_signals_UART_tx___05FI___05Flocal___05FI___05FclkCnterReg 
+        = vlSelf->UART_tx__DOT__clkCnterReg;
+    vlSelf->_cond_pred_UART_tx___05FI___05Flocal___05FI___05F_T_6 
+        = (1U & (~ ((IData)(vlSelf->UART_tx__DOT__bitCnterReg) 
+                    >> 3U)));
+    vlSelf->_reg_signals_UART_tx___05FI___05Flocal___05FI___05FbitCnterReg 
+        = vlSelf->UART_tx__DOT__bitCnterReg;
+    vlSelf->_reg_signals_UART_tx___05FI___05Flocal___05FI___05FinDataReg 
+        = vlSelf->UART_tx__DOT__inDataReg;
+    vlSelf->io_o_tx_busy = vlSelf->UART_tx__DOT__outTxBusyReg;
+    vlSelf->io_o_tx_done = vlSelf->UART_tx__DOT__outTxDoneReg;
+    vlSelf->io_o_serial_data = vlSelf->UART_tx__DOT__outDataReg;
+    vlSelf->_cond_pred_UART_tx___05FI___05Flocal___05FI___05F_T_3 
+        = (0x56U > (IData)(vlSelf->UART_tx__DOT__clkCnterReg));
+    vlSelf->_reg_signals_UART_tx___05FI___05Flocal___05FI___05FoutTxBusyReg 
+        = vlSelf->io_o_tx_busy;
+    vlSelf->_reg_signals_UART_tx___05FI___05Flocal___05FI___05FoutTxDoneReg 
+        = vlSelf->io_o_tx_done;
+    vlSelf->_reg_signals_UART_tx___05FI___05Flocal___05FI___05FoutDataReg 
+        = vlSelf->io_o_serial_data;
+    vlSelf->_cond_pred_UART_tx___05FI___05Flocal___05FI___05F_T_5 
+        = vlSelf->_cond_pred_UART_tx___05FI___05Flocal___05FI___05F_T_3;
+    vlSelf->_cond_pred_UART_tx___05FI___05Flocal___05FI___05F_T_8 
+        = vlSelf->_cond_pred_UART_tx___05FI___05Flocal___05FI___05F_T_3;
 }
 
-VL_ATTR_COLD void VUART_tx___024root___stl_sequent__TOP__0(VUART_tx___024root* vlSelf) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root___stl_sequent__TOP__0\n"); );
+VL_ATTR_COLD void VUART_tx___024root___eval_stl(VUART_tx___024root* vlSelf) {
+    if (false && vlSelf) {}  // Prevent unused
     VUART_tx__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    auto& vlSelfRef = std::ref(*vlSelf).get();
+    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root___eval_stl\n"); );
     // Body
-    vlSelfRef._reg_signals_UART_tx___05FI___05Flocal___05FI___05FbitCnterReg 
-        = vlSelfRef.UART_tx__DOT__bitCnterReg;
-    vlSelfRef._reg_signals_UART_tx___05FI___05Flocal___05FI___05FclkCnterReg 
-        = vlSelfRef.UART_tx__DOT__clkCnterReg;
-    vlSelfRef._reg_signals_UART_tx___05FI___05Flocal___05FI___05FstateReg 
-        = vlSelfRef.UART_tx__DOT__stateReg;
-    vlSelfRef.UART_tx__DOT___GEN_0 = (0x56U > (IData)(vlSelfRef.UART_tx__DOT__clkCnterReg));
-    vlSelfRef.UART_tx__DOT___GEN = (1U == (IData)(vlSelfRef.UART_tx__DOT__stateReg));
-    vlSelfRef.UART_tx__DOT___GEN_1 = (2U == (IData)(vlSelfRef.UART_tx__DOT__stateReg));
-    vlSelfRef.io_o_tx_busy = vlSelfRef.UART_tx__DOT__outTxBusyReg;
-    vlSelfRef._reg_signals_UART_tx___05FI___05Flocal___05FI___05FoutTxBusyReg 
-        = vlSelfRef.UART_tx__DOT__outTxBusyReg;
-    vlSelfRef.io_o_tx_done = vlSelfRef.UART_tx__DOT__outTxDoneReg;
-    vlSelfRef._reg_signals_UART_tx___05FI___05Flocal___05FI___05FoutTxDoneReg 
-        = vlSelfRef.UART_tx__DOT__outTxDoneReg;
-    vlSelfRef.io_o_serial_data = vlSelfRef.UART_tx__DOT__outDataReg;
-    vlSelfRef._reg_signals_UART_tx___05FI___05Flocal___05FI___05FoutDataReg 
-        = vlSelfRef.UART_tx__DOT__outDataReg;
-    vlSelfRef._reg_signals_UART_tx___05FI___05Flocal___05FI___05FinDataReg 
-        = vlSelfRef.UART_tx__DOT__inDataReg;
-    vlSelfRef.UART_tx__DOT___GEN_3 = ((1U == (IData)(vlSelfRef.UART_tx__DOT__stateReg)) 
-                                      | (2U == (IData)(vlSelfRef.UART_tx__DOT__stateReg)));
-    vlSelfRef._cond_pred_UART_tx___05FI___05Flocal___05FI___05F_T 
-        = (0U == (IData)(vlSelfRef.UART_tx__DOT__stateReg));
-    vlSelfRef._cond_pred_UART_tx___05FI___05Flocal___05FI___05F_T_1 
-        = ((IData)(vlSelfRef._cond_pred_UART_tx___05FI___05Flocal___05FI___05F_T) 
-           & (IData)(vlSelfRef.io_i_tx_trig));
-    vlSelfRef._cond_pred_UART_tx___05FI___05Flocal___05FI___05F_T_2 
-        = ((~ (IData)(vlSelfRef._cond_pred_UART_tx___05FI___05Flocal___05FI___05F_T)) 
-           & (1U == (IData)(vlSelfRef.UART_tx__DOT__stateReg)));
-    vlSelfRef._cond_pred_UART_tx___05FI___05Flocal___05FI___05F_T_7 
-        = ((~ ((IData)(vlSelfRef._cond_pred_UART_tx___05FI___05Flocal___05FI___05F_T) 
-               | (IData)(vlSelfRef.UART_tx__DOT___GEN_3))) 
-           & (3U == (IData)(vlSelfRef.UART_tx__DOT__stateReg)));
-    vlSelfRef._cond_pred_UART_tx___05FI___05Flocal___05FI___05F_T_4 
-        = ((~ ((IData)(vlSelfRef._cond_pred_UART_tx___05FI___05Flocal___05FI___05F_T) 
-               | (1U == (IData)(vlSelfRef.UART_tx__DOT__stateReg)))) 
-           & (2U == (IData)(vlSelfRef.UART_tx__DOT__stateReg)));
-    vlSelfRef._cond_pred_UART_tx___05FI___05Flocal___05FI___05F_T_3 
-        = ((IData)(vlSelfRef._cond_pred_UART_tx___05FI___05Flocal___05FI___05F_T_2) 
-           & (0x56U > (IData)(vlSelfRef.UART_tx__DOT__clkCnterReg)));
-    vlSelfRef._cond_pred_UART_tx___05FI___05Flocal___05FI___05F_T_8 
-        = ((IData)(vlSelfRef._cond_pred_UART_tx___05FI___05Flocal___05FI___05F_T_7) 
-           & (0x56U > (IData)(vlSelfRef.UART_tx__DOT__clkCnterReg)));
-    vlSelfRef._cond_pred_UART_tx___05FI___05Flocal___05FI___05F_T_5 
-        = ((IData)(vlSelfRef._cond_pred_UART_tx___05FI___05Flocal___05FI___05F_T_4) 
-           & (0x56U > (IData)(vlSelfRef.UART_tx__DOT__clkCnterReg)));
-    vlSelfRef._cond_pred_UART_tx___05FI___05Flocal___05FI___05F_T_6 
-        = ((~ ((0x56U > (IData)(vlSelfRef.UART_tx__DOT__clkCnterReg)) 
-               | ((IData)(vlSelfRef.UART_tx__DOT__bitCnterReg) 
-                  >> 3U))) & (IData)(vlSelfRef._cond_pred_UART_tx___05FI___05Flocal___05FI___05F_T_4));
+    if ((1ULL & vlSelf->__VstlTriggered.word(0U))) {
+        VUART_tx___024root___stl_sequent__TOP__0(vlSelf);
+    }
 }
 
 VL_ATTR_COLD void VUART_tx___024root___eval_triggers__stl(VUART_tx___024root* vlSelf);
 
 VL_ATTR_COLD bool VUART_tx___024root___eval_phase__stl(VUART_tx___024root* vlSelf) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root___eval_phase__stl\n"); );
+    if (false && vlSelf) {}  // Prevent unused
     VUART_tx__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    auto& vlSelfRef = std::ref(*vlSelf).get();
+    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root___eval_phase__stl\n"); );
     // Init
     CData/*0:0*/ __VstlExecute;
     // Body
     VUART_tx___024root___eval_triggers__stl(vlSelf);
-    __VstlExecute = vlSelfRef.__VstlTriggered.any();
+    __VstlExecute = vlSelf->__VstlTriggered.any();
     if (__VstlExecute) {
         VUART_tx___024root___eval_stl(vlSelf);
     }
@@ -161,14 +144,14 @@ VL_ATTR_COLD bool VUART_tx___024root___eval_phase__stl(VUART_tx___024root* vlSel
 
 #ifdef VL_DEBUG
 VL_ATTR_COLD void VUART_tx___024root___dump_triggers__ico(VUART_tx___024root* vlSelf) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root___dump_triggers__ico\n"); );
+    if (false && vlSelf) {}  // Prevent unused
     VUART_tx__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    auto& vlSelfRef = std::ref(*vlSelf).get();
+    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root___dump_triggers__ico\n"); );
     // Body
-    if ((1U & (~ vlSelfRef.__VicoTriggered.any()))) {
+    if ((1U & (~ (IData)(vlSelf->__VicoTriggered.any())))) {
         VL_DBG_MSGF("         No triggers active\n");
     }
-    if ((1ULL & vlSelfRef.__VicoTriggered.word(0U))) {
+    if ((1ULL & vlSelf->__VicoTriggered.word(0U))) {
         VL_DBG_MSGF("         'ico' region trigger index 0 is active: Internal 'ico' trigger - first iteration\n");
     }
 }
@@ -176,14 +159,14 @@ VL_ATTR_COLD void VUART_tx___024root___dump_triggers__ico(VUART_tx___024root* vl
 
 #ifdef VL_DEBUG
 VL_ATTR_COLD void VUART_tx___024root___dump_triggers__act(VUART_tx___024root* vlSelf) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root___dump_triggers__act\n"); );
+    if (false && vlSelf) {}  // Prevent unused
     VUART_tx__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    auto& vlSelfRef = std::ref(*vlSelf).get();
+    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root___dump_triggers__act\n"); );
     // Body
-    if ((1U & (~ vlSelfRef.__VactTriggered.any()))) {
+    if ((1U & (~ (IData)(vlSelf->__VactTriggered.any())))) {
         VL_DBG_MSGF("         No triggers active\n");
     }
-    if ((1ULL & vlSelfRef.__VactTriggered.word(0U))) {
+    if ((1ULL & vlSelf->__VactTriggered.word(0U))) {
         VL_DBG_MSGF("         'act' region trigger index 0 is active: @(posedge clock)\n");
     }
 }
@@ -191,23 +174,23 @@ VL_ATTR_COLD void VUART_tx___024root___dump_triggers__act(VUART_tx___024root* vl
 
 #ifdef VL_DEBUG
 VL_ATTR_COLD void VUART_tx___024root___dump_triggers__nba(VUART_tx___024root* vlSelf) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root___dump_triggers__nba\n"); );
+    if (false && vlSelf) {}  // Prevent unused
     VUART_tx__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    auto& vlSelfRef = std::ref(*vlSelf).get();
+    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root___dump_triggers__nba\n"); );
     // Body
-    if ((1U & (~ vlSelfRef.__VnbaTriggered.any()))) {
+    if ((1U & (~ (IData)(vlSelf->__VnbaTriggered.any())))) {
         VL_DBG_MSGF("         No triggers active\n");
     }
-    if ((1ULL & vlSelfRef.__VnbaTriggered.word(0U))) {
+    if ((1ULL & vlSelf->__VnbaTriggered.word(0U))) {
         VL_DBG_MSGF("         'nba' region trigger index 0 is active: @(posedge clock)\n");
     }
 }
 #endif  // VL_DEBUG
 
 VL_ATTR_COLD void VUART_tx___024root___ctor_var_reset(VUART_tx___024root* vlSelf) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root___ctor_var_reset\n"); );
+    if (false && vlSelf) {}  // Prevent unused
     VUART_tx__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    auto& vlSelfRef = std::ref(*vlSelf).get();
+    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_tx___024root___ctor_var_reset\n"); );
     // Body
     vlSelf->clock = VL_RAND_RESET_I(1);
     vlSelf->reset = VL_RAND_RESET_I(1);
@@ -239,13 +222,9 @@ VL_ATTR_COLD void VUART_tx___024root___ctor_var_reset(VUART_tx___024root* vlSelf
     vlSelf->UART_tx__DOT__outTxBusyReg = VL_RAND_RESET_I(1);
     vlSelf->UART_tx__DOT__outTxDoneReg = VL_RAND_RESET_I(1);
     vlSelf->UART_tx__DOT__stateReg = VL_RAND_RESET_I(2);
-    vlSelf->UART_tx__DOT___GEN = VL_RAND_RESET_I(1);
-    vlSelf->UART_tx__DOT___GEN_0 = VL_RAND_RESET_I(1);
-    vlSelf->UART_tx__DOT___GEN_1 = VL_RAND_RESET_I(1);
-    vlSelf->UART_tx__DOT___GEN_3 = VL_RAND_RESET_I(1);
-    vlSelf->UART_tx__DOT__unnamedblk1__DOT___GEN_5 = VL_RAND_RESET_I(32);
-    vlSelf->UART_tx__DOT__unnamedblk1__DOT___GEN_6 = VL_RAND_RESET_I(8);
-    vlSelf->UART_tx__DOT__unnamedblk1__DOT__unnamedblk2__DOT___GEN_7 = VL_RAND_RESET_I(8);
+    vlSelf->UART_tx__DOT__unnamedblk1__DOT___GEN_0 = VL_RAND_RESET_I(32);
+    vlSelf->UART_tx__DOT__unnamedblk1__DOT___GEN_1 = VL_RAND_RESET_I(8);
+    vlSelf->UART_tx__DOT__unnamedblk1__DOT__unnamedblk2__DOT___GEN_2 = VL_RAND_RESET_I(8);
     vlSelf->UART_tx__DOT__unnamedblk1__DOT__unnamedblk2__DOT__unnamedblk3__DOT___outDataReg_T = VL_RAND_RESET_I(8);
     vlSelf->UART_tx__DOT__unnamedblk1__DOT__unnamedblk2__DOT__unnamedblk4__DOT___outDataReg_T_2 = VL_RAND_RESET_I(8);
     vlSelf->__Vtrigprevexpr___TOP__clock__0 = VL_RAND_RESET_I(1);

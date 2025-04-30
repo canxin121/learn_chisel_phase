@@ -35,12 +35,18 @@ class alignas(VL_CACHE_LINE_BYTES) VComplexExample VL_NOT_FINAL : public Verilat
     VL_IN8(&io_topInB,7,0);
     VL_IN8(&io_topSel,1,0);
     VL_OUT8(&io_topOut,7,0);
-    VL_OUT8(&_cond_pred_ComplexExample___05FI___05FanotherSub___05FI___05Flocal___05FI___05F_T,0,0);
-    VL_OUT8(&_cond_pred_ComplexExample___05FI___05Fsub___05FI___05Flocal___05FI___05F_T,0,0);
-    VL_OUT8(&_cond_pred_ComplexExample___05FI___05Fsub___05FI___05Flocal___05FI___05F_T_1,0,0);
-    VL_OUT8(&_cond_pred_ComplexExample___05FI___05Fsub___05FI___05Flocal___05FI___05F_T_2,0,0);
-    VL_OUT8(&_reg_signals_ComplexExample___05FI___05FanotherSub___05FI___05Flocal___05FI___05FdelayedIn,7,0);
-    VL_OUT8(&_reg_signals_ComplexExample___05FI___05Fsub___05FI___05Flocal___05FI___05FstateReg,7,0);
+    VL_OUT8(&_mux_cond_ComplexExample___05FM___05FComplexExample___05FS___05F_anotherSub_io_in_T,0,0);
+    VL_OUT8(&_mux_cond_ComplexExample___05FM___05FComplexExample___05FS___05F_sub_io_a_T,0,0);
+    VL_OUT8(&_cond_pred_ComplexExample___05FI___05FanotherSub___05FM___05FAnotherSubModule___05FS___05F_T,0,0);
+    VL_OUT8(&_cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T,0,0);
+    VL_OUT8(&_cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T_1,0,0);
+    VL_OUT8(&_cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T_2,0,0);
+    VL_OUT8(&_cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T,0,0);
+    VL_OUT8(&_cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T_1,0,0);
+    VL_OUT8(&_cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T_2,0,0);
+    VL_OUT8(&_cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T_3,0,0);
+    VL_OUT8(&_reg_signals_ComplexExample___05FI___05FanotherSub___05FM___05FAnotherSubModule___05FS___05FdelayedIn,7,0);
+    VL_OUT8(&_reg_signals_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05FstateReg,7,0);
 
     // CELLS
     // Public to allow access to /* verilator public */ items.

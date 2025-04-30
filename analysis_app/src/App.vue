@@ -1,32 +1,16 @@
 <script setup lang="ts">
-import { ref, nextTick, watch } from "vue";
+import { ref } from "vue";
 import { useCoverageStore } from "./stores/coverageStore";
 
-// Import components
+// 导入组件
 import FileUpload from './components/FileUpload.vue';
 import CoverageSummary from './components/CoverageSummary.vue';
 import CoverageDetails from './components/CoverageDetails.vue';
 import SourceViewer from './components/SourceViewer.vue';
+import ModuleRootDirEditor from './components/ModuleRootDirEditor.vue'; // 导入组件
 
 // 使用 Pinia Store
 const coverageStore = useCoverageStore();
-
-// Refs
-const sourceViewerWrapperRef = ref<HTMLElement | null>(null);
-
-// 监听 store 中的 selectedSourcePath, highlightLine 和 selectionTrigger 来滚动页面
-watch([() => coverageStore.selectedSourcePath, () => coverageStore.highlightLine, () => coverageStore.selectionTrigger],
-  ([newPath, newLine]) => { // selectionTrigger 的变化会触发回调
-    if (newPath && newLine !== null) {
-      nextTick(() => {
-        // 使用 setTimeout 确保 SourceViewer 组件有时间响应 store 更新并渲染
-        setTimeout(() => {
-          sourceViewerWrapperRef.value?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          console.log("App.vue: Scrolled page to SourceViewer wrapper due to store change.");
-        }, 100); // 增加一点延迟以确保 SourceViewer 内部滚动完成
-      });
-    }
-  });
 
 </script>
 
@@ -37,24 +21,25 @@ watch([() => coverageStore.selectedSourcePath, () => coverageStore.highlightLine
     <a-layout-content class="content">
       <a-spin :spinning="coverageStore.isLoadingReport || coverageStore.isLoadingInfo" tip="Processing files...">
         <a-space direction="vertical" size="large" style="width: 100%">
-          <!-- File Upload Component - 移除事件监听 -->
+          <!-- 文件上传组件 -->
           <FileUpload />
 
-          <!-- Summary Component -->
+          <!-- 模块根目录编辑器 -->
+          <ModuleRootDirEditor v-if="coverageStore.coverageInfo" />
+
+          <!-- 摘要组件 -->
           <CoverageSummary />
 
-          <!-- Group Details and Source Viewer under v-if -->
+          <!-- 详情和源代码查看器 -->
           <template v-if="coverageStore.coverageReport">
-            <!-- Details Component (Trees Only) - 移除事件监听 -->
+            <!-- 详情组件 -->
             <CoverageDetails />
 
-            <!-- Add a wrapper div with the ref -->
-            <div ref="sourceViewerWrapperRef">
-              <SourceViewer />
-            </div>
+            <!-- 源代码查看器 -->
+            <SourceViewer />
           </template>
 
-          <!-- Message when no report is loaded (use v-else) -->
+          <!-- 未加载报告时的消息 -->
           <a-card v-else>
             <p style="text-align: center; color: #888;">Please upload a coverage report file to view the analysis.</p>
           </a-card>
@@ -65,7 +50,7 @@ watch([() => coverageStore.selectedSourcePath, () => coverageStore.highlightLine
 </template>
 
 <style scoped>
-/* Global layout styles */
+/* 全局布局样式 */
 .layout {
   min-height: 100vh;
   background-color: #f0f2f5;
@@ -84,7 +69,7 @@ watch([() => coverageStore.selectedSourcePath, () => coverageStore.highlightLine
 </style>
 
 <style>
-/* Global styles (like body) remain */
+/* 全局样式 (例如 body) 保持不变 */
 body {
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 14px;

@@ -17,8 +17,6 @@ VUART_tx__Syms::VUART_tx__Syms(VerilatedContext* contextp, const char* namep, VU
     // Setup module instances
     , TOP{this, namep}
 {
-        // Check resources
-        Verilated::stackCheck(35);
     // Configure time unit / time precision
     _vm_contextp__->timeunit(-12);
     _vm_contextp__->timeprecision(-12);

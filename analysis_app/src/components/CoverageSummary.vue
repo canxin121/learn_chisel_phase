@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { useCoverageStore } from "../stores/coverageStore";
 
-// 使用 Pinia Store 替代 props
+// 使用 Pinia Store
 const coverageStore = useCoverageStore();
 </script>
 
 <template>
+  <!-- 摘要卡片 -->
   <a-card v-if="coverageStore.coverageReport" title="Overall Coverage Summary">
     <a-row :gutter="16">
+      <!-- 统计数据 -->
       <a-col :span="4">
         <a-statistic title="Overall" :value="coverageStore.overallCoverage" :precision="2" suffix="%" />
       </a-col>

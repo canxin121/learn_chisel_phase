@@ -1,18 +1,25 @@
 <script setup lang="ts">
-import { Tag as ATag, Tabs as ATabs, TabPane as ATabPane } from 'ant-design-vue';
-import { FileTextOutlined } from "@ant-design/icons-vue";
-import type { TreeNode } from '../types/TreeNode';
+// 导入组件和图标
+import { Tag as ATag, Tabs as ATabs, TabPane as ATabPane, Button as AButton, Tooltip as ATooltip } from 'ant-design-vue';
+import { LinkOutlined } from '@ant-design/icons-vue';
 import { formatCoverage, getNodeStyle, getConditionTagColor, getBitTagColor, formatCount, formatPercent } from '../utils/coverageUtils';
 import { useCoverageStore } from "../stores/coverageStore";
+import type { TreeNode } from '../types/TreeNode'; // TreeNode 类型
 
 const coverageStore = useCoverageStore();
 
-const onIconClick = (nodeData: TreeNode) => {
-  if (nodeData.sourceLocation) {
-    console.log("CoverageDetails: Calling store.selectNode for", nodeData.key);
-    coverageStore.selectNode(nodeData);
+// 跳转到源代码
+const jumpToSource = (nodeData: TreeNode) => {
+  if (nodeData.isSignal && nodeData.sourceLocation && nodeData.data?.instancePath && nodeData.originatingModule) {
+    console.log("Requesting navigation to:", nodeData.sourceLocation, "in instance", nodeData.data.instancePath.join('.'));
+    coverageStore.navigateToSource({
+      signalKey: nodeData.key, // 信号键
+      instancePath: nodeData.data.instancePath,
+      sourceLocation: nodeData.sourceLocation,
+      moduleName: nodeData.originatingModule,
+    });
   } else {
-    console.log("Icon clicked on node without source location:", nodeData.key);
+    console.warn("Cannot navigate: Missing required data (sourceLocation, instancePath, or originatingModule) for node:", nodeData);
   }
 };
 </script>
@@ -20,26 +27,49 @@ const onIconClick = (nodeData: TreeNode) => {
 <template>
   <a-card class="coverage-details-card" title="Coverage Details">
     <a-tabs v-model:activeKey="coverageStore.activeTabKey">
+      <!-- 条件谓词 -->
       <a-tab-pane key="predicates" tab="Conditional Predicates">
         <div class="tree-container">
           <a-directory-tree :showLine="true" v-if="coverageStore.predicateTreeData.length > 0"
-            :tree-data="coverageStore.predicateTreeData" :default-expand-all="false" selectable>
+            :tree-data="coverageStore.predicateTreeData" :default-expand-all="false" selectable
+            :fieldNames="{ title: 'label', key: 'key', children: 'children' }">
             <template #title="{ data: nodeData }">
               <span class="tree-node-title">
-                <span :style="getNodeStyle(nodeData.coverage)" class="node-text">{{ nodeData.title }}</span>
+                <!-- 节点标签 -->
+                <span :style="getNodeStyle(nodeData.coverage)" class="node-text">{{ nodeData.label }}</span>
+
+                <!-- 覆盖率值 -->
                 <span v-if="nodeData.coverage !== undefined" class="coverage-value"
                   :style="getNodeStyle(nodeData.coverage)">
                   ({{ formatCoverage(nodeData.coverage) }})
                 </span>
-                <FileTextOutlined v-if="nodeData.sourceLocation" class="source-link-icon" title="Go to source"
-                  @click.stop="onIconClick(nodeData)" />
-                <span v-if="nodeData.type === 'predicate' && nodeData.details" class="node-details condition-details">
-                  <a-tag :color="getConditionTagColor(nodeData.details.hit_true)">True</a-tag>
-                  <span class="detail-count">({{ formatCount(nodeData.details.count_true) }}, {{
-                    formatPercent(nodeData.details.true_percentage) }})</span>
-                  <a-tag :color="getConditionTagColor(nodeData.details.hit_false)">False</a-tag>
-                  <span class="detail-count">({{ formatCount(nodeData.details.count_false) }}, {{
-                    formatPercent(nodeData.details.false_percentage) }})</span>
+
+                <!-- 信号详情 -->
+                <span v-if="nodeData.isSignal && nodeData.data?.type === 'predicate' && nodeData.data"
+                  class="node-details condition-details">
+                  <a-tag :color="getConditionTagColor(nodeData.data.hit_true)">True</a-tag>
+                  <span class="detail-count">({{ formatCount(nodeData.data.count_true) }}, {{
+                    formatPercent(nodeData.data.true_percentage) }})</span>
+                  <a-tag :color="getConditionTagColor(nodeData.data.hit_false)">False</a-tag>
+                  <span class="detail-count">({{ formatCount(nodeData.data.count_false) }}, {{
+                    formatPercent(nodeData.data.false_percentage) }})</span>
+                </span>
+
+                <!-- 原始模块指示器 -->
+                <span v-if="nodeData.isSignal && nodeData.originatingModule && nodeData.originatingModule !== '?'"
+                  class="originating-module-indicator" :title="`Originating Module: ${nodeData.originatingModule}`">
+                  M:{{ nodeData.originatingModule }}
+                </span>
+
+                <!-- 跳转源代码图标 -->
+                <span v-if="nodeData.isSignal && nodeData.sourceLocation" class="source-link-icon-wrapper">
+                  <a-tooltip title="Jump to Source">
+                    <a-button type="text" size="small" @click.stop="jumpToSource(nodeData)" class="source-link-button">
+                      <template #icon>
+                        <LinkOutlined />
+                      </template>
+                    </a-button>
+                  </a-tooltip>
                 </span>
               </span>
             </template>
@@ -48,26 +78,48 @@ const onIconClick = (nodeData: TreeNode) => {
         </div>
       </a-tab-pane>
 
+      <!-- Mux 条件 -->
       <a-tab-pane key="mux" tab="Mux Conditions">
         <div class="tree-container">
           <a-directory-tree v-if="coverageStore.muxTreeData.length > 0" :tree-data="coverageStore.muxTreeData"
-            :default-expand-all="false" selectable>
+            :default-expand-all="false" selectable :fieldNames="{ title: 'label', key: 'key', children: 'children' }">
             <template #title="{ data: nodeData }">
               <span class="tree-node-title">
-                <span :style="getNodeStyle(nodeData.coverage)" class="node-text">{{ nodeData.title }}</span>
+                <!-- 节点标签 -->
+                <span :style="getNodeStyle(nodeData.coverage)" class="node-text">{{ nodeData.label }}</span>
+
+                <!-- 覆盖率值 -->
                 <span v-if="nodeData.coverage !== undefined" class="coverage-value"
                   :style="getNodeStyle(nodeData.coverage)">
                   ({{ formatCoverage(nodeData.coverage) }})
                 </span>
-                <FileTextOutlined v-if="nodeData.sourceLocation" class="source-link-icon" title="Go to source"
-                  @click.stop="onIconClick(nodeData)" />
-                <span v-if="nodeData.type === 'mux' && nodeData.details" class="node-details condition-details">
-                  <a-tag :color="getConditionTagColor(nodeData.details.hit_true)">True</a-tag>
-                  <span class="detail-count">({{ formatCount(nodeData.details.count_true) }}, {{
-                    formatPercent(nodeData.details.true_percentage) }})</span>
-                  <a-tag :color="getConditionTagColor(nodeData.details.hit_false)">False</a-tag>
-                  <span class="detail-count">({{ formatCount(nodeData.details.count_false) }}, {{
-                    formatPercent(nodeData.details.false_percentage) }})</span>
+
+                <!-- 信号详情 -->
+                <span v-if="nodeData.isSignal && nodeData.data?.type === 'mux' && nodeData.data"
+                  class="node-details condition-details">
+                  <a-tag :color="getConditionTagColor(nodeData.data.hit_true)">True</a-tag>
+                  <span class="detail-count">({{ formatCount(nodeData.data.count_true) }}, {{
+                    formatPercent(nodeData.data.true_percentage) }})</span>
+                  <a-tag :color="getConditionTagColor(nodeData.data.hit_false)">False</a-tag>
+                  <span class="detail-count">({{ formatCount(nodeData.data.count_false) }}, {{
+                    formatPercent(nodeData.data.false_percentage) }})</span>
+                </span>
+
+                <!-- 原始模块指示器 -->
+                <span v-if="nodeData.isSignal && nodeData.originatingModule && nodeData.originatingModule !== '?'"
+                  class="originating-module-indicator" :title="`Originating Module: ${nodeData.originatingModule}`">
+                  M:{{ nodeData.originatingModule }}
+                </span>
+
+                <!-- 跳转源代码图标 -->
+                <span v-if="nodeData.isSignal && nodeData.sourceLocation" class="source-link-icon-wrapper">
+                  <a-tooltip title="Jump to Source">
+                    <a-button type="text" size="small" @click.stop="jumpToSource(nodeData)" class="source-link-button">
+                      <template #icon>
+                        <LinkOutlined />
+                      </template>
+                    </a-button>
+                  </a-tooltip>
                 </span>
               </span>
             </template>
@@ -76,33 +128,57 @@ const onIconClick = (nodeData: TreeNode) => {
         </div>
       </a-tab-pane>
 
+      <!-- 寄存器位 -->
       <a-tab-pane key="registers" tab="Register Bits">
         <div class="tree-container">
           <a-directory-tree v-if="coverageStore.registerTreeData.length > 0" :tree-data="coverageStore.registerTreeData"
-            :default-expand-all="false" selectable>
+            :default-expand-all="false" selectable :fieldNames="{ title: 'label', key: 'key', children: 'children' }">
             <template #title="{ data: nodeData }">
               <span class="tree-node-title">
-                <span :style="getNodeStyle(nodeData.coverage)" class="node-text">{{ nodeData.title }}</span>
+                <!-- 节点标签 -->
+                <span :style="getNodeStyle(nodeData.coverage)" class="node-text">{{ nodeData.label }}</span>
+
+                <!-- 覆盖率值 -->
                 <span v-if="nodeData.coverage !== undefined" class="coverage-value"
                   :style="getNodeStyle(nodeData.coverage)">
                   ({{ formatCoverage(nodeData.coverage) }})
                 </span>
-                <FileTextOutlined v-if="nodeData.sourceLocation" class="source-link-icon" title="Go to source"
-                  @click.stop="onIconClick(nodeData)" />
-                <span v-if="nodeData.type === 'register' && nodeData.details"
+
+                <!-- 寄存器摘要 -->
+                <span v-if="nodeData.isSignal && nodeData.data?.type === 'register' && nodeData.data"
                   class="node-details register-summary-details">
-                  (W: {{ nodeData.details.width }}, Hit: {{ nodeData.details.bins_hit }}/{{
-                    nodeData.details.bins_total }})
+                  (W: {{ nodeData.data.width }}, Hit: {{ nodeData.data.bins_hit }}/{{
+                    nodeData.data.bins_total }})
                 </span>
-                <span v-if="nodeData.type === 'register_bit' && nodeData.details" class="node-details bit-details">
-                  <a-tag :color="getBitTagColor(nodeData.details.hit_zero)">0</a-tag>
-                  <span class="detail-count">({{ formatCount(nodeData.details.count_zero) }}, {{
-                    formatPercent(nodeData.details.zero_percentage) }})</span>
-                  <a-tag :color="getBitTagColor(nodeData.details.hit_one)">1</a-tag>
-                  <span class="detail-count">({{ formatCount(nodeData.details.count_one) }}, {{
-                    formatPercent(nodeData.details.one_percentage) }})</span>
-                  <span v-if="nodeData.details.missing" class="missing-indicator"> ({{ nodeData.details.missing }})
+
+                <!-- 寄存器位详情 -->
+                <span v-if="nodeData.isSignal && nodeData.data?.type === 'register_bit' && nodeData.data"
+                  class="node-details bit-details">
+                  <a-tag :color="getBitTagColor(nodeData.data.hit_zero)">0</a-tag>
+                  <span class="detail-count">({{ formatCount(nodeData.data.count_zero) }}, {{
+                    formatPercent(nodeData.data.zero_percentage) }})</span>
+                  <a-tag :color="getBitTagColor(nodeData.data.hit_one)">1</a-tag>
+                  <span class="detail-count">({{ formatCount(nodeData.data.count_one) }}, {{
+                    formatPercent(nodeData.data.one_percentage) }})</span>
+                  <span v-if="nodeData.data.missing" class="missing-indicator"> ({{ nodeData.data.missing }})
                   </span>
+                </span>
+
+                <!-- 原始模块指示器 -->
+                <span v-if="nodeData.isSignal && nodeData.originatingModule && nodeData.originatingModule !== '?'"
+                  class="originating-module-indicator" :title="`Originating Module: ${nodeData.originatingModule}`">
+                  M:{{ nodeData.originatingModule }}
+                </span>
+
+                <!-- 跳转源代码图标 -->
+                <span v-if="nodeData.isSignal && nodeData.sourceLocation" class="source-link-icon-wrapper">
+                  <a-tooltip title="Jump to Source">
+                    <a-button type="text" size="small" @click.stop="jumpToSource(nodeData)" class="source-link-button">
+                      <template #icon>
+                        <LinkOutlined />
+                      </template>
+                    </a-button>
+                  </a-tooltip>
                 </span>
               </span>
             </template>
@@ -159,13 +235,15 @@ const onIconClick = (nodeData: TreeNode) => {
 }
 
 .coverage-value {
-  margin-left: 8px;
+  margin-left: 0;
+  margin-right: 8px;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .node-details {
-  margin-left: 10px;
+  margin-left: auto;
+  padding-left: 10px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -218,14 +296,77 @@ const onIconClick = (nodeData: TreeNode) => {
   background-color: #e6f7ff;
 }
 
-.source-link-icon {
-  margin-left: 8px;
-  color: #1890ff;
-  cursor: pointer;
+.source-link-icon-wrapper {
+  margin-left: auto;
+  /* 将图标推到最右边 */
+  padding-left: 10px;
+  /* 与其他详情保持间距 */
   flex-shrink: 0;
+  /* 防止收缩 */
+  display: inline-flex;
+  /* 确保按钮正确显示 */
+  align-items: center;
+  /* 垂直居中 */
 }
 
-.source-link-icon:hover {
+.source-link-button {
+  color: #1890ff;
+  padding: 0 4px;
+  /* 调整按钮内边距 */
+  height: auto;
+  /* 允许按钮根据内容调整高度 */
+  line-height: 1;
+  /* 确保图标垂直居中 */
+}
+
+.source-link-button:hover {
   color: #40a9ff;
+  background-color: transparent !important;
+  /* 覆盖悬停背景 */
+}
+
+/* 如果没有详情或模块指示器，确保图标仍然在右侧 */
+.coverage-value+.source-link-icon-wrapper {
+  margin-left: auto;
+}
+
+/* 调整节点标题以适应图标 */
+.tree-node-title {
+  /* display: flex; align-items: center; 已存在 */
+  justify-content: space-between;
+  /* 尝试在元素间分配空间 */
+}
+
+.node-text,
+.coverage-value {
+  flex-shrink: 1;
+  /* 允许文本和值收缩 */
+}
+
+.node-details,
+.originating-module-indicator,
+.source-link-icon-wrapper {
+  flex-shrink: 0;
+  /* 防止这些元素收缩 */
+}
+
+.node-details {
+  margin-left: 8px;
+  /* 覆盖之前的 margin-left: auto */
+}
+
+.originating-module-indicator {
+  margin-left: 8px;
+  /* 覆盖之前的 margin-left: 10px */
+}
+
+.source-link-icon-wrapper {
+  margin-left: 8px;
+  /* 覆盖之前的 margin-left: auto */
+}
+
+/* 确保最后一个元素是跳转图标时，它被推到右边 */
+.tree-node-title>*:last-child.source-link-icon-wrapper {
+  margin-left: auto;
 }
 </style>

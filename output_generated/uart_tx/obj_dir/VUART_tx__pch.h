@@ -23,6 +23,4 @@
 #include "VUART_tx__Syms.h"
 #include "VUART_tx.h"
 
-// Additional include files added using '--compiler-include'
-
 #endif  // guard

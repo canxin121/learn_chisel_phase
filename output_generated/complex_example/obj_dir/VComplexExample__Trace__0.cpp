@@ -29,9 +29,14 @@ void VComplexExample___024root__trace_chg_0_sub_0(VComplexExample___024root* vlS
     bufp->chgCData(oldp+3,(vlSelfRef.io_topInB),8);
     bufp->chgCData(oldp+4,(vlSelfRef.io_topSel),2);
     bufp->chgCData(oldp+5,(vlSelfRef.io_topOut),8);
-    bufp->chgCData(oldp+6,(vlSelfRef.ComplexExample__DOT___sub_io_out),8);
-    bufp->chgCData(oldp+7,(vlSelfRef.ComplexExample__DOT__anotherSub__DOT__delayedIn),8);
-    bufp->chgCData(oldp+8,(vlSelfRef.ComplexExample__DOT__sub__DOT__stateReg),8);
+    bufp->chgCData(oldp+6,(vlSelfRef.ComplexExample__DOT____Vcellinp__anotherSub__io_in),8);
+    bufp->chgCData(oldp+7,((0xffU & ((IData)(vlSelfRef.ComplexExample__DOT__anotherSub__DOT__delayedIn) 
+                                     + (IData)(vlSelfRef._cond_pred_ComplexExample___05FI___05FanotherSub___05FM___05FAnotherSubModule___05FS___05F_T)))),8);
+    bufp->chgCData(oldp+8,(vlSelfRef.ComplexExample__DOT__anotherSub__DOT__delayedIn),8);
+    bufp->chgCData(oldp+9,(vlSelfRef.ComplexExample__DOT____Vcellinp__sub__io_a),8);
+    bufp->chgCData(oldp+10,(vlSelfRef.ComplexExample__DOT____Vcellinp__sub__io_b),8);
+    bufp->chgCData(oldp+11,(vlSelfRef.ComplexExample__DOT___sub_io_out),8);
+    bufp->chgCData(oldp+12,(vlSelfRef.ComplexExample__DOT__sub__DOT__stateReg),8);
 }
 
 void VComplexExample___024root__trace_cleanup(void* voidSelf, VerilatedVcd* /*unused*/) {

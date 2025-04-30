@@ -12,9 +12,22 @@ import chisel3.Reg
 import modules.RegModule
 import modules.ComplexExample
 import firrtl.ir.CoverageTool
+import org.chipsalliance.cde.config.{Parameters, Config, Field}
+import freechips.rocketchip.rocket._
+import freechips.rocketchip.rocket.ALU._
+import freechips.rocketchip.util._
+import _root_.circt.stage.ChiselStage
+import freechips.rocketchip.system.DefaultConfig
+import freechips.rocketchip.tile.{RocketTileParams, TileKey}
 
 object Main {
   def main(args: Array[String]): Unit = {
+    implicit val p: Parameters = new Config(
+      new Config((site, here, up) => { case TileKey =>
+        RocketTileParams()
+      }) ++ new DefaultConfig
+    ).toInstance
+
     val baseOutputDir = "output_generated"
 
     val modulesToProcess: Seq[(() => RawModule, String)] = Seq(
@@ -31,7 +44,8 @@ object Main {
         "uart_tx"
       ),
       (() => new RegModule(), "reg_module"),
-      (() => new ComplexExample(), "complex_example")
+      (() => new ComplexExample(), "complex_example"),
+      (() => new ALU(), "rocket_alu")
     )
 
     modulesToProcess.foreach { case (moduleGenerator, outputSubDir) =>

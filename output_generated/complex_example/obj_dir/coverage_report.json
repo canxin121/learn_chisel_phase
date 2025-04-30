@@ -1,25 +1,25 @@
 {
   "summary": {
     "overall_coverage_percent": 100.00000000000000000,
-    "total_bins_hit": 24,
-    "total_bins": 24
+    "total_bins_hit": 38,
+    "total_bins": 38
   },
   "conditional_predicates": [
     {
-      "name": "_cond_pred_ComplexExample__I__anotherSub__I__local__I___T",
+      "name": "_cond_pred_ComplexExample__I__anotherSub__M__AnotherSubModule__S___T",
       "hit_true": true,
       "hit_false": true,
-      "count_true": 5428,
-      "count_false": 4572,
+      "count_true": 5493,
+      "count_false": 4507,
       "total_updates": 10000,
-      "true_percentage": 54.28,
-      "false_percentage": 45.72,
+      "true_percentage": 54.93,
+      "false_percentage": 45.07,
       "bins_hit": 2,
       "bins_total": 2,
       "coverage_percent": 100.00
     },
     {
-      "name": "_cond_pred_ComplexExample__I__sub__I__local__I___T",
+      "name": "_cond_pred_ComplexExample__I__sub__M__SubModule__S___T",
       "hit_true": true,
       "hit_false": true,
       "count_true": 2437,
@@ -32,7 +32,7 @@
       "coverage_percent": 100.00
     },
     {
-      "name": "_cond_pred_ComplexExample__I__sub__I__local__I___T_1",
+      "name": "_cond_pred_ComplexExample__I__sub__M__SubModule__S___T_1",
       "hit_true": true,
       "hit_false": true,
       "count_true": 2633,
@@ -45,7 +45,59 @@
       "coverage_percent": 100.00
     },
     {
-      "name": "_cond_pred_ComplexExample__I__sub__I__local__I___T_2",
+      "name": "_cond_pred_ComplexExample__I__sub__M__SubModule__S___T_2",
+      "hit_true": true,
+      "hit_false": true,
+      "count_true": 2449,
+      "count_false": 7551,
+      "total_updates": 10000,
+      "true_percentage": 24.49,
+      "false_percentage": 75.51,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00
+    },
+    {
+      "name": "_cond_pred_ComplexExample__M__ComplexExample__S___T",
+      "hit_true": true,
+      "hit_false": true,
+      "count_true": 4930,
+      "count_false": 5070,
+      "total_updates": 10000,
+      "true_percentage": 49.30,
+      "false_percentage": 50.70,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00
+    },
+    {
+      "name": "_cond_pred_ComplexExample__M__ComplexExample__S___T_1",
+      "hit_true": true,
+      "hit_false": true,
+      "count_true": 2437,
+      "count_false": 7563,
+      "total_updates": 10000,
+      "true_percentage": 24.37,
+      "false_percentage": 75.63,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00
+    },
+    {
+      "name": "_cond_pred_ComplexExample__M__ComplexExample__S___T_2",
+      "hit_true": true,
+      "hit_false": true,
+      "count_true": 2633,
+      "count_false": 7367,
+      "total_updates": 10000,
+      "true_percentage": 26.33,
+      "false_percentage": 73.67,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00
+    },
+    {
+      "name": "_cond_pred_ComplexExample__M__ComplexExample__S___T_3",
       "hit_true": true,
       "hit_false": true,
       "count_true": 2449,
@@ -59,23 +111,59 @@
     }
   ],
   "mux_conditions": [
+    {
+      "name": "_mux_cond_ComplexExample__M__ComplexExample__S___anotherSub_io_in_T",
+      "hit_true": true,
+      "hit_false": true,
+      "count_true": 5114,
+      "count_false": 4886,
+      "total_updates": 10000,
+      "true_percentage": 51.14,
+      "false_percentage": 48.86,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00
+    },
+    {
+      "name": "_mux_cond_ComplexExample__M__ComplexExample__S___sub_io_a_T",
+      "hit_true": true,
+      "hit_false": true,
+      "count_true": 5114,
+      "count_false": 4886,
+      "total_updates": 10000,
+      "true_percentage": 51.14,
+      "false_percentage": 48.86,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00
+    }
   ],
   "register_coverage": [
     {
-      "name": "_reg_signals_ComplexExample__I__sub__I__local__I__stateReg",
+      "name": "_reg_signals_ComplexExample__I__anotherSub__M__AnotherSubModule__S__delayedIn",
+      "width": 1,
+      "bins_hit": 2,
+      "bins_total": 2,
+      "coverage_percent": 100.00000000000000000,
+      "bit_details": [
+        {"bit": 0, "hit_zero": true, "hit_one": true, "count_zero": 5611, "count_one": 4389, "total_updates": 10000, "zero_percentage": 56.11, "one_percentage": 43.89, "covered": true, "status": "ZO"}
+      ]
+    },
+    {
+      "name": "_reg_signals_ComplexExample__I__sub__M__SubModule__S__stateReg",
       "width": 8,
       "bins_hit": 16,
       "bins_total": 16,
       "coverage_percent": 100.00000000000000000,
       "bit_details": [
-        {"bit": 0, "hit_zero": true, "hit_one": true, "count_zero": 5930, "count_one": 4070, "total_updates": 10000, "zero_percentage": 59.30, "one_percentage": 40.70, "covered": true, "status": "ZO"},
-        {"bit": 1, "hit_zero": true, "hit_one": true, "count_zero": 5794, "count_one": 4206, "total_updates": 10000, "zero_percentage": 57.94, "one_percentage": 42.06, "covered": true, "status": "ZO"},
-        {"bit": 2, "hit_zero": true, "hit_one": true, "count_zero": 5904, "count_one": 4096, "total_updates": 10000, "zero_percentage": 59.04, "one_percentage": 40.96, "covered": true, "status": "ZO"},
-        {"bit": 3, "hit_zero": true, "hit_one": true, "count_zero": 5849, "count_one": 4151, "total_updates": 10000, "zero_percentage": 58.49, "one_percentage": 41.51, "covered": true, "status": "ZO"},
-        {"bit": 4, "hit_zero": true, "hit_one": true, "count_zero": 5848, "count_one": 4152, "total_updates": 10000, "zero_percentage": 58.48, "one_percentage": 41.52, "covered": true, "status": "ZO"},
-        {"bit": 5, "hit_zero": true, "hit_one": true, "count_zero": 5885, "count_one": 4115, "total_updates": 10000, "zero_percentage": 58.85, "one_percentage": 41.15, "covered": true, "status": "ZO"},
-        {"bit": 6, "hit_zero": true, "hit_one": true, "count_zero": 5870, "count_one": 4130, "total_updates": 10000, "zero_percentage": 58.70, "one_percentage": 41.30, "covered": true, "status": "ZO"},
-        {"bit": 7, "hit_zero": true, "hit_one": true, "count_zero": 5936, "count_one": 4064, "total_updates": 10000, "zero_percentage": 59.36, "one_percentage": 40.64, "covered": true, "status": "ZO"}
+        {"bit": 0, "hit_zero": true, "hit_one": true, "count_zero": 6936, "count_one": 3064, "total_updates": 10000, "zero_percentage": 69.36, "one_percentage": 30.64, "covered": true, "status": "ZO"},
+        {"bit": 1, "hit_zero": true, "hit_one": true, "count_zero": 6610, "count_one": 3390, "total_updates": 10000, "zero_percentage": 66.10, "one_percentage": 33.90, "covered": true, "status": "ZO"},
+        {"bit": 2, "hit_zero": true, "hit_one": true, "count_zero": 6755, "count_one": 3245, "total_updates": 10000, "zero_percentage": 67.55, "one_percentage": 32.45, "covered": true, "status": "ZO"},
+        {"bit": 3, "hit_zero": true, "hit_one": true, "count_zero": 6801, "count_one": 3199, "total_updates": 10000, "zero_percentage": 68.01, "one_percentage": 31.99, "covered": true, "status": "ZO"},
+        {"bit": 4, "hit_zero": true, "hit_one": true, "count_zero": 6645, "count_one": 3355, "total_updates": 10000, "zero_percentage": 66.45, "one_percentage": 33.55, "covered": true, "status": "ZO"},
+        {"bit": 5, "hit_zero": true, "hit_one": true, "count_zero": 6805, "count_one": 3195, "total_updates": 10000, "zero_percentage": 68.05, "one_percentage": 31.95, "covered": true, "status": "ZO"},
+        {"bit": 6, "hit_zero": true, "hit_one": true, "count_zero": 6648, "count_one": 3352, "total_updates": 10000, "zero_percentage": 66.48, "one_percentage": 33.52, "covered": true, "status": "ZO"},
+        {"bit": 7, "hit_zero": true, "hit_one": true, "count_zero": 6822, "count_one": 3178, "total_updates": 10000, "zero_percentage": 68.22, "one_percentage": 31.78, "covered": true, "status": "ZO"}
       ]
     }
   ]

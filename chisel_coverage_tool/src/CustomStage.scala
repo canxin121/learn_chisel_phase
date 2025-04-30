@@ -7,7 +7,6 @@ import chisel3.RawModule
 import chisel3.stage.ChiselGeneratorAnnotation
 import circt.stage.CIRCTTargetAnnotation
 import circt.stage.CIRCTTarget
-import chisel3.ElaboratedCircuit
 import chisel3.stage.ChiselCircuitAnnotation
 import firrtl.options.Unserializable
 import firrtl.options.CustomFileEmission
@@ -37,106 +36,6 @@ class CustomStage(val customPhases: Seq[Phase] = Seq.empty) {
       )
     )
 
-  /** Elaborate a Chisel circuit into a CHIRRTL string */
-  def emitCHIRRTL(
-      gen: => RawModule,
-      args: Array[String] = Array.empty
-  ): String = {
-    val annos = Seq(
-      ChiselGeneratorAnnotation(() => gen),
-      CIRCTTargetAnnotation(CIRCTTarget.CHIRRTL)
-    ) ++ (new Shell("circt")).parse(args)
-
-    val resultAnnos = phase.transform(annos)
-    var elaboratedCircuit: Option[ElaboratedCircuit] = None
-    val inFileAnnos = resultAnnos.flatMap {
-      case a: ChiselCircuitAnnotation =>
-        elaboratedCircuit = Some(a.elaboratedCircuit)
-        None
-      case _: Unserializable     => None
-      case _: CustomFileEmission => None
-      case a                     => Some(a)
-    }
-    elaboratedCircuit.get.serialize(inFileAnnos)
-  }
-
-  /** Elaborates a Chisel circuit and emits it to a file
-    *
-    * @param gen
-    *   a call-by-name Chisel module
-    * @param args
-    *   additional command line arguments to pass to Chisel
-    */
-  def emitCHIRRTLFile(
-      gen: => RawModule,
-      args: Array[String] = Array.empty
-  ): AnnotationSeq = {
-    (new circt.stage.ChiselStage).execute(
-      Array("--target", "chirrtl") ++ args,
-      Seq(ChiselGeneratorAnnotation(() => gen))
-    )
-  }
-
-  /** Return a CHIRRTL circuit for a Chisel module
-    *
-    * @param gen
-    *   a call-by-name Chisel module
-    */
-  def convert(
-      gen: => RawModule,
-      args: Array[String] = Array.empty
-  ): firrtl.ir.Circuit = {
-    val annos = Seq(
-      ChiselGeneratorAnnotation(() => gen),
-      CIRCTTargetAnnotation(CIRCTTarget.CHIRRTL)
-    ) ++ (new Shell("circt")).parse(args)
-
-    phase
-      .transform(annos)
-      .collectFirst { case FirrtlCircuitAnnotation(a) =>
-        a
-      }
-      .get
-  }
-
-  /** Compile a Chisel circuit to FIRRTL dialect */
-  def emitFIRRTLDialect(
-      gen: => RawModule,
-      args: Array[String] = Array.empty,
-      firtoolOpts: Array[String] = Array.empty
-  ): String = {
-    val annos = Seq(
-      ChiselGeneratorAnnotation(() => gen),
-      CIRCTTargetAnnotation(CIRCTTarget.FIRRTL)
-    ) ++ (new Shell("circt")).parse(args) ++ firtoolOpts.map(FirtoolOption(_))
-
-    phase
-      .transform(annos)
-      .collectFirst { case EmittedMLIR(_, a, _) =>
-        a
-      }
-      .get
-  }
-
-  /** Compile a Chisel circuit to HWS dialect */
-  def emitHWDialect(
-      gen: => RawModule,
-      args: Array[String] = Array.empty,
-      firtoolOpts: Array[String] = Array.empty
-  ): String = {
-    val annos = Seq(
-      ChiselGeneratorAnnotation(() => gen),
-      CIRCTTargetAnnotation(CIRCTTarget.HW)
-    ) ++ (new Shell("circt")).parse(args) ++ firtoolOpts.map(FirtoolOption(_))
-
-    phase
-      .transform(annos)
-      .collectFirst { case EmittedMLIR(_, a, _) =>
-        a
-      }
-      .get
-  }
-
   /** Compile a Chisel circuit to SystemVerilog
     *
     * @param gen
@@ -165,27 +64,4 @@ class CustomStage(val customPhases: Seq[Phase] = Seq.empty) {
       .get
       .value
   }
-
-  /** Compile a Chisel circuit to SystemVerilog with file output
-    *
-    * @param gen
-    *   a call-by-name Chisel module
-    * @param args
-    *   additional command line arguments to pass to Chisel
-    * @param firtoolOpts
-    *   additional command line options to pass to firtool
-    * @return
-    *   a string containing the Verilog output
-    */
-  def emitSystemVerilogFile(
-      gen: => RawModule,
-      args: Array[String] = Array.empty,
-      firtoolOpts: Array[String] = Array.empty
-  ): AnnotationSeq =
-    (new circt.stage.ChiselStage).execute(
-      Array("--target", "systemverilog") ++ args,
-      Seq(ChiselGeneratorAnnotation(() => gen)) ++ firtoolOpts.map(
-        FirtoolOption(_)
-      )
-    )
 }

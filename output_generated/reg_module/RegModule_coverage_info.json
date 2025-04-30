@@ -1,77 +1,76 @@
 {
   "topModuleName": "RegModule",
-  "currentWorkingDirectory": "D:\\projs\\fuzz\\chisel_coverage_tool\\.",
   "exportedPorts": [
     {
-      "portName": "_cond_pred",
+      "type": "cond_pred",
       "signals": [
       {
-        "fieldName": "RegModule__I__local__I___T",
+        "name": "_cond_pred_RegModule__M__RegModule__S___T",
         "type": "UInt<1>",
         "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Reg.scala 13:24]"
       }
       ]
     },
     {
-      "portName": "_reg_signals",
+      "type": "register",
       "signals": [
       {
-        "fieldName": "RegModule__I__local__I__regA_0_0",
+        "name": "_reg_signals_RegModule__M__RegModule__S__regA",
         "type": "UInt<8>",
         "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Reg.scala 15:23]"
       },
       {
-        "fieldName": "RegModule__I__local__I__regA_0_1",
+        "name": "_reg_signals_RegModule__M__RegModule__S__regA",
         "type": "UInt<8>",
         "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Reg.scala 15:23]"
       },
       {
-        "fieldName": "RegModule__I__local__I__regA_0_2",
+        "name": "_reg_signals_RegModule__M__RegModule__S__regA",
         "type": "UInt<8>",
         "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Reg.scala 15:23]"
       },
       {
-        "fieldName": "RegModule__I__local__I__regA_1_0",
+        "name": "_reg_signals_RegModule__M__RegModule__S__regA",
         "type": "UInt<8>",
         "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Reg.scala 15:23]"
       },
       {
-        "fieldName": "RegModule__I__local__I__regA_1_1",
+        "name": "_reg_signals_RegModule__M__RegModule__S__regA",
         "type": "UInt<8>",
         "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Reg.scala 15:23]"
       },
       {
-        "fieldName": "RegModule__I__local__I__regA_1_2",
+        "name": "_reg_signals_RegModule__M__RegModule__S__regA",
         "type": "UInt<8>",
         "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Reg.scala 15:23]"
       },
       {
-        "fieldName": "RegModule__I__local__I__regB_0_0",
+        "name": "_reg_signals_RegModule__M__RegModule__S__regB",
         "type": "UInt<8>",
         "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Reg.scala 22:23]"
       },
       {
-        "fieldName": "RegModule__I__local__I__regB_0_1",
+        "name": "_reg_signals_RegModule__M__RegModule__S__regB",
         "type": "UInt<8>",
         "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Reg.scala 22:23]"
       },
       {
-        "fieldName": "RegModule__I__local__I__regB_0_2",
+        "name": "_reg_signals_RegModule__M__RegModule__S__regB",
         "type": "UInt<8>",
         "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Reg.scala 22:23]"
       },
       {
-        "fieldName": "RegModule__I__local__I__regB_1_0",
+        "name": "_reg_signals_RegModule__M__RegModule__S__regB",
         "type": "UInt<8>",
         "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Reg.scala 22:23]"
       },
       {
-        "fieldName": "RegModule__I__local__I__regB_1_1",
+        "name": "_reg_signals_RegModule__M__RegModule__S__regB",
         "type": "UInt<8>",
         "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Reg.scala 22:23]"
       },
       {
-        "fieldName": "RegModule__I__local__I__regB_1_2",
+        "name": "_reg_signals_RegModule__M__RegModule__S__regB",
         "type": "UInt<8>",
         "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Reg.scala 22:23]"
       }
