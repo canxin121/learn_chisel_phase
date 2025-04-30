@@ -9,4 +9,5 @@ target
 .bloop
 .clangd
 out
-*.json
+/*.json
+PowerShell 7.5.0
