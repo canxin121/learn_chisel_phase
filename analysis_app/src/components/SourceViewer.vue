@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue';
-import { Card as ACard, Row as ARow, Col as ACol, DirectoryTree as ADirectoryTree, Spin as ASpin, Alert as AAlert, Button as AButton, Empty as AEmpty, Tag as ATag } from 'ant-design-vue';
+// Import Select component and its types
+import { Card as ACard, Row as ARow, Col as ACol, DirectoryTree as ADirectoryTree, Spin as ASpin, Alert as AAlert, Button as AButton, Empty as AEmpty, Tag as ATag, Select as ASelect, SelectOption as ASelectOption } from 'ant-design-vue';
+import type { SelectValue, DefaultOptionType } from 'ant-design-vue/es/select'; // Import SelectValue
 import { CodeOutlined, LoadingOutlined, PlusSquareOutlined, MinusSquareOutlined } from "@ant-design/icons-vue";
 import { useCoverageStore } from "../stores/coverageStore";
-import type { InstanceSignalTree, SignalInfo } from '../types/CoverageInfo';
+import type { InstanceSignalTree, SignalInfo, ModuleInfo, SourceFileInfo } from '../types/CoverageInfo';
 import type { ConditionCoveragePoint, RegisterCoveragePoint } from '../types/CoverageReport';
 import { formatCoverage, getNodeStyle, getConditionTagColor, formatCount, formatPercent, parseSignalName } from '../utils/coverageUtils';
 import hljs from 'highlight.js';
@@ -14,6 +16,7 @@ import 'highlight.js/styles/vs.css';
 hljs.registerLanguage('scala', scala);
 
 // --- Type Definitions ---
+
 interface InstanceTreeNode {
   key: string; // Unique path of the instance (e.g., "root__I__sub1")
   title: string; // Display title: "instanceName (moduleName)"
@@ -36,10 +39,14 @@ const coverageStore = useCoverageStore();
 const sourceCodeContainerRef = ref<HTMLElement | null>(null);
 
 // --- State ---
-const selectedInstanceKey = ref<string | null>(null); // Key of the selected instance path
-const selectedInstanceNode = ref<InstanceTreeNode | null>(null); // Store the full selected node info
+const selectedInstanceKey = ref<string | null>(null);
+const selectedInstanceNode = ref<InstanceTreeNode | null>(null);
 const displayedSourceContent = ref<string | null>(null);
 const displayedSourceModuleName = ref<string | null>(null);
+// MODIFIED: Initialize with undefined instead of null
+const displayedSourceRelativePath = ref<string | undefined>(undefined);
+// NEW: Store the list of available source files for the selected module
+const availableSourceFiles = ref<SourceFileInfo[]>([]);
 const isSourceLoading = ref(false);
 const sourceError = ref<string | null>(null);
 
@@ -86,19 +93,23 @@ const highlightedSourceCode = computed(() => {
 });
 
 // Calculate lines with coverage data
+// MODIFIED: Filter coverageInfos based on displayedSourceRelativePath
 const linesWithCoverage = computed(() => {
   if (!highlightedSourceCode.value) return [];
   const lines = highlightedSourceCode.value.split('\n');
   return lines.map((content, index) => {
     const lineNumber = index + 1;
-    // Filter coverageInfos to only include those belonging to the *currently selected* instance
+    // Filter coverageInfos:
+    // 1. Must belong to the currently selected instance
+    // 2. Must belong to the currently displayed source file
     const coverageInfos = (coverageDataByLine.value[lineNumber] || []).filter(info =>
-      info.instancePath.join('__I__') === selectedInstanceKey.value
+      info.instancePath.join('__I__') === selectedInstanceKey.value &&
+      info.signalInfo.filePath === displayedSourceRelativePath.value // <-- Check against displayed file path
     );
     return {
       lineNumber,
       content, // Already highlighted HTML
-      coverageInfos, // Now filtered
+      coverageInfos, // Now filtered by instance AND file path
       isExpanded: expandedLines.value.has(lineNumber),
     };
   });
@@ -123,23 +134,24 @@ const toggleLineExpansion = (lineNumber: number) => {
   expandedLines.value = new Set(expandedLines.value); // Force reactivity
 };
 
-// Calculate and update line-level coverage data for the currently selected instance in the currently displayed file
+// MODIFIED: updateCoverageDataForSelectedInstance - Now considers all signals of the instance,
+// filtering happens later in linesWithCoverage computed property based on displayedSourceRelativePath.
+// This pre-calculates coverage for all signals of the instance, regardless of which file they are in.
 const updateCoverageDataForSelectedInstance = () => {
   const data: Record<number, LineCoverageInfo[]> = {};
   const currentInstanceNode = selectedInstanceNode.value; // Use the stored selected node
   const currentInstancePathArray = selectedInstancePathArray.value;
 
-  console.log(`[updateCoverageData] Start: Updating for selected instance: ${currentInstancePathArray.join('.') || '(none)'}`);
+  console.log(`[updateCoverageData] Start: Pre-calculating for selected instance: ${currentInstancePathArray.join('.') || '(none)'}`);
 
   // 1. Check prerequisites
   if (!currentInstanceNode || // Must have a selected instance node
     !coverageStore.coverageReport ||
-    !displayedSourceContent.value || // Must have source content
     currentInstancePathArray.length === 0) // Must have an instance path
   {
     coverageDataByLine.value = {};
     expandedLines.value.clear();
-    console.log('[updateCoverageData] Exiting early - missing required data (selected node, report, source content, or instance path).');
+    console.log('[updateCoverageData] Exiting early - missing required data (selected node, report, or instance path).');
     return;
   }
 
@@ -150,7 +162,7 @@ const updateCoverageDataForSelectedInstance = () => {
   // 3. Iterate through the signals of the selected instance
   selectedRawNode.signals.forEach(signalInfo => {
     // Core matching logic: signal line number is valid
-    if (signalInfo.line !== null && signalInfo.line !== undefined && signalInfo.line > 0) {
+    if (signalInfo.line !== null && signalInfo.line !== undefined && signalInfo.line > 0 && signalInfo.filePath) {
       const lineNumber = signalInfo.line;
       const parsed = parseSignalName(signalInfo.name);
       let coverageData: ConditionCoveragePoint | RegisterCoveragePoint | undefined = undefined;
@@ -169,9 +181,9 @@ const updateCoverageDataForSelectedInstance = () => {
       }
       // console.log(`[updateCoverageData]   Signal: ${signalInfo.name} (Line ${lineNumber}), Found in report: ${!!coverageData}`);
 
-      // Create line info
+      // Create line info (includes signalInfo.filePath)
       const lineInfo: LineCoverageInfo = {
-        signalInfo,
+        signalInfo, // Contains the relative filePath
         coverageData,
         parsedName: parsed,
         instancePath: currentInstancePathArray, // Use the path of the currently selected instance
@@ -188,79 +200,140 @@ const updateCoverageDataForSelectedInstance = () => {
   });
 
   // 4. Update state
-  console.log('[updateCoverageData] End: Final data object for selected instance:', JSON.parse(JSON.stringify(data)));
-  coverageDataByLine.value = data;
-  // Optional: clear expansion state or keep it
-  // expandedLines.value.clear();
+  console.log('[updateCoverageData] End: Pre-calculated data object for selected instance (all files):', JSON.parse(JSON.stringify(data)));
+  coverageDataByLine.value = data; // Store the pre-calculated data
+  // Filtering based on displayed file happens in linesWithCoverage computed property
 };
 
 
-// Handle instance tree selection
-const handleInstanceSelect = (keys: (string | number)[], { node }: { node: any /* AntTreeNode, but use InstanceTreeNode type */ }) => {
-  if (keys.length === 0 || !node) {
-    selectedInstanceKey.value = null;
-    selectedInstanceNode.value = null; // Clear selected node
-    displayedSourceContent.value = null;
-    displayedSourceModuleName.value = null;
-    sourceError.value = null;
-    coverageDataByLine.value = {};
-    expandedLines.value.clear();
-    return;
-  }
-
-  const selectedKey = String(keys[0]);
-  // node.dataRef contains the original InstanceTreeNode data
-  const selectedNodeData = node.dataRef as InstanceTreeNode;
-
-  selectedInstanceKey.value = selectedKey;
-  selectedInstanceNode.value = selectedNodeData; // Store selected node info
+// MODIFIED: loadSourceFileContent - Ensure path is set correctly
+const loadSourceFileContent = (sourceFileInfo: SourceFileInfo | undefined) => {
   isSourceLoading.value = true;
   sourceError.value = null;
   displayedSourceContent.value = null;
-  coverageDataByLine.value = {};
-  expandedLines.value.clear();
 
-  const moduleName = selectedNodeData.moduleName;
-
-  displayedSourceModuleName.value = moduleName;
-
-  console.log(`Selected instance: ${selectedNodeData.title}, Module: ${moduleName}`);
-
-  // Get ModuleInfo from store (using moduleName as key)
-  const moduleInfo = coverageStore.coverageInfo?.moduleInfoMap?.[moduleName];
-
-  if (moduleInfo) {
-    // Check content directly
-    if (moduleInfo.content === null || moduleInfo.content === undefined) {
-      sourceError.value = `Source content for module "${moduleName}" is not available or could not be loaded.`;
-      console.warn(sourceError.value);
-      // Attempt to update coverage (might be empty)
-      updateCoverageDataForSelectedInstance();
-    } else if (moduleInfo.content.startsWith("Error reading file:")) { // Keep error check based on content prefix
-      sourceError.value = moduleInfo.content;
-      console.error(`Error reading file for module "${moduleName}": ${moduleInfo.content}`);
-      // Attempt to update coverage (might be empty)
-      updateCoverageDataForSelectedInstance();
-    } else {
-      displayedSourceContent.value = moduleInfo.content;
-      // After source code loads successfully, update coverage data
-      updateCoverageDataForSelectedInstance(); // <--- Core call
-      nextTick(() => {
-        sourceCodeContainerRef.value?.scrollTo({ top: 0 });
-      });
-    }
-  } else {
-    sourceError.value = `Module information for "${moduleName}" not found in coverage info.`;
+  if (!sourceFileInfo) {
+    sourceError.value = "Selected source file information is missing.";
     console.error(sourceError.value);
-    // Clear coverage data
-    updateCoverageDataForSelectedInstance(); // Will exit early
+    displayedSourceRelativePath.value = undefined; // Ensure path is undefined on error
+    isSourceLoading.value = false;
+    return;
   }
 
+  displayedSourceRelativePath.value = sourceFileInfo.relativePath; // Update displayed path
+
+  console.log(`Loading content for: ${sourceFileInfo.relativePath}`);
+
+  if (sourceFileInfo.content === null || sourceFileInfo.content === undefined) {
+    sourceError.value = `Source content for file "${sourceFileInfo.relativePath}" in module "${displayedSourceModuleName.value}" is not available or could not be loaded. Check root directory settings.`;
+    console.warn(sourceError.value);
+  } else if (sourceFileInfo.content.startsWith("Error reading file:")) {
+    sourceError.value = sourceFileInfo.content; // Show the specific error
+    console.error(`Error reading file "${sourceFileInfo.relativePath}" for module "${displayedSourceModuleName.value}": ${sourceFileInfo.content}`);
+  } else {
+    displayedSourceContent.value = sourceFileInfo.content;
+    // No need to call updateCoverageDataForSelectedInstance here, it's already done for the instance.
+    // linesWithCoverage will automatically filter based on the new displayedSourceRelativePath.
+    nextTick(() => {
+      sourceCodeContainerRef.value?.scrollTo({ top: 0 });
+    });
+  }
   isSourceLoading.value = false;
 };
 
+
+// MODIFIED: handleInstanceSelect - Ensure path is set to undefined on reset/error
+const handleInstanceSelect = (keys: (string | number)[], { node }: { node: any }) => {
+  // --- Reset state ---
+  selectedInstanceKey.value = null;
+  selectedInstanceNode.value = null;
+  displayedSourceContent.value = null;
+  displayedSourceModuleName.value = null;
+  displayedSourceRelativePath.value = undefined; // Reset to undefined
+  availableSourceFiles.value = []; // Clear available files
+  sourceError.value = null;
+  coverageDataByLine.value = {};
+  expandedLines.value.clear();
+
+  if (keys.length === 0 || !node) {
+    return; // Exit if deselected or invalid node
+  }
+
+  // --- Set selected instance ---
+  const selectedKey = String(keys[0]);
+  const selectedNodeData = node.dataRef as InstanceTreeNode;
+  selectedInstanceKey.value = selectedKey;
+  selectedInstanceNode.value = selectedNodeData;
+  const moduleName = selectedNodeData.moduleName;
+  displayedSourceModuleName.value = moduleName;
+
+  console.log(`Selected instance: ${selectedNodeData.title}, Module: ${moduleName}`);
+  isSourceLoading.value = true; // Start loading indicator
+
+  // --- Find ModuleInfo and Source Files ---
+  const moduleInfo = coverageStore.coverageInfo?.moduleInfoMap?.[moduleName];
+
+  if (moduleInfo?.sourceFiles) {
+    const filesArray = Object.values(moduleInfo.sourceFiles);
+    availableSourceFiles.value = filesArray; // Store available files
+
+    if (filesArray.length > 0) {
+      // --- Select and load the default (first) source file ---
+      const defaultSourceFile = filesArray[0];
+      console.log(`Found ${filesArray.length} source file(s) for module ${moduleName}. Defaulting to: ${defaultSourceFile.relativePath}`);
+      // Pre-calculate coverage for the entire instance *before* loading the first file's content
+      updateCoverageDataForSelectedInstance();
+      // Load content for the default file
+      loadSourceFileContent(defaultSourceFile); // This sets displayedSourceRelativePath and content/error
+
+    } else {
+      sourceError.value = `Module "${moduleName}" has no associated source files defined in coverage info.`;
+      console.warn(sourceError.value);
+      displayedSourceRelativePath.value = undefined; // Ensure path is undefined
+      isSourceLoading.value = false;
+    }
+  } else {
+    sourceError.value = `Module information or source files for "${moduleName}" not found in coverage info.`;
+    console.error(sourceError.value);
+    displayedSourceRelativePath.value = undefined; // Ensure path is undefined
+    isSourceLoading.value = false;
+  }
+
+  // If an error occurred during module/file finding, ensure loading stops
+  if (sourceError.value) {
+    isSourceLoading.value = false;
+    // Clear coverage data if we errored out before calculating it
+    if (availableSourceFiles.value.length === 0) {
+      updateCoverageDataForSelectedInstance(); // Clears the data
+    }
+  }
+};
+
+// MODIFIED: Handle change in source file selection dropdown - Adjust signature and add type check
+const handleSourceFileChange = (value: SelectValue, _option: DefaultOptionType | DefaultOptionType[]) => {
+  // Check if the value is a string (it should be in this case)
+  if (typeof value === 'string') {
+    const selectedPath = value;
+    console.log("Source file selection changed to:", selectedPath);
+    const selectedFileInfo = availableSourceFiles.value.find(f => f.relativePath === selectedPath);
+    if (selectedFileInfo) {
+      loadSourceFileContent(selectedFileInfo);
+    } else {
+      console.error(`Could not find SourceFileInfo for path: ${selectedPath}`);
+      sourceError.value = `Internal error: Could not find details for selected file path ${selectedPath}.`;
+      displayedSourceContent.value = null;
+      displayedSourceRelativePath.value = undefined; // Reset path on error
+    }
+  } else {
+    // Handle unexpected value types if necessary (e.g., multiple select, labeled value)
+    console.warn("Unexpected value type from Select change event:", value);
+    displayedSourceRelativePath.value = undefined; // Reset path
+  }
+};
+
+
 // --- Watchers ---
-// Watch for coverageInfo changes (usually when loading a new file)
+// MODIFIED: Watch coverageInfo - Reset path to undefined
 watch(() => coverageStore.coverageInfo, (newInfo, oldInfo) => {
   if (newInfo !== oldInfo) {
     console.log("Coverage info changed, clearing source viewer state.");
@@ -268,6 +341,8 @@ watch(() => coverageStore.coverageInfo, (newInfo, oldInfo) => {
     selectedInstanceNode.value = null;
     displayedSourceContent.value = null;
     displayedSourceModuleName.value = null;
+    displayedSourceRelativePath.value = undefined; // Reset to undefined
+    availableSourceFiles.value = []; // Clear available files too
     sourceError.value = null;
     coverageDataByLine.value = {};
     expandedLines.value.clear();
@@ -277,9 +352,9 @@ watch(() => coverageStore.coverageInfo, (newInfo, oldInfo) => {
 // Watch for coverageReport changes
 watch(() => coverageStore.coverageReport, () => {
   console.log("Coverage report changed, updating line coverage data if an instance is selected.");
-  // Only update if an instance is selected and source code is displayed
-  if (selectedInstanceKey.value && displayedSourceContent.value) {
-    updateCoverageDataForSelectedInstance();
+  // Only update if an instance is selected
+  if (selectedInstanceKey.value) {
+    updateCoverageDataForSelectedInstance(); // Re-calculate pre-computed data
   }
 }, { deep: true });
 
@@ -307,52 +382,75 @@ watch(() => coverageStore.coverageReport, () => {
           <div class="source-container" ref="sourceCodeContainerRef">
             <a-spin :spinning="isSourceLoading" :indicator="LoadingOutlined" size="large" tip="Loading source code...">
               <div v-if="selectedInstanceKey">
-                <!-- Source Header (Simplified) -->
+                <!-- Source Header -->
                 <div class="source-header">
-                  <span class="module-name">
+                  <span class="module-name" :title="`Module: ${displayedSourceModuleName ?? 'N/A'}`">
                     Module: <strong>{{ displayedSourceModuleName ?? 'N/A' }}</strong>
+                  </span>
+                  <!-- Source File Selector Dropdown (value binding is now compatible) -->
+                  <a-select v-if="availableSourceFiles.length > 1" :value="displayedSourceRelativePath"
+                    @change="handleSourceFileChange" size="small"
+                    style="min-width: 200px; max-width: 50%; margin-left: 15px;"
+                    :title="`Select source file for module ${displayedSourceModuleName}`"
+                    :options="availableSourceFiles.map(f => ({ value: f.relativePath, label: f.relativePath }))"
+                    :showSearch="true" optionFilterProp="label" placeholder="Select source file" allowClear>
+                  </a-select>
+                  <!-- Display single file path if only one exists -->
+                  <span v-else-if="availableSourceFiles.length === 1" class="file-path"
+                    :title="`File: ${displayedSourceRelativePath ?? 'N/A'}`">
+                    File: {{ displayedSourceRelativePath ?? 'N/A' }}
+                  </span>
+                  <!-- Placeholder if no files (should ideally show error) -->
+                  <span v-else class="file-path" title="No source files available">
+                    File: N/A
                   </span>
                 </div>
 
-                <!-- Error Display (Simplified) -->
+                <!-- Error Display -->
                 <div v-if="sourceError" class="error-display">
-                  <a-alert type="error" :message="`Error loading source code for module ${displayedSourceModuleName}`" show-icon>
+                  <a-alert type="error"
+                    :message="`Error loading source for ${displayedSourceModuleName} (${displayedSourceRelativePath ?? 'path unknown'})`"
+                    show-icon>
                     <template #description>
                       <p>{{ sourceError }}</p>
+                      <!-- Consider adding a retry or root dir link here -->
                     </template>
                   </a-alert>
                 </div>
 
-                <!-- Source Code -->
+                <!-- Source Code (uses linesWithCoverage which is now filtered) -->
                 <pre v-else-if="displayedSourceContent" class="source-code-viewer hljs vs">
-                  <div v-for="line in linesWithCoverage" :key="line.lineNumber" class="line-container">
-                    <div class="line-content-wrapper">
-                      <!-- Toggle Button -->
-                      <span class="line-toggle">
-                        <a-button v-if="line.coverageInfos.length > 0" type="text" size="small"
-                          @click="toggleLineExpansion(line.lineNumber)" :title="line.isExpanded ? 'Collapse coverage details' : 'Expand coverage details'">
-                          <template #icon>
+  <!-- Loop uses linesWithCoverage, which now correctly filters based on displayed file -->
+  <div v-for="line in linesWithCoverage" :key="line.lineNumber" class="line-container">
+    <div class="line-content-wrapper">
+      <!-- Toggle Button -->
+      <span class="line-toggle">
+        <!-- Only show toggle if there are coverageInfos *for this file* on this line -->
+        <a-button v-if="line.coverageInfos.length > 0" type="text" size="small"
+          @click="toggleLineExpansion(line.lineNumber)"
+          :title="line.isExpanded ? 'Collapse coverage details' : 'Expand coverage details'">
+          <template #icon>
                             <component :is="line.isExpanded ? MinusSquareOutlined : PlusSquareOutlined" />
                           </template>
-                        </a-button>
-                        <span v-else class="toggle-placeholder"></span>
-                      </span>
-                      <!-- Line Number -->
-                      <span class="line-number">{{ line.lineNumber }}</span>
-                      <!-- Line Content (Highlighted) -->
-                      <code class="line-content" v-html="line.content"></code>
-                    </div>
-                    <!-- Coverage Details -->
-                    <div v-if="line.isExpanded && line.coverageInfos.length > 0" class="coverage-details-line">
-                      <div v-for="(info, index) in line.coverageInfos" :key="`${line.lineNumber}-${index}-${info.signalInfo.name}`"
-                        class="coverage-item">
-                        <!-- Display Signal Name (Instance path not needed, all from current instance) -->
-                        <span class="signal-path" :title="info.signalInfo.name">
-                          {{ info.parsedName.signal }}
-                        </span>
+        </a-button>
+        <span v-else class="toggle-placeholder"></span>
+      </span>
+      <!-- Line Number -->
+      <span class="line-number">{{ line.lineNumber }}</span>
+      <!-- Line Content (Highlighted) -->
+      <code class="line-content" v-html="line.content"></code>
+    </div>
+    <!-- Coverage Details (only shown if line.coverageInfos has items for this file) -->
+    <div v-if="line.isExpanded && line.coverageInfos.length > 0" class="coverage-details-line">
+      <div v-for="(info, index) in line.coverageInfos" :key="`${line.lineNumber}-${index}-${info.signalInfo.name}`"
+        class="coverage-item">
+        <!-- Display Signal Name -->
+        <span class="signal-path" :title="info.signalInfo.name">
+          {{ info.parsedName.signal }}
+        </span>
 
-                        <!-- Display coverage data based on type -->
-                        <template v-if="info.coverageData">
+        <!-- Display coverage data based on type -->
+        <template v-if="info.coverageData">
                           <!-- Condition Coverage -->
                           <span v-if="info.parsedName.type === 'predicate' || info.parsedName.type === 'mux'"
                                 class="coverage-tags condition-details">
@@ -369,18 +467,18 @@ watch(() => coverageStore.coverageReport, () => {
                             <span class="coverage-percent" :style="getNodeStyle(info.coverageData.coverage_percent)">({{ formatCoverage(info.coverageData.coverage_percent) }})</span>
                           </span>
                         </template>
-                        <!-- No data in report -->
-                        <span v-else class="coverage-tags no-data">
-                          (No coverage data in report)
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </pre>
+        <!-- No data in report -->
+        <span v-else class="coverage-tags no-data">
+          (No coverage data in report)
+        </span>
+      </div>
+    </div>
+  </div>
+</pre>
 
                 <!-- No Content (but no error) (Simplified) -->
                 <div v-else-if="!isSourceLoading" class="empty-content">
-                  <a-empty description="Source content for this module is empty or unavailable." />
+                  <a-empty description="Source content for this module/file is empty or unavailable." />
                 </div>
 
               </div>
@@ -487,11 +585,39 @@ watch(() => coverageStore.coverageReport, () => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  display: flex;
+  /* Ensure flex */
+  align-items: center;
+  /* Vertically align items */
+  justify-content: space-between;
+  /* Space out module and file selector */
 }
 
 .module-name {
   font-size: 0.9em;
   color: #555;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+  /* Prevent module name from shrinking too much */
+}
+
+.file-path {
+  margin-left: 15px;
+  /* Add some space between module and file */
+  color: #888;
+  flex-shrink: 1;
+  /* Allow file path to shrink if needed */
+  text-align: right;
+  /* Align text to the right */
+}
+
+/* Style the select dropdown */
+.source-header .ant-select {
+  flex-grow: 1;
+  /* Allow select to take available space */
+  margin-left: 15px;
 }
 
 /* --- Error Display --- */
@@ -533,7 +659,8 @@ watch(() => coverageStore.coverageReport, () => {
 .line-content-wrapper {
   display: flex;
   align-items: center;
-  min-height: calc(13px * 1.5); /* Maintain minimum height */
+  min-height: calc(13px * 1.5);
+  /* Maintain minimum height */
 }
 
 /* --- Line Expand/Collapse Toggle Button --- */
@@ -541,24 +668,31 @@ watch(() => coverageStore.coverageReport, () => {
   width: 28px;
   flex-shrink: 0;
   padding-left: 4px;
-  display: flex; /* Use flexbox */
-  align-items: center; /* Vertically center the button */
-  justify-content: center; /* Horizontally center the button */
-  height: 100%; /* Ensure toggle span takes full height of wrapper */
+  display: flex;
+  /* Use flexbox */
+  align-items: center;
+  /* Vertically center the button */
+  justify-content: center;
+  /* Horizontally center the button */
+  height: 100%;
+  /* Ensure toggle span takes full height of wrapper */
 }
 
 .line-toggle .ant-btn {
   padding: 0 4px;
   height: 18px;
-  display: inline-flex; /* Ensure icon inside button is centered */
+  display: inline-flex;
+  /* Ensure icon inside button is centered */
   align-items: center;
   justify-content: center;
 }
 
 .toggle-placeholder {
   display: inline-block;
-  width: 18px; /* Match button width */
-  height: 18px; /* Match button height */
+  width: 18px;
+  /* Match button width */
+  height: 18px;
+  /* Match button height */
 }
 
 /* --- Line Number --- */
@@ -570,7 +704,8 @@ watch(() => coverageStore.coverageReport, () => {
   user-select: none;
   flex-shrink: 0;
   /* Ensure line-number aligns well with centered items */
-  line-height: calc(13px * 1.5); /* Match min-height of wrapper */
+  line-height: calc(13px * 1.5);
+  /* Match min-height of wrapper */
 }
 
 /* --- Line Code Content --- */
@@ -578,7 +713,8 @@ watch(() => coverageStore.coverageReport, () => {
   flex-grow: 1;
   padding-right: 16px;
   /* Ensure code content aligns well */
-  line-height: calc(13px * 1.5); /* Match min-height of wrapper */
+  line-height: calc(13px * 1.5);
+  /* Match min-height of wrapper */
 }
 
 /* --- Coverage Details Line --- */
@@ -623,7 +759,8 @@ watch(() => coverageStore.coverageReport, () => {
   text-overflow: ellipsis;
   max-width: 45%;
   display: inline-block;
-  line-height: 1.4; /* Added line-height for better vertical display */
+  line-height: 1.4;
+  /* Added line-height for better vertical display */
 }
 
 /* --- Coverage Tags and Counts --- */

@@ -1,45 +1,70 @@
 <script setup lang="ts">
 import { ref, computed, reactive } from 'vue';
-// Import Collapse and CollapsePanel
-import { Collapse as ACollapse, CollapsePanel as ACollapsePanel, Table as ATable, Button as AButton, Input as AInput, Tooltip as ATooltip, Space as ASpace, message, Alert as AAlert } from 'ant-design-vue';
+import { Collapse as ACollapse, CollapsePanel as ACollapsePanel, Table as ATable, Button as AButton, Input as AInput, Tooltip as ATooltip, Space as ASpace, message, Alert as AAlert, TableColumnsType } from 'ant-design-vue';
 import type { Key } from 'ant-design-vue/es/table/interface';
 import { FolderOpenOutlined, SaveOutlined } from '@ant-design/icons-vue';
 import { useCoverageStore } from "../stores/coverageStore";
 import { open } from '@tauri-apps/plugin-dialog';
+// Import ModuleInfo and SourceFileIdentifier
+import type { ModuleInfo, SourceFileIdentifier } from '../types/CoverageInfo';
+
 const coverageStore = useCoverageStore();
-interface ModuleTableItem {
-    key: string;
+
+// MODIFIED: Interface now represents a single source file entry
+interface SourceFileTableItem {
+    key: string; // Unique key: moduleName::relativePath
     moduleName: string;
-    filePath: string | null;
+    relativePath: string;
     rootDir: string | null;
 }
+
 const newRootDir = ref('');
+// selectedRowKeys now stores the unique keys of selected SourceFileTableItem
 const selectedRowKeys = ref<Key[]>([]);
 const isApplying = ref(false);
-const tableData = computed((): ModuleTableItem[] => {
+
+// MODIFIED: Flatten moduleInfoMap into a list of source files
+const tableData = computed((): SourceFileTableItem[] => {
     if (!coverageStore.coverageInfo?.moduleInfoMap) {
         return [];
     }
-    return Object.entries(coverageStore.coverageInfo.moduleInfoMap).map(([moduleName, info]) => ({
-        key: moduleName,
-        moduleName: moduleName,
-        filePath: info.filePath,
-        rootDir: info.rootDir,
-    }));
+    const items: SourceFileTableItem[] = [];
+    Object.entries(coverageStore.coverageInfo.moduleInfoMap).forEach(([moduleName, moduleInfo]: [string, ModuleInfo]) => {
+        if (moduleInfo.sourceFiles) {
+            Object.entries(moduleInfo.sourceFiles).forEach(([relativePath, sourceFileInfo]) => {
+                items.push({
+                    key: `${moduleName}::${relativePath}`, // Create unique key
+                    moduleName: moduleName,
+                    relativePath: relativePath,
+                    rootDir: sourceFileInfo.rootDir ?? null,
+                });
+            });
+        }
+    });
+    // Optional: Sort the items, e.g., by module name then relative path
+    items.sort((a, b) => {
+        if (a.moduleName !== b.moduleName) {
+            return a.moduleName.localeCompare(b.moduleName);
+        }
+        return a.relativePath.localeCompare(b.relativePath);
+    });
+    return items;
 });
-const columns = [
+
+// MODIFIED: Columns now reflect SourceFileTableItem
+const columns: TableColumnsType<SourceFileTableItem> = [
     {
         title: 'Module Name',
         dataIndex: 'moduleName',
         key: 'moduleName',
         ellipsis: true,
+        width: 200,
     },
     {
-        title: 'Current File Path',
-        dataIndex: 'filePath',
-        key: 'filePath',
+        title: 'Relative Path',
+        dataIndex: 'relativePath',
+        key: 'relativePath',
         ellipsis: true,
-        customRender: ({ text }: { text: string | null }) => text || 'N/A',
     },
     {
         title: 'Current Root Dir',
@@ -49,12 +74,14 @@ const columns = [
         customRender: ({ text }: { text: string | null }) => text || 'N/A',
     },
 ];
+
 const rowSelection = reactive({
     selectedRowKeys: selectedRowKeys,
     onChange: (keys: Key[]) => {
         selectedRowKeys.value = keys;
     },
 });
+
 const selectDirectory = async () => {
     try {
         const selected = await open({
@@ -70,9 +97,11 @@ const selectDirectory = async () => {
         console.error("Error opening directory dialog:", err);
     }
 };
+
+// MODIFIED: Apply logic now targets selected source files
 const applyNewRootDir = async () => {
     if (selectedRowKeys.value.length === 0) {
-        message.warn('Please select at least one module to update.');
+        message.warn('Please select at least one source file to update.');
         return;
     }
     if (!newRootDir.value) {
@@ -80,22 +109,34 @@ const applyNewRootDir = async () => {
         return;
     }
     isApplying.value = true;
-    // Ensure keys are strings before passing to the store function
-    const modulesToUpdate = selectedRowKeys.value.map(String);
+
+    // Map selected keys (moduleName::relativePath) back to SourceFileIdentifier objects
+    const identifiersToUpdate: SourceFileIdentifier[] = selectedRowKeys.value.map(key => {
+        const [moduleName, relativePath] = String(key).split('::');
+        return { moduleName, relativePath };
+    }).filter(id => id.moduleName && id.relativePath); // Basic validation
+
+    if (identifiersToUpdate.length !== selectedRowKeys.value.length) {
+         console.warn("Some selected keys could not be parsed into identifiers:", selectedRowKeys.value);
+         // Optionally inform the user
+    }
+
+    if (identifiersToUpdate.length === 0) {
+        message.warn('No valid source file identifiers could be determined from selection.');
+        isApplying.value = false;
+        return;
+    }
+
 
     try {
-        // Call the renamed batch update action in the store
-        await coverageStore.updateFileRootBatch(modulesToUpdate, newRootDir.value);
+        // Call the updated store action with the list of identifiers
+        await coverageStore.updateFileRootBatch(identifiersToUpdate, newRootDir.value);
 
-        // Success handling is now mostly within the store action,
-        // but we still clear local state here on success.
-        message.success(`Batch root directory update request processed successfully for ${modulesToUpdate.length} module(s).`); // Simplified message
-        selectedRowKeys.value = [];
-        newRootDir.value = '';
+        message.success(`Batch root directory update request processed successfully for ${identifiersToUpdate.length} source file(s).`);
+        selectedRowKeys.value = []; // Clear selection on success
+        newRootDir.value = ''; // Clear input on success
 
     } catch (error) {
-        // Error handling is also mostly within the store action.
-        // We might just log it here or rely on the store's message.
         message.error(`Batch root directory update request failed. See console or previous messages for details.`);
         console.error("Error during batch root directory update process:", error);
         // Decide whether to clear selection on failure
@@ -106,17 +147,16 @@ const applyNewRootDir = async () => {
 };
 </script>
 <template>
-    <!-- Replace ACard with ACollapse and ACollapsePanel -->
     <a-collapse accordion>
-        <a-collapse-panel key="1" header="Module Root Directory Editor">
+        <a-collapse-panel key="1" header="Source File Root Directory Editor"> <!-- Changed header -->
             <a-space direction="vertical" style="width: 100%">
                 <a-alert v-if="!coverageStore.originalInfoFilePath" type="warning"
-                    message="Load a Coverage Info file to manage module source paths." show-icon />
+                    message="Load a Coverage Info file to manage source file paths." show-icon />
                 <template v-if="coverageStore.originalInfoFilePath">
                     <a-row :gutter="16" align="bottom">
                         <a-col flex="auto">
                             <a-tooltip
-                                title="Enter the new root directory containing the source files for the selected modules.">
+                                title="Enter the new root directory for the selected source file(s)."> <!-- Changed tooltip -->
                                 <a-input v-model:value="newRootDir" placeholder="Enter New Root Directory Path"
                                     style="width: 100%" />
                             </a-tooltip>
@@ -141,19 +181,15 @@ const applyNewRootDir = async () => {
                             </a-button>
                         </a-col>
                     </a-row>
+                    <!-- Table uses updated columns and data -->
                     <a-table :dataSource="tableData" :columns="columns" :row-selection="rowSelection" size="small"
                         bordered :pagination="{ pageSize: 10, hideOnSinglePage: true }" :scroll="{ y: 300 }">
                         <template #bodyCell="{ column, text }">
                             <!-- Custom rendering for ellipsis with tooltip -->
-                            <template v-if="column.key === 'filePath' || column.key === 'rootDir'">
+                            <!-- MODIFIED: Check against new keys -->
+                            <template v-if="column.key === 'moduleName' || column.key === 'relativePath' || column.key === 'rootDir'">
                                 <a-tooltip :title="text">
-                                    <!-- Display the text directly, or 'N/A' if null/undefined -->
                                     <span>{{ text || 'N/A' }}</span>
-                                </a-tooltip>
-                            </template>
-                            <template v-else-if="column.key === 'moduleName'">
-                                <a-tooltip :title="text">
-                                    <span>{{ text }}</span>
                                 </a-tooltip>
                             </template>
                             <!-- Fallback for other columns if needed -->

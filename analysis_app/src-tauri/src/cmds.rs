@@ -1,4 +1,4 @@
-use crate::types::coverage_info::CoverageInfo;
+use crate::types::coverage_info::{CoverageInfo, SourceFileIdentifier}; // Import SourceFileIdentifier
 use std::fs; // Import fs for read_file and write_file
 
 #[tauri::command]
@@ -7,15 +7,15 @@ pub async fn parse_coverage_info(mut coverage_info: CoverageInfo) -> Result<Cove
     Ok(coverage_info)
 }
 
-// NEW: Batch command to update root dir for multiple modules
+// MODIFIED: Batch command now accepts specific source file identifiers
 #[tauri::command]
 pub async fn reread_files_with_new_root_batch(
     mut coverage_info: CoverageInfo,
-    module_keys: Vec<String>, // Expect a list of keys
+    source_file_identifiers: Vec<SourceFileIdentifier>, // Expect list of identifiers
     new_root_dir: String,
 ) -> Result<CoverageInfo, String> {
-    // Call the batch update method on CoverageInfo
-    match coverage_info.update_multiple_module_roots_and_reload(&module_keys, &new_root_dir) {
+    // Call the updated batch update method on CoverageInfo
+    match coverage_info.update_source_file_roots_and_reload(&source_file_identifiers, &new_root_dir) {
         Ok(_) => Ok(coverage_info), // Return the updated info on success
         Err(e) => Err(e),           // Return the error string on failure
     }

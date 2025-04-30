@@ -4,6 +4,7 @@ export interface SignalInfo {
     name: string;
     type: string;
     info: string;
+    // filePath now stores the relative path from the info string
     filePath?: string | null;
     line?: number | null;
     column?: number | null;
@@ -16,10 +17,17 @@ export interface ExportedPort {
 }
 
 
-export interface ModuleInfo {
-    content: string | null;
-    filePath: string | null;
+// NEW: Interface for individual source file info within a module
+export interface SourceFileInfo {
+    relativePath: string; // The relative path (key in the map)
     rootDir: string | null;
+    content: string | null; // Content or error message
+}
+
+// MODIFIED: ModuleInfo now contains a map of source files
+export interface ModuleInfo {
+    // Key is the relative file path
+    sourceFiles: Record<string, SourceFileInfo>;
 }
 
 export interface InstanceSignalTree {
@@ -29,10 +37,16 @@ export interface InstanceSignalTree {
     signals: SignalInfo[];
 }
 
+// NEW: Interface to identify a specific source file for backend commands
+export interface SourceFileIdentifier {
+    moduleName: string;
+    relativePath: string;
+}
 
 export interface CoverageInfo {
     topModuleName: string;
     exportedPorts: ExportedPort[];
+    // moduleInfoMap's value is now the updated ModuleInfo interface
     moduleInfoMap: Record<string, ModuleInfo>;
     instanceSignalMap: InstanceSignalTree;
 }
@@ -42,15 +56,16 @@ export async function parseCoverageInfo(rawCoverageInfo: any): Promise<CoverageI
     return processedInfo;
 }
 
+// MODIFIED: Update signature to accept SourceFileIdentifier array
 export async function rereadFilesWithNewRootBatch(
     currentCoverageInfo: CoverageInfo,
-    moduleKeys: string[], // Expect an array of keys
+    sourceFileIdentifiers: SourceFileIdentifier[], // Expect an array of identifiers
     newRootDir: string
 ): Promise<CoverageInfo> {
-    console.log(`Calling backend reread_files_with_new_root_batch for keys: ${moduleKeys.join(', ')}`);
+    console.log(`Calling backend reread_files_with_new_root_batch for ${sourceFileIdentifiers.length} source file(s).`);
     const updatedInfo: CoverageInfo = await invoke("reread_files_with_new_root_batch", {
         coverageInfo: currentCoverageInfo,
-        moduleKeys: moduleKeys, // Pass the array
+        sourceFileIdentifiers: sourceFileIdentifiers, // Pass the array of identifiers
         newRootDir: newRootDir
     });
     return updatedInfo;

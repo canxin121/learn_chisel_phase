@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import { message, type UploadFile } from 'ant-design-vue'
 import { invoke } from '@tauri-apps/api/core';
 import type { CoverageReport } from '../types/CoverageReport'
-import { type CoverageInfo, parseCoverageInfo, rereadFilesWithNewRootBatch } from '../types/CoverageInfo'
+import { type CoverageInfo, parseCoverageInfo, rereadFilesWithNewRootBatch, type SourceFileIdentifier } from '../types/CoverageInfo'
 import type { TreeNode } from '../types/TreeNode'
 import { buildCoverageTrees } from '../utils/coverageUtils'
 import { writeCoverageInfo } from '../utils/file'
@@ -162,42 +162,43 @@ export const useCoverageStore = defineStore('coverageStore', () => {
       isLoadingInfo.value = false;
     }
   }
-  async function updateFileRootBatch(moduleKeys: string[], newRootDir: string) {
+  async function updateFileRootBatch(sourceFileIdentifiers: SourceFileIdentifier[], newRootDir: string) {
     if (!coverageInfo.value) {
       message.error("Coverage info not loaded.");
-      return Promise.reject("Coverage info not loaded."); // Return a rejected promise
+      return Promise.reject("Coverage info not loaded.");
     }
     if (!originalInfoFilePath.value) {
       message.error("Cannot update root directory: Original file path is missing.");
-      return Promise.reject("Original file path is missing."); // Return a rejected promise
+      return Promise.reject("Original file path is missing.");
     }
-    if (moduleKeys.length === 0) {
-        message.warn("No modules selected for root directory update.");
+    if (sourceFileIdentifiers.length === 0) {
+        message.warn("No source files selected for root directory update.");
         return Promise.resolve(); // Nothing to do
     }
 
-    const keysString = moduleKeys.length > 3 ? `${moduleKeys.slice(0, 3).join(', ')}...` : moduleKeys.join(', ');
-    console.log(`Updating root directory for module keys [${keysString}] to "${newRootDir}"`);
-    message.loading({ content: `Processing root directory change for ${moduleKeys.length} module(s)...`, key: 'updateRootBatch', duration: 0 });
+    const count = sourceFileIdentifiers.length;
+    const firstFileDesc = count > 0 ? `${sourceFileIdentifiers[0].moduleName}/${sourceFileIdentifiers[0].relativePath}` : '';
+    const logMsg = count > 1 ? `${firstFileDesc} and ${count - 1} other(s)` : firstFileDesc;
+
+    console.log(`Updating root directory for source file(s) [${logMsg}] to "${newRootDir}"`);
+    message.loading({ content: `Processing root directory change for ${count} source file(s)...`, key: 'updateRootBatch', duration: 0 });
     isLoadingInfo.value = true;
 
-    // Update userDefinedRootDirs locally (optional, for immediate UI feedback if needed)
-    moduleKeys.forEach(key => {
-        userDefinedRootDirs.value[key] = newRootDir;
-    });
+    // Note: userDefinedRootDirs is less relevant now as roots are per-file.
+    // We could update it, but the source of truth is coverageInfo.value.
 
     try {
-      // Call the new batch command
+      // Call the updated batch command with identifiers
       const updatedCoverageInfo = await rereadFilesWithNewRootBatch(
         coverageInfo.value,
-        moduleKeys, // Pass the array of keys
+        sourceFileIdentifiers, // Pass the array of identifiers
         newRootDir
       );
 
-      // Update the store with the single result from the batch operation
+      // Update the store with the result
       coverageInfo.value = updatedCoverageInfo;
 
-      message.success({ content: `Root directory updated and files re-processed for ${moduleKeys.length} module(s).`, key: 'updateRootBatch', duration: 3 });
+      message.success({ content: `Root directory updated and files re-processed for ${count} source file(s).`, key: 'updateRootBatch', duration: 3 });
 
       // Save back the updated info
       if (originalInfoFilePath.value && coverageInfo.value) {
@@ -216,10 +217,8 @@ export const useCoverageStore = defineStore('coverageStore', () => {
       return Promise.resolve(); // Indicate success
 
     } catch (error) {
-      console.error(`Error updating root directory via batch backend for keys [${keysString}]:`, error);
+      console.error(`Error updating root directory via batch backend for files [${logMsg}]:`, error);
       message.error({ content: `Failed to update root directory: ${error instanceof Error ? error.message : String(error)}`, key: 'updateRootBatch', duration: 5 });
-      // Optionally revert userDefinedRootDirs changes on error?
-      // moduleKeys.forEach(key => { delete userDefinedRootDirs.value[key]; });
       return Promise.reject(error); // Indicate failure
     } finally {
       isLoadingInfo.value = false;
@@ -245,6 +244,6 @@ export const useCoverageStore = defineStore('coverageStore', () => {
     registerStats,
     processReportFile,
     processInfoFile,
-    updateFileRootBatch, // Export the renamed function
+    updateFileRootBatch, // Keep the same export name
   }
 })
