@@ -85,11 +85,11 @@ pub struct CoverageInfo {
 
 impl CoverageInfo {
     // 1. Parse SignalInfo.info, correct path, extract line/col. Store *relative* path in SignalInfo.file_path.
-    // 2. Populate module_info_map: For each signal, find its moduleName and relative filePath. Add/update the SourceFileInfo entry within the corresponding ModuleInfo.
+    // 2. Populate module_info_map: For each signal, find its moduleName and relative filePath. Add/update the SourceFileInfo entry within the corresponding ModuleInfo, PRESERVING existing root_dir/content.
     // 3. Build instance_signal_map tree.
-    // 4. Load content for all SourceFileInfo entries based on their rootDir and relativePath.
+    // 4. Load content for SourceFileInfo entries where content is None and root_dir is Some.
     pub fn parse(&mut self) {
-        // Initialize instance_signal_map root
+        // Initialize instance_signal_map root (or reset if re-parsing)
         self.instance_signal_map = InstanceSignalTree {
             instance_name: self.top_module_name.clone(),
             module_name: self.top_module_name.clone(),
@@ -97,8 +97,11 @@ impl CoverageInfo {
             signals: Vec::new(),
         };
 
-        // Clear existing module info map before parsing
-        self.module_info_map.clear();
+        // DO NOT clear module_info_map here to preserve existing data like root_dir/content
+        // self.module_info_map.clear(); // Removed
+
+        // Keep track of module-file pairs encountered during this parse
+        let mut encountered_module_files = std::collections::HashSet::<(String, String)>::new();
 
         // 1, 2, 3: Parse signals, populate module_info_map and instance_signal_map
         for port in self.exported_ports.iter_mut() {
@@ -160,17 +163,21 @@ impl CoverageInfo {
                             let module_entry = self
                                 .module_info_map
                                 .entry(module_name_extracted.clone())
-                                .or_insert_with(ModuleInfo::default); // Use default if new
+                                .or_insert_with(ModuleInfo::default); // Use default if new ModuleInfo
 
                             // Get or insert the SourceFileInfo for this specific relative path within the module
-                            module_entry
+                            // This preserves existing SourceFileInfo if it exists.
+                            let source_file_entry = module_entry
                                 .source_files
                                 .entry(relative_path.clone())
                                 .or_insert_with(|| SourceFileInfo {
                                     relative_path: relative_path.clone(), // Store relative path
-                                    root_dir: None, // Initialize rootDir as None
-                                    content: None,  // Initialize content as None
+                                    root_dir: None, // Initialize rootDir as None ONLY IF NEW
+                                    content: None,  // Initialize content as None ONLY IF NEW
                                 });
+                            // Mark this module-file pair as encountered
+                            encountered_module_files
+                                .insert((module_name_extracted.clone(), relative_path.clone()));
                         } else {
                             eprintln!(
                                 "Warning: Signal '{}' has module name '{}' but no file path could be parsed from info string '{}'. Cannot associate with source file.",
@@ -187,7 +194,8 @@ impl CoverageInfo {
                                 .module_info_map
                                 .entry(module_name_extracted.clone())
                                 .or_insert_with(ModuleInfo::default);
-                            module_entry
+                            // Preserve existing SourceFileInfo if it exists.
+                            let source_file_entry = module_entry
                                 .source_files
                                 .entry(relative_path.clone())
                                 .or_insert_with(|| SourceFileInfo {
@@ -195,6 +203,9 @@ impl CoverageInfo {
                                     root_dir: None,
                                     content: None,
                                 });
+                            // Mark this module-file pair as encountered
+                            encountered_module_files
+                                .insert((module_name_extracted.clone(), relative_path.clone()));
                         } else {
                             eprintln!(
                                 "Warning: Top-level signal '{}' has no file path parsed from info string '{}'.",
@@ -220,7 +231,7 @@ impl CoverageInfo {
                             } else {
                                 // Using "Unknown" for intermediate nodes remains a simplification.
                                 // A full pre-scan could map all instance paths to module names.
-                                String::from("Unknown")
+                                String::from("Unknown") // Consider improving this if needed
                             };
 
                             let new_node = InstanceSignalTree {
@@ -244,62 +255,72 @@ impl CoverageInfo {
             }
         }
 
-        // 4: Load file content for all SourceFileInfo entries
+        // Optional: Clean up SourceFileInfo entries that were present before but not encountered in this parse?
+        // This might be desirable if the input JSON structure changes significantly between parses.
+        // For now, we keep all entries. If cleanup is needed:
+        // self.module_info_map.retain(|module_name, module_info| {
+        //     module_info.source_files.retain(|relative_path, _| {
+        //         encountered_module_files.contains(&(module_name.clone(), relative_path.clone()))
+        //     });
+        //     !module_info.source_files.is_empty() // Keep module if it still has files
+        // });
+
+        // 4: Load file content ONLY for entries where content is None and root_dir is Some
         self.load_all_module_content();
     }
 
-    // MODIFIED: Helper function to load/reload content for all source files within all modules
+    // MODIFIED: Helper function to load/reload content ONLY for source files where content is None and root_dir is Some
     fn load_all_module_content(&mut self) {
         // Iterate through each module in the map
         for (module_name, module_info) in self.module_info_map.iter_mut() {
             // Iterate through each source file associated with this module
             for (relative_path_key, source_file_info) in module_info.source_files.iter_mut() {
-                // Reset content before attempting to load
-                source_file_info.content = None;
+                // --- Start Modification ---
+                // Only attempt to load if root_dir is set AND content is currently None
+                if source_file_info.root_dir.is_some() && source_file_info.content.is_none() {
+                    let root_dir_str = source_file_info.root_dir.as_ref().unwrap(); // Safe unwrap due to check above
+                    let current_relative_path = Path::new(relative_path_key);
+                    let mut path_to_read: Option<PathBuf> = None;
 
-                let current_relative_path = Path::new(relative_path_key); // Use the key as the relative path
-                let mut path_to_read: Option<PathBuf> = None;
-
-                // Check if root_dir is available for *this specific source file*
-                if let Some(root_dir_str) = &source_file_info.root_dir {
                     // Normalize root_dir slashes
                     let root_normalized = root_dir_str.replace('\\', "/");
                     let mut combined_path = PathBuf::from(root_normalized);
                     combined_path.push(current_relative_path); // Push the relative path onto the root
                     path_to_read = Some(combined_path);
-                } else {
-                    // Log warning if root_dir is needed but missing for this file
-                    let warning_msg = format!(
-                        "Root directory not set for relative path '{}' in module '{}'",
-                        relative_path_key, module_name
-                    );
-                    eprintln!("Warning: {}. File content will not be loaded.", warning_msg);
-                    // Set content to an error message for the frontend
-                    source_file_info.content = Some(format!("Error reading file: {}", warning_msg));
-                }
 
-                // Try reading the file if we determined a path
-                if let Some(final_path) = path_to_read {
-                    match fs::read_to_string(&final_path) {
-                        Ok(content) => {
-                            source_file_info.content = Some(content);
-                        }
-                        Err(e) => {
-                            let error_msg = format!(
-                                "Error reading file: {} (Path: {})",
-                                e,
-                                final_path.display()
-                            );
-                            eprintln!(
-                                "{} (Module: {}, File: {})",
-                                error_msg, module_name, relative_path_key
-                            );
-                            // Set content to the error message for the frontend
-                            source_file_info.content = Some(error_msg);
+                    // Try reading the file if we determined a path
+                    if let Some(final_path) = path_to_read {
+                        match fs::read_to_string(&final_path) {
+                            Ok(content) => {
+                                source_file_info.content = Some(content);
+                            }
+                            Err(e) => {
+                                let error_msg = format!(
+                                    "Error reading file: {} (Path: {})",
+                                    e,
+                                    final_path.display()
+                                );
+                                eprintln!(
+                                    "{} (Module: {}, File: {})",
+                                    error_msg, module_name, relative_path_key
+                                );
+                                // Set content to the error message for the frontend
+                                source_file_info.content = Some(error_msg);
+                            }
                         }
                     }
+                    // If path_to_read was None (shouldn't happen here due to root_dir check), do nothing
+                } else if source_file_info.root_dir.is_none() && source_file_info.content.is_none()
+                {
+                    // Optional: Log if root_dir is missing and content is also missing (first load attempt likely)
+                    // eprintln!(
+                    //     "Info: Root directory not set for relative path '{}' in module '{}'. Content not loaded.",
+                    //     relative_path_key, module_name
+                    // );
+                    // Do not set an error message here, wait for root_dir to be set.
                 }
-                // If path_to_read was None (root_dir missing), content remains the error message set earlier.
+                // If content is already Some(_), do nothing, preserving the existing content.
+                // --- End Modification ---
             } // End loop through source files
         } // End loop through modules
     }
@@ -312,6 +333,7 @@ impl CoverageInfo {
     ) -> Result<(), String> {
         let mut updated_count = 0;
         let mut not_found_files = Vec::new();
+        let mut needs_reload = false; // Flag to check if any content might need loading
 
         // Iterate through the provided identifiers
         for identifier in source_file_identifiers {
@@ -322,8 +344,25 @@ impl CoverageInfo {
                     module_info.source_files.get_mut(&identifier.relative_path)
                 {
                     // Update the root_dir for this specific file
+                    let old_root_dir = source_file_info.root_dir.clone();
                     source_file_info.root_dir = Some(new_root_dir.to_string());
                     updated_count += 1;
+
+                    // If the root dir changed OR if content was previously None (or an error message),
+                    // we might need to reload content.
+                    if old_root_dir.as_deref() != Some(new_root_dir)
+                        || source_file_info.content.is_none()
+                        || source_file_info
+                            .content
+                            .as_ref()
+                            .map_or(false, |c| c.starts_with("Error reading file:"))
+                    {
+                        // Invalidate existing content if root dir changed, forcing a reload attempt
+                        if old_root_dir.as_deref() != Some(new_root_dir) {
+                            source_file_info.content = None;
+                        }
+                        needs_reload = true;
+                    }
                 } else {
                     // Source file not found within the module
                     not_found_files.push(identifier.clone());
@@ -353,19 +392,23 @@ impl CoverageInfo {
             // return Err(format!("Failed to update: Source files not found: {:?}", not_found_files));
         }
 
-        // If at least one file was updated, reload content for all modules.
-        if updated_count > 0 {
+        // If at least one file's root dir was potentially updated in a way that requires reload,
+        // call load_all_module_content. This will attempt to load content for any file
+        // that now has a root_dir and content == None.
+        if needs_reload {
             self.load_all_module_content();
         } else if source_file_identifiers.is_empty() {
             // No identifiers provided, do nothing, return Ok.
             return Ok(());
-        } else if not_found_files.len() == source_file_identifiers.len() {
-            // All provided identifiers resulted in errors
-            return Err("No valid source file identifiers found for update.".to_string());
+        } else if updated_count == 0 && !source_file_identifiers.is_empty() {
+            // All provided identifiers resulted in errors or no actual change needed reload
+            if not_found_files.len() == source_file_identifiers.len() {
+                return Err("No valid source file identifiers found for update.".to_string());
+            } else {
+                // Files were found, but no reload was triggered (e.g., setting same root dir again)
+                // Still return Ok, as the update technically completed for found files.
+            }
         }
-        // If only warnings occurred (files not found), but updated_count is 0,
-        // we might still reach here. Consider if reloading is needed even then.
-        // Currently, reload only happens if updated_count > 0.
 
         Ok(())
     }

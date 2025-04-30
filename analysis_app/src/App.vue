@@ -2,12 +2,12 @@
 import { ref } from "vue";
 import { useCoverageStore } from "./stores/coverageStore";
 
-// Import components
+// 导入组件
 import FileUpload from './components/FileUpload.vue';
 import CoverageSummary from './components/CoverageSummary.vue';
 import CoverageDetails from './components/CoverageDetails.vue';
 import SourceViewer from './components/SourceViewer.vue';
-import ModuleRootDirEditor from './components/ModuleRootDirEditor.vue'; // <-- Import the new component
+import ModuleRootDirEditor from './components/ModuleRootDirEditor.vue'; // 导入新组件
 
 // 使用 Pinia Store
 const coverageStore = useCoverageStore();
@@ -21,25 +21,25 @@ const coverageStore = useCoverageStore();
     <a-layout-content class="content">
       <a-spin :spinning="coverageStore.isLoadingReport || coverageStore.isLoadingInfo" tip="Processing files...">
         <a-space direction="vertical" size="large" style="width: 100%">
-          <!-- File Upload Component -->
+          <!-- 文件上传组件 -->
           <FileUpload />
 
-          <!-- Module Root Dir Editor (shown when info is loaded) -->
+          <!-- 模块根目录编辑器 (当 info 加载后显示) -->
           <ModuleRootDirEditor v-if="coverageStore.coverageInfo" />
 
-          <!-- Summary Component -->
+          <!-- 摘要组件 -->
           <CoverageSummary />
 
-          <!-- Group Details and Source Viewer under v-if -->
+          <!-- 将 Details 和 Source Viewer 组合在 v-if 下 -->
           <template v-if="coverageStore.coverageReport">
-            <!-- Details Component -->
+            <!-- 详情组件 -->
             <CoverageDetails />
 
-            <!-- SourceViewer now correctly uses moduleInfoMap from the store -->
+            <!-- SourceViewer 现在正确地使用 store 中的 moduleInfoMap -->
             <SourceViewer />
           </template>
 
-          <!-- Message when no report is loaded (use v-else) -->
+          <!-- 未加载报告时的消息 (使用 v-else) -->
           <a-card v-else>
             <p style="text-align: center; color: #888;">Please upload a coverage report file to view the analysis.</p>
           </a-card>
@@ -50,7 +50,7 @@ const coverageStore = useCoverageStore();
 </template>
 
 <style scoped>
-/* Global layout styles */
+/* 全局布局样式 */
 .layout {
   min-height: 100vh;
   background-color: #f0f2f5;
@@ -69,7 +69,7 @@ const coverageStore = useCoverageStore();
 </style>
 
 <style>
-/* Global styles (like body) remain */
+/* 全局样式 (例如 body) 保持不变 */
 body {
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 14px;

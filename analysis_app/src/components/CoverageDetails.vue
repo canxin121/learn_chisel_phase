@@ -9,7 +9,7 @@ const coverageStore = useCoverageStore();
 <template>
   <a-card class="coverage-details-card" title="Coverage Details">
     <a-tabs v-model:activeKey="coverageStore.activeTabKey">
-      <!-- Conditional Predicates Tab -->
+      <!-- 条件谓词选项卡 -->
       <a-tab-pane key="predicates" tab="Conditional Predicates">
         <div class="tree-container">
           <a-directory-tree :showLine="true" v-if="coverageStore.predicateTreeData.length > 0"
@@ -17,16 +17,16 @@ const coverageStore = useCoverageStore();
             :fieldNames="{ title: 'label', key: 'key', children: 'children' }">
             <template #title="{ data: nodeData }">
               <span class="tree-node-title">
-                <!-- Node Label (Instance or Signal Name) -->
+                <!-- 节点标签 (实例或信号名称) -->
                 <span :style="getNodeStyle(nodeData.coverage)" class="node-text">{{ nodeData.label }}</span>
 
-                <!-- Coverage Value (Aggregated or Direct) -->
+                <!-- 覆盖率值 (聚合或直接) -->
                 <span v-if="nodeData.coverage !== undefined" class="coverage-value"
                   :style="getNodeStyle(nodeData.coverage)">
                   ({{ formatCoverage(nodeData.coverage) }})
                 </span>
 
-                <!-- Signal Specific Details (ONLY for Signal nodes) -->
+                <!-- 信号特定详情 (仅适用于信号节点) -->
                 <span v-if="nodeData.isSignal && nodeData.data?.type === 'predicate' && nodeData.data"
                   class="node-details condition-details">
                   <a-tag :color="getConditionTagColor(nodeData.data.hit_true)">True</a-tag>
@@ -37,7 +37,7 @@ const coverageStore = useCoverageStore();
                     formatPercent(nodeData.data.false_percentage) }})</span>
                 </span>
 
-                <!-- Originating Module Indicator (ONLY for Signal nodes) -->
+                <!-- 原始模块指示器 (仅适用于信号节点) -->
                 <span v-if="nodeData.isSignal && nodeData.originatingModule && nodeData.originatingModule !== '?'"
                   class="originating-module-indicator" :title="`Originating Module: ${nodeData.originatingModule}`">
                   M:{{ nodeData.originatingModule }}
@@ -49,23 +49,23 @@ const coverageStore = useCoverageStore();
         </div>
       </a-tab-pane>
 
-      <!-- Mux Conditions Tab -->
+      <!-- Mux 条件选项卡 -->
       <a-tab-pane key="mux" tab="Mux Conditions">
         <div class="tree-container">
           <a-directory-tree v-if="coverageStore.muxTreeData.length > 0" :tree-data="coverageStore.muxTreeData"
             :default-expand-all="false" selectable :fieldNames="{ title: 'label', key: 'key', children: 'children' }">
             <template #title="{ data: nodeData }">
               <span class="tree-node-title">
-                <!-- Node Label (Instance or Signal Name) -->
+                <!-- 节点标签 (实例或信号名称) -->
                 <span :style="getNodeStyle(nodeData.coverage)" class="node-text">{{ nodeData.label }}</span>
 
-                <!-- Coverage Value (Aggregated or Direct) -->
+                <!-- 覆盖率值 (聚合或直接) -->
                 <span v-if="nodeData.coverage !== undefined" class="coverage-value"
                   :style="getNodeStyle(nodeData.coverage)">
                   ({{ formatCoverage(nodeData.coverage) }})
                 </span>
 
-                <!-- Signal Specific Details (ONLY for Signal nodes) -->
+                <!-- 信号特定详情 (仅适用于信号节点) -->
                 <span v-if="nodeData.isSignal && nodeData.data?.type === 'mux' && nodeData.data"
                   class="node-details condition-details">
                   <a-tag :color="getConditionTagColor(nodeData.data.hit_true)">True</a-tag>
@@ -76,7 +76,7 @@ const coverageStore = useCoverageStore();
                     formatPercent(nodeData.data.false_percentage) }})</span>
                 </span>
 
-                <!-- Originating Module Indicator (ONLY for Signal nodes) -->
+                <!-- 原始模块指示器 (仅适用于信号节点) -->
                 <span v-if="nodeData.isSignal && nodeData.originatingModule && nodeData.originatingModule !== '?'"
                   class="originating-module-indicator" :title="`Originating Module: ${nodeData.originatingModule}`">
                   M:{{ nodeData.originatingModule }}
@@ -88,33 +88,33 @@ const coverageStore = useCoverageStore();
         </div>
       </a-tab-pane>
 
-      <!-- Register Bits Tab -->
+      <!-- 寄存器位选项卡 -->
       <a-tab-pane key="registers" tab="Register Bits">
         <div class="tree-container">
           <a-directory-tree v-if="coverageStore.registerTreeData.length > 0" :tree-data="coverageStore.registerTreeData"
             :default-expand-all="false" selectable :fieldNames="{ title: 'label', key: 'key', children: 'children' }">
             <template #title="{ data: nodeData }">
               <span class="tree-node-title">
-                <!-- Node Label (Instance or Signal Name) -->
+                <!-- 节点标签 (实例或信号名称) -->
                 <span :style="getNodeStyle(nodeData.coverage)" class="node-text">{{ nodeData.label }}</span>
 
-                <!-- Coverage Value (Aggregated or Direct) -->
+                <!-- 覆盖率值 (聚合或直接) -->
                 <span v-if="nodeData.coverage !== undefined" class="coverage-value"
                   :style="getNodeStyle(nodeData.coverage)">
                   ({{ formatCoverage(nodeData.coverage) }})
                 </span>
 
-                <!-- Register Summary (ONLY for Signal nodes of type 'register') -->
+                <!-- 寄存器摘要 (仅适用于类型为 'register' 的信号节点) -->
                 <span v-if="nodeData.isSignal && nodeData.data?.type === 'register' && nodeData.data"
                   class="node-details register-summary-details">
                   (W: {{ nodeData.data.width }}, Hit: {{ nodeData.data.bins_hit }}/{{
                     nodeData.data.bins_total }})
                 </span>
 
-                <!-- Register Bit Details (ONLY for Signal nodes of type 'register_bit') -->
-                <!-- Note: buildCoverageTrees currently creates 'register' type nodes. -->
-                <!-- If you want bit-level nodes, buildCoverageTrees needs further modification. -->
-                <!-- This span likely won't render with the current buildCoverageTrees. -->
+                <!-- 寄存器位详情 (仅适用于类型为 'register_bit' 的信号节点) -->
+                <!-- 注意: buildCoverageTrees 当前创建 'register' 类型的节点。 -->
+                <!-- 如果需要位级节点，buildCoverageTrees 需要进一步修改。 -->
+                <!-- 这个 span 在当前的 buildCoverageTrees 下可能不会渲染。 -->
                 <span v-if="nodeData.isSignal && nodeData.data?.type === 'register_bit' && nodeData.data"
                   class="node-details bit-details">
                   <a-tag :color="getBitTagColor(nodeData.data.hit_zero)">0</a-tag>
@@ -127,7 +127,7 @@ const coverageStore = useCoverageStore();
                   </span>
                 </span>
 
-                <!-- Originating Module Indicator (ONLY for Signal nodes) -->
+                <!-- 原始模块指示器 (仅适用于信号节点) -->
                 <span v-if="nodeData.isSignal && nodeData.originatingModule && nodeData.originatingModule !== '?'"
                   class="originating-module-indicator" :title="`Originating Module: ${nodeData.originatingModule}`">
                   M:{{ nodeData.originatingModule }}
@@ -272,10 +272,10 @@ const coverageStore = useCoverageStore();
   flex-shrink: 0;
 }
 
-/* Ensure enough space for all elements */
+/* 确保所有元素有足够的空间 */
 :deep(.ant-tree-node-content-wrapper) {
   width: 100%;
   overflow: hidden;
-  /* Prevent content overflow */
+  /* 防止内容溢出 */
 }
 </style>
