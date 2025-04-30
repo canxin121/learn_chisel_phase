@@ -379,534 +379,534 @@ inline void CoverageCollector::initialize(VRocketALU *top) {
 
   // --- Placeholder for dynamically generated emplace_back calls ---
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___bext_mask_T_1", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_bext_mask_T_1);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___bext_mask_T_1", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_bext_mask_T_1);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_bext_mask_T_1" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_bext_mask_T_1" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___in2_inv_T", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_in2_inv_T);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___in2_inv_T", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_in2_inv_T);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_in2_inv_T" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_in2_inv_T" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___io_cmp_out_T_2", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_io_cmp_out_T_2);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___io_cmp_out_T_2", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_io_cmp_out_T_2);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_io_cmp_out_T_2" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_io_cmp_out_T_2" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___io_out_T_1", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_io_out_T_1);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___io_out_T_1", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_io_out_T_1);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_io_out_T_1" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_io_out_T_1" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___logic_T_14", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_logic_T_14);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___logic_T_14", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_logic_T_14);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_logic_T_14" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_logic_T_14" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___logic_T_6", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_logic_T_6);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___logic_T_6", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_logic_T_6);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_logic_T_6" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_logic_T_6" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___orcb_T_1", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_orcb_T_1);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___orcb_T_1", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_orcb_T_1);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_orcb_T_1" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_orcb_T_1" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___orcb_T_10", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_orcb_T_10);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___orcb_T_10", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_orcb_T_10);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_orcb_T_10" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_orcb_T_10" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___orcb_T_13", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_orcb_T_13);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___orcb_T_13", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_orcb_T_13);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_orcb_T_13" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_orcb_T_13" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___orcb_T_16", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_orcb_T_16);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___orcb_T_16", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_orcb_T_16);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_orcb_T_16" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_orcb_T_16" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___orcb_T_19", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_orcb_T_19);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___orcb_T_19", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_orcb_T_19);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_orcb_T_19" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_orcb_T_19" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___orcb_T_22", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_orcb_T_22);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___orcb_T_22", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_orcb_T_22);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_orcb_T_22" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_orcb_T_22" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___orcb_T_4", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_orcb_T_4);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___orcb_T_4", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_orcb_T_4);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_orcb_T_4" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_orcb_T_4" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___orcb_T_7", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_orcb_T_7);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___orcb_T_7", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_orcb_T_7);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_orcb_T_7" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_orcb_T_7" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___out_T", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_out_T);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___out_T", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_out_T);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_out_T" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_out_T" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___out_T_2", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_out_T_2);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___out_T_2", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_out_T_2);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_out_T_2" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_out_T_2" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_1", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_1);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_1", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_1);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_1" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_1" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_10", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_10);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_10", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_10);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_10" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_10" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_11", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_11);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_11", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_11);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_11" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_11" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_12", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_12);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_12", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_12);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_12" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_12" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_13", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_13);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_13", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_13);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_13" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_13" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_14", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_14);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_14", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_14);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_14" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_14" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_15", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_15);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_15", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_15);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_15" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_15" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_16", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_16);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_16", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_16);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_16" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_16" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_17", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_17);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_17", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_17);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_17" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_17" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_18", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_18);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_18", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_18);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_18" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_18" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_19", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_19);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_19", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_19);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_19" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_19" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_20", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_20);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_20", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_20);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_20" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_20" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_21", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_21);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_21", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_21);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_21" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_21" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_22", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_22);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_22", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_22);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_22" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_22" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_23", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_23);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_23", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_23);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_23" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_23" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_24", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_24);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_24", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_24);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_24" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_24" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_25", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_25);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_25", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_25);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_25" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_25" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_26", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_26);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_26", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_26);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_26" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_26" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_27", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_27);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_27", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_27);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_27" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_27" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_28", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_28);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_28", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_28);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_28" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_28" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_29", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_29);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_29", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_29);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_29" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_29" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_30", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_30);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_30", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_30);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_30" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_30" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_31", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_31);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_31", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_31);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_31" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_31" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_32", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_32);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_32", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_32);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_32" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_32" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_33", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_33);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_33", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_33);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_33" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_33" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_34", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_34);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_34", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_34);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_34" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_34" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_35", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_35);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_35", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_35);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_35" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_35" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_36", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_36);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_36", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_36);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_36" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_36" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_37", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_37);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_37", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_37);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_37" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_37" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_38", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_38);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_38", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_38);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_38" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_38" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_39", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_39);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_39", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_39);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_39" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_39" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_40", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_40);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_40", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_40);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_40" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_40" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_41", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_41);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_41", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_41);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_41" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_41" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_42", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_42);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_42", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_42);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_42" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_42" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_43", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_43);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_43", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_43);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_43" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_43" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_44", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_44);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_44", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_44);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_44" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_44" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_45", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_45);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_45", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_45);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_45" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_45" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_46", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_46);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_46", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_46);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_46" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_46" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_47", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_47);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_47", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_47);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_47" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_47" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_48", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_48);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_48", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_48);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_48" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_48" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_49", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_49);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_49", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_49);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_49" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_49" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_5", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_5);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_5", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_5);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_5" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_5" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_50", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_50);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_50", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_50);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_50" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_50" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_51", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_51);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_51", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_51);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_51" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_51" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_52", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_52);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_52", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_52);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_52" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_52" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_53", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_53);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_53", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_53);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_53" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_53" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_54", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_54);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_54", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_54);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_54" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_54" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_55", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_55);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_55", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_55);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_55" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_55" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_56", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_56);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_56", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_56);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_56" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_56" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_57", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_57);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_57", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_57);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_57" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_57" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_58", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_58);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_58", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_58);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_58" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_58" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_59", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_59);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_59", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_59);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_59" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_59" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_6", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_6);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_6", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_6);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_6" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_6" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_60", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_60);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_60", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_60);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_60" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_60" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_61", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_61);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_61", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_61);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_61" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_61" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_62", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_62);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_62", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_62);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_62" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_62" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_63", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_63);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_63", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_63);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_63" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_63" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_64", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_64);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_64", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_64);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_64" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_64" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_65", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_65);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_65", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_65);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_65" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_65" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_66", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_66);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_66", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_66);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_66" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_66" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_67", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_67);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_67", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_67);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_67" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_67" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_68", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_68);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_68", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_68);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_68" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_68" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_69", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_69);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_69", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_69);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_69" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_69" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_7", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_7);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_7", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_7);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_7" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_7" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_8", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_8);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_8", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_8);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_8" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_8" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___popc_in_T_9", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_9);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_9", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_9);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_popc_in_T_9" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_popc_in_T_9" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___rot_shamt_T", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_rot_shamt_T);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___rot_shamt_T", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_rot_shamt_T);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_rot_shamt_T" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_rot_shamt_T" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___rotin_T", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_rotin_T);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___rotin_T", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_rotin_T);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_rotin_T" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_rotin_T" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___rotout_T", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_rotout_T);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___rotout_T", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_rotout_T);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_rotout_T" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_rotout_T" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___rotout_T_2", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_rotout_T_2);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___rotout_T_2", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_rotout_T_2);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_rotout_T_2" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_rotout_T_2" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___shin_T_7", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_shin_T_7);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___shin_T_7", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_shin_T_7);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_shin_T_7" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_shin_T_7" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___shin_hi_32_T_3", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_shin_hi_32_T_3);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___shin_hi_32_T_3", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_shin_hi_32_T_3);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_shin_hi_32_T_3" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_shin_hi_32_T_3" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___shin_hi_T", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_shin_hi_T);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___shin_hi_T", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_shin_hi_T);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_shin_hi_T" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_shin_hi_T" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___shout_T_4", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_shout_T_4);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___shout_T_4", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_shout_T_4);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_shout_T_4" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_shout_T_4" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___shout_T_6", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_shout_T_6);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___shout_T_6", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_shout_T_6);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_shout_T_6" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_shout_T_6" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___slt_T_2", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_slt_T_2);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___slt_T_2", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_slt_T_2);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_slt_T_2" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_slt_T_2" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___slt_T_4", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_slt_T_4);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___slt_T_4", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_slt_T_4);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_slt_T_4" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_slt_T_4" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___tz_in_T_116", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_tz_in_T_116);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___tz_in_T_116", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_tz_in_T_116);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_tz_in_T_116" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_tz_in_T_116" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___tz_in_T_118", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_tz_in_T_118);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___tz_in_T_118", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_tz_in_T_118);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_tz_in_T_118" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_tz_in_T_118" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___tz_in_T_120", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_tz_in_T_120);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___tz_in_T_120", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_tz_in_T_120);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_tz_in_T_120" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_tz_in_T_120" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___unary_T_12", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_unary_T_12);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___unary_T_12", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_unary_T_12);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_unary_T_12" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_unary_T_12" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___unary_T_14", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_unary_T_14);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___unary_T_14", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_unary_T_14);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_unary_T_14" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_unary_T_14" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___unary_T_16", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_unary_T_16);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___unary_T_16", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_unary_T_16);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_unary_T_16" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_unary_T_16" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___unary_T_18", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_unary_T_18);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___unary_T_18", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_unary_T_18);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_unary_T_18" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_unary_T_18" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___unary_T_20", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_unary_T_20);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___unary_T_20", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_unary_T_20);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_unary_T_20" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_unary_T_20" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___unary_T_3", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_unary_T_3);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___unary_T_3", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_unary_T_3);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_unary_T_3" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_unary_T_3" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I___unary_T_8", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05F_unary_T_8);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S___unary_T_8", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_unary_T_8);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05F_unary_T_8" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05F_unary_T_8" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_RocketALU__I__local__I__io__S__cmp_out", &top->_mux_cond_RocketALU___05FI___05Flocal___05FI___05Fio___05FS___05Fcmp_out);
+    mux_condition_points.emplace_back("_mux_cond_RocketALU__M__RocketALU__S__io__s__cmp_out", &top->_mux_cond_RocketALU___05FM___05FRocketALU___05FS___05Fio___05Fs___05Fcmp_out);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FI___05Flocal___05FI___05Fio___05FS___05Fcmp_out" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond_RocketALU___05FM___05FRocketALU___05FS___05Fio___05Fs___05Fcmp_out" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_RocketALU__I__local__I___T_1", &top->_cond_pred_RocketALU___05FI___05Flocal___05FI___05F_T_1);
+    condition_points.emplace_back("_cond_pred_RocketALU__M__RocketALU__S___T_1", &top->_cond_pred_RocketALU___05FM___05FRocketALU___05FS___05F_T_1);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_RocketALU___05FI___05Flocal___05FI___05F_T_1" << std::endl;
+    std::cerr << "Error adding cond point _cond_pred_RocketALU___05FM___05FRocketALU___05FS___05F_T_1" << std::endl;
   }
 
   // --- End of generated emplace_back calls ---

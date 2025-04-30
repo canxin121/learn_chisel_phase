@@ -1,28 +1,57 @@
 import { invoke } from '@tauri-apps/api/core';
 
 export interface SignalInfo {
-    fieldName: string;
-    signalType: string;
+    name: string;
+    type: string;
     info: string;
     filePath?: string | null;
     line?: number | null;
     column?: number | null;
-    rootDir?: string | null;
+
 }
 
 export interface ExportedPort {
-    portName: string;
+    type: string;
     signals: SignalInfo[];
 }
+
+
+export interface ModuleInfo {
+    content: string | null;
+    filePath: string | null;
+    rootDir: string | null;
+}
+
+export interface InstanceSignalTree {
+    instanceName: string;
+    moduleName: string;
+    subInstances: InstanceSignalTree[];
+    signals: SignalInfo[];
+}
+
 
 export interface CoverageInfo {
     topModuleName: string;
     exportedPorts: ExportedPort[];
-    sourceFiles: Record<string, string>;
+    moduleInfoMap: Record<string, ModuleInfo>;
+    instanceSignalMap: InstanceSignalTree;
 }
 
-export async function parseCoverageInfo(rawCoverageInfo: CoverageInfo): Promise<CoverageInfo> {
+export async function parseCoverageInfo(rawCoverageInfo: any): Promise<CoverageInfo> {
     const processedInfo: CoverageInfo = await invoke("parse_coverage_info", { coverageInfo: rawCoverageInfo });
     return processedInfo;
 }
 
+export async function rereadFilesWithNewRootBatch(
+    currentCoverageInfo: CoverageInfo,
+    moduleKeys: string[], // Expect an array of keys
+    newRootDir: string
+): Promise<CoverageInfo> {
+    console.log(`Calling backend reread_files_with_new_root_batch for keys: ${moduleKeys.join(', ')}`);
+    const updatedInfo: CoverageInfo = await invoke("reread_files_with_new_root_batch", {
+        coverageInfo: currentCoverageInfo,
+        moduleKeys: moduleKeys, // Pass the array
+        newRootDir: newRootDir
+    });
+    return updatedInfo;
+}

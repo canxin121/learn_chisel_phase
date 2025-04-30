@@ -17,7 +17,7 @@ VRocketALU___024root::VRocketALU___024root(VRocketALU__Syms* symsp, const char* 
 }
 
 void VRocketALU___024root::__Vconfigure(bool first) {
-    if (false && first) {}  // Prevent unused
+    (void)first;  // Prevent unused variable warning
 }
 
 VRocketALU___024root::~VRocketALU___024root() {

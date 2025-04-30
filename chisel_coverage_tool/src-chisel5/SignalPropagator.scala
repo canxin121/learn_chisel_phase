@@ -94,8 +94,9 @@ object SignalPropagator {
 
   // --- 常量定义 ---
   val InstanceSeparator = "__I__"
-  val SubfieldSeparator = "__S__"
-  val LocalMarker = "local"
+  val ModuleMarker = "__M__"
+  val SignalMarker = "__S__"
+  val InternalSeparator = "__s__" 
 
   // --- 通用数据结构 ---
   case class SignalOriginInfo(
@@ -163,14 +164,14 @@ object SignalPropagator {
     case Reference(name, _) => name
     case SubField(innerExpr, fieldName, _) =>
       val innerIdentifier = getSignalBaseIdentifier(innerExpr, signalTypeName)
-      s"${innerIdentifier}${SubfieldSeparator}$fieldName"
+      s"${innerIdentifier}${InternalSeparator}$fieldName"
     case SubIndex(innerExpr, index, _) =>
       val innerIdentifier = getSignalBaseIdentifier(innerExpr, signalTypeName)
-      s"${innerIdentifier}${SubfieldSeparator}$index"
+      s"${innerIdentifier}${InternalSeparator}$index"
     case SubAccess(innerExpr, indexExpr, _) =>
       val innerIdentifier = getSignalBaseIdentifier(innerExpr, signalTypeName)
       val indexStr = indexExpr.serialize.replaceAll("[^\\w]", "_")
-      s"${innerIdentifier}${SubfieldSeparator}access_$indexStr"
+      s"${innerIdentifier}${InternalSeparator}access_$indexStr"
     case otherExpr =>
       throwInternalError(
         s"SignalPropagator.getSignalBaseIdentifier: 遇到不符合假设的 ${signalTypeName} 表达式类型: ${otherExpr.getClass.getName}. " +
@@ -338,7 +339,7 @@ object SignalPropagator {
               val instancePathPrefix =
                 currentInstancePath.mkString(InstanceSeparator)
               val uniqueFieldName =
-                s"${instancePathPrefix}${InstanceSeparator}${LocalMarker}${InstanceSeparator}$signalBaseId"
+                s"${instancePathPrefix}${ModuleMarker}${module.name}${SignalMarker}$signalBaseId"
               LocalSignalSource(
                 uniqueFieldName,
                 SignalOriginInfo(signalExpr, originalSignalType, originInfo)

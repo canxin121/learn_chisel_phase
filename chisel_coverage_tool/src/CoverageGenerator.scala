@@ -7,8 +7,69 @@ import scala.collection.mutable
 import scala.io.Source
 import java.nio.charset.StandardCharsets
 import java.io.{InputStream, IOException} // 导入 InputStream
+import scala.collection.mutable.ListBuffer // <-- 新增导入
 
 object CoverageCollectorGenerator {
+
+  // --- Helper Functions (Moved from CoverageTool) ---
+
+  /** 辅助函数：转义 JSON 字符串中的特殊字符 */
+  private def escapeJsonString(s: String): String = {
+    s.replace("\\", "\\\\")
+      .replace("\"", "\\\"")
+      .replace("\b", "\\b")
+      .replace("\f", "\\f")
+      .replace("\n", "\\n")
+      .replace("\r", "\\r")
+      .replace("\t", "\\t")
+  }
+
+  /** 辅助数据结构，用于存储展开后的标量信号信息和其原始名称 */
+  private case class FlattenedSignalData(
+      originalName: String, // 原始（未展开）的信号名称
+      scalarType: GroundType, // 展开后的标量类型
+      info: Info // 原始的 Info
+  )
+
+  /** 递归地将向量/数组信号展开为标量信号数据 */
+  private def flattenSignalInfo(
+      originalName: String, // 传入原始名称
+      fieldType: Type,
+      originalInfo: Info
+  ): Seq[FlattenedSignalData] = {
+    val results = ListBuffer[FlattenedSignalData]()
+
+    def run(currentType: Type): Unit = {
+      currentType match {
+        case VectorType(elementType, size) =>
+          if (size > 0) {
+            (0 until size).foreach { _ => // 递归处理每个元素，但结果共享原始名称
+              run(elementType)
+            }
+          } // 零长度向量忽略
+        case _: BundleType =>
+          // 忽略 Bundle
+          ()
+        case groundType: GroundType =>
+          // 基本情况：遇到标量类型，添加结果
+          results += FlattenedSignalData(
+            originalName = originalName, // 使用传入的原始名称
+            scalarType = groundType,
+            info = originalInfo
+          )
+        case otherType =>
+          println(
+            s"[WARN] Encountered unexpected type '${otherType.serialize}' for original field '$originalName' during flattening. Skipping."
+          )
+          ()
+      }
+    }
+
+    run(fieldType)
+    results.toList
+  }
+
+  // --- End of Moved Helper Functions ---
 
   /** Reads a resource file from the classpath. Assumes the resource is packaged
     * within the JAR.
@@ -60,6 +121,18 @@ object CoverageCollectorGenerator {
       w // Note: Analog width might not always be meaningful for coverage? Keep for now.
     case ClockType | ResetType | AsyncResetType | BoolType =>
       BigInt(1) // Treat as 1-bit signals
+    // --- 新增: 处理没有显式宽度的 UInt/SInt ---
+    case _: UIntType =>
+      println(
+        s"[WARN] CoverageCollectorGenerator: Encountered UIntType without explicit width (${tpe.serialize}). Assuming width 1."
+      )
+      BigInt(1)
+    case _: SIntType =>
+      println(
+        s"[WARN] CoverageCollectorGenerator: Encountered SIntType without explicit width (${tpe.serialize}). Assuming width 1."
+      )
+      BigInt(1)
+    // --- 结束新增 ---
     case _ =>
       throw new IllegalArgumentException(
         s"CoverageCollectorGenerator: Cannot extract width from unsupported ground type: ${tpe.getClass.getName} (${tpe.serialize})"
@@ -255,4 +328,64 @@ object CoverageCollectorGenerator {
     val template = readResource("templates/coverage.template.bash")
     template.replace("{{TOP_MODULE_NAME}}", topModuleName)
   }
+
+  // --- generateCoverageInfoJson (Moved from CoverageTool and made public) ---
+  /** 生成包含 TopLevelExportInfo 信息的 JSON 字符串 (新格式) */
+  def generateCoverageInfoJson(
+      topModuleName: String,
+      exportInfos: List[TopLevelExportInfo]
+  ): String = {
+    val portsJson = exportInfos
+      .map { portInfo =>
+        // 1. 将 portName 映射到 type
+        val portTypeString = portInfo.portName match {
+          case "_cond_pred"   => "cond_pred"
+          case "_mux_cond"    => "mux_cond"
+          case "_reg_signals" => "register" // 修正: 寄存器类型名称是 "_reg_signals"
+          case other          => escapeJsonString(other) // 保留未知类型，进行转义
+        }
+
+        // 2. 对每个端口中的信号列表进行 flatMap 操作，应用 flattenSignalInfo
+        val flattenedSignals = portInfo.exportedSignals.flatMap { signal =>
+          // 构建完整的信号名称 (前缀 + 字段名)
+          val fullSignalName = s"${portInfo.portName}_${signal.fieldName}"
+          // 调用 flattenSignalInfo，传入完整的原始名称
+          flattenSignalInfo(fullSignalName, signal.fieldtype, signal.info)
+        }
+
+        // 3. 为展开后的每个标量信号生成 JSON 条目 (使用新格式)
+        val signalsJson = flattenedSignals
+          .sortBy(_.originalName) // 按原始名称排序以保持一致性
+          .map { flatSignal =>
+            s"""      {
+               |        "name": "${escapeJsonString(
+                flatSignal.originalName // 使用包含前缀的完整原始名称
+              )}",
+               |        "type": "${escapeJsonString(
+                flatSignal.scalarType.serialize // 使用展开后的标量类型
+              )}",
+               |        "info": "${escapeJsonString(flatSignal.info.serialize)}"
+               |      }""".stripMargin
+          }
+          .mkString(",\n")
+
+        // 4. 生成端口/类型组的 JSON
+        s"""    {
+           |      "type": "$portTypeString",
+           |      "signals": [
+           |$signalsJson
+           |      ]
+           |    }""".stripMargin
+      }
+      .mkString(",\n")
+
+    // 5. 生成顶层 JSON 结构
+    s"""{
+       |  "topModuleName": "${escapeJsonString(topModuleName)}",
+       |  "exportedPorts": [
+       |$portsJson
+       |  ]
+       |}""".stripMargin
+  }
+
 } // End of CoverageCollectorGenerator object

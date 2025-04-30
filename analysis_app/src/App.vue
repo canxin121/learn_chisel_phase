@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, nextTick, watch } from "vue";
+import { ref } from "vue";
 import { useCoverageStore } from "./stores/coverageStore";
 
 // Import components
@@ -7,26 +7,10 @@ import FileUpload from './components/FileUpload.vue';
 import CoverageSummary from './components/CoverageSummary.vue';
 import CoverageDetails from './components/CoverageDetails.vue';
 import SourceViewer from './components/SourceViewer.vue';
+import ModuleRootDirEditor from './components/ModuleRootDirEditor.vue'; // <-- Import the new component
 
 // 使用 Pinia Store
 const coverageStore = useCoverageStore();
-
-// Refs
-const sourceViewerWrapperRef = ref<HTMLElement | null>(null);
-
-// 监听 store 中的 selectedSourcePath, highlightLine 和 selectionTrigger 来滚动页面
-watch([() => coverageStore.selectedSourcePath, () => coverageStore.highlightLine, () => coverageStore.selectionTrigger],
-  ([newPath, newLine]) => { // selectionTrigger 的变化会触发回调
-    if (newPath && newLine !== null) {
-      nextTick(() => {
-        // 使用 setTimeout 确保 SourceViewer 组件有时间响应 store 更新并渲染
-        setTimeout(() => {
-          sourceViewerWrapperRef.value?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          console.log("App.vue: Scrolled page to SourceViewer wrapper due to store change.");
-        }, 100); // 增加一点延迟以确保 SourceViewer 内部滚动完成
-      });
-    }
-  });
 
 </script>
 
@@ -37,21 +21,22 @@ watch([() => coverageStore.selectedSourcePath, () => coverageStore.highlightLine
     <a-layout-content class="content">
       <a-spin :spinning="coverageStore.isLoadingReport || coverageStore.isLoadingInfo" tip="Processing files...">
         <a-space direction="vertical" size="large" style="width: 100%">
-          <!-- File Upload Component - 移除事件监听 -->
+          <!-- File Upload Component -->
           <FileUpload />
+
+          <!-- Module Root Dir Editor (shown when info is loaded) -->
+          <ModuleRootDirEditor v-if="coverageStore.coverageInfo" />
 
           <!-- Summary Component -->
           <CoverageSummary />
 
           <!-- Group Details and Source Viewer under v-if -->
           <template v-if="coverageStore.coverageReport">
-            <!-- Details Component (Trees Only) - 移除事件监听 -->
+            <!-- Details Component -->
             <CoverageDetails />
 
-            <!-- Add a wrapper div with the ref -->
-            <div ref="sourceViewerWrapperRef">
-              <SourceViewer />
-            </div>
+            <!-- SourceViewer now correctly uses moduleInfoMap from the store -->
+            <SourceViewer />
           </template>
 
           <!-- Message when no report is loaded (use v-else) -->

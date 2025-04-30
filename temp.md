@@ -1,0 +1,3 @@
+TopModuleNameAsTopInstanceName__I__subinstance1__I__subinstance2__M__SubInstance2Module__S__signal1__s__out
+
+上述是一个 探针信号名称, 首先是 将TopModule的名字作为顶层实例的名字, 然后使用__I__连接实例路径, 然后使用__M__标志最后一个实例的Module名称, 然后使用__S__标注信号名称, __s__则是代替信号中的`.`

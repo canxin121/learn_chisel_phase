@@ -1,49 +1,48 @@
 {
   "topModuleName": "WaveformGenerator",
-  "currentWorkingDirectory": "/home/canxin/Documents/git/chisel_coverage_tool/.",
   "exportedPorts": [
     {
-      "portName": "_mux_cond",
+      "type": "mux_cond",
       "signals": [
       {
-        "fieldName": "WaveformGenerator__I__local__I___io_output_T_4",
+        "name": "_mux_cond_WaveformGenerator__M__WaveformGenerator__S___io_output_T_4",
         "type": "UInt<1>",
-        "info": " @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 53:23]"
+        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\WaveformGenerator.scala 53:23]"
       }
       ]
     },
     {
-      "portName": "_cond_pred",
+      "type": "cond_pred",
       "signals": [
       {
-        "fieldName": "WaveformGenerator__I__local__I___T",
+        "name": "_cond_pred_WaveformGenerator__M__WaveformGenerator__S___T",
         "type": "UInt<1>",
-        "info": " @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 42:23]"
+        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\WaveformGenerator.scala 42:23]"
       },
       {
-        "fieldName": "WaveformGenerator__I__local__I___T_1",
+        "name": "_cond_pred_WaveformGenerator__M__WaveformGenerator__S___T_1",
         "type": "UInt<1>",
-        "info": " @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 42:23]"
+        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\WaveformGenerator.scala 42:23]"
       },
       {
-        "fieldName": "WaveformGenerator__I__local__I___T_2",
+        "name": "_cond_pred_WaveformGenerator__M__WaveformGenerator__S___T_2",
         "type": "UInt<1>",
-        "info": " @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 42:23]"
+        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\WaveformGenerator.scala 42:23]"
       },
       {
-        "fieldName": "WaveformGenerator__I__local__I___T_3",
+        "name": "_cond_pred_WaveformGenerator__M__WaveformGenerator__S___T_3",
         "type": "UInt<1>",
-        "info": " @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 42:23]"
+        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\WaveformGenerator.scala 42:23]"
       }
       ]
     },
     {
-      "portName": "_reg_signals",
+      "type": "register",
       "signals": [
       {
-        "fieldName": "WaveformGenerator__I__local__I__phaseAcc",
+        "name": "_reg_signals_WaveformGenerator__M__WaveformGenerator__S__phaseAcc",
         "type": "UInt<16>",
-        "info": " @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 17:25]"
+        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\WaveformGenerator.scala 17:25]"
       }
       ]
     }

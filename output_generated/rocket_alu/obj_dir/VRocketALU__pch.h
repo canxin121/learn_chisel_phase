@@ -23,4 +23,6 @@
 #include "VRocketALU__Syms.h"
 #include "VRocketALU.h"
 
+// Additional include files added using '--compiler-include'
+
 #endif  // guard

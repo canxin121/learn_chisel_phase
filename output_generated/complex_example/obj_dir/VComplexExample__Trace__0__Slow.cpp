@@ -28,17 +28,17 @@ VL_ATTR_COLD void VComplexExample___024root__trace_init_sub__TOP__0(VComplexExam
     tracep->declBit(c+1,0,"clock",-1, VerilatedTraceSigDirection::INPUT, VerilatedTraceSigKind::WIRE, VerilatedTraceSigType::LOGIC, false,-1);
     tracep->declBit(c+2,0,"reset",-1, VerilatedTraceSigDirection::INPUT, VerilatedTraceSigKind::WIRE, VerilatedTraceSigType::LOGIC, false,-1);
     tracep->declBus(c+7,0,"io_in",-1, VerilatedTraceSigDirection::INPUT, VerilatedTraceSigKind::WIRE, VerilatedTraceSigType::LOGIC, false,-1, 7,0);
-    tracep->declBus(c+6,0,"io_out",-1, VerilatedTraceSigDirection::OUTPUT, VerilatedTraceSigKind::WIRE, VerilatedTraceSigType::LOGIC, false,-1, 7,0);
-    tracep->declBus(c+8,0,"delayedIn",-1, VerilatedTraceSigDirection::NONE, VerilatedTraceSigKind::VAR, VerilatedTraceSigType::LOGIC, false,-1, 7,0);
+    tracep->declBus(c+8,0,"io_out",-1, VerilatedTraceSigDirection::OUTPUT, VerilatedTraceSigKind::WIRE, VerilatedTraceSigType::LOGIC, false,-1, 7,0);
+    tracep->declBus(c+9,0,"delayedIn",-1, VerilatedTraceSigDirection::NONE, VerilatedTraceSigKind::VAR, VerilatedTraceSigType::LOGIC, false,-1, 7,0);
     tracep->popPrefix();
     tracep->pushPrefix("sub", VerilatedTracePrefixType::SCOPE_MODULE);
     tracep->declBit(c+1,0,"clock",-1, VerilatedTraceSigDirection::INPUT, VerilatedTraceSigKind::WIRE, VerilatedTraceSigType::LOGIC, false,-1);
     tracep->declBit(c+2,0,"reset",-1, VerilatedTraceSigDirection::INPUT, VerilatedTraceSigKind::WIRE, VerilatedTraceSigType::LOGIC, false,-1);
-    tracep->declBus(c+3,0,"io_a",-1, VerilatedTraceSigDirection::INPUT, VerilatedTraceSigKind::WIRE, VerilatedTraceSigType::LOGIC, false,-1, 7,0);
-    tracep->declBus(c+4,0,"io_b",-1, VerilatedTraceSigDirection::INPUT, VerilatedTraceSigKind::WIRE, VerilatedTraceSigType::LOGIC, false,-1, 7,0);
+    tracep->declBus(c+10,0,"io_a",-1, VerilatedTraceSigDirection::INPUT, VerilatedTraceSigKind::WIRE, VerilatedTraceSigType::LOGIC, false,-1, 7,0);
+    tracep->declBus(c+11,0,"io_b",-1, VerilatedTraceSigDirection::INPUT, VerilatedTraceSigKind::WIRE, VerilatedTraceSigType::LOGIC, false,-1, 7,0);
     tracep->declBus(c+5,0,"io_sel",-1, VerilatedTraceSigDirection::INPUT, VerilatedTraceSigKind::WIRE, VerilatedTraceSigType::LOGIC, false,-1, 1,0);
-    tracep->declBus(c+7,0,"io_out",-1, VerilatedTraceSigDirection::OUTPUT, VerilatedTraceSigKind::WIRE, VerilatedTraceSigType::LOGIC, false,-1, 7,0);
-    tracep->declBus(c+9,0,"stateReg",-1, VerilatedTraceSigDirection::NONE, VerilatedTraceSigKind::VAR, VerilatedTraceSigType::LOGIC, false,-1, 7,0);
+    tracep->declBus(c+12,0,"io_out",-1, VerilatedTraceSigDirection::OUTPUT, VerilatedTraceSigKind::WIRE, VerilatedTraceSigType::LOGIC, false,-1, 7,0);
+    tracep->declBus(c+13,0,"stateReg",-1, VerilatedTraceSigDirection::NONE, VerilatedTraceSigKind::VAR, VerilatedTraceSigType::LOGIC, false,-1, 7,0);
     tracep->popPrefix();
     tracep->popPrefix();
 }
@@ -98,7 +98,12 @@ VL_ATTR_COLD void VComplexExample___024root__trace_full_0_sub_0(VComplexExample_
     bufp->fullCData(oldp+4,(vlSelfRef.io_topInB),8);
     bufp->fullCData(oldp+5,(vlSelfRef.io_topSel),2);
     bufp->fullCData(oldp+6,(vlSelfRef.io_topOut),8);
-    bufp->fullCData(oldp+7,(vlSelfRef.ComplexExample__DOT___sub_io_out),8);
-    bufp->fullCData(oldp+8,(vlSelfRef.ComplexExample__DOT__anotherSub__DOT__delayedIn),8);
-    bufp->fullCData(oldp+9,(vlSelfRef.ComplexExample__DOT__sub__DOT__stateReg),8);
+    bufp->fullCData(oldp+7,(vlSelfRef.ComplexExample__DOT____Vcellinp__anotherSub__io_in),8);
+    bufp->fullCData(oldp+8,((0xffU & ((IData)(vlSelfRef.ComplexExample__DOT__anotherSub__DOT__delayedIn) 
+                                      + (IData)(vlSelfRef._cond_pred_ComplexExample___05FI___05FanotherSub___05FM___05FAnotherSubModule___05FS___05F_T)))),8);
+    bufp->fullCData(oldp+9,(vlSelfRef.ComplexExample__DOT__anotherSub__DOT__delayedIn),8);
+    bufp->fullCData(oldp+10,(vlSelfRef.ComplexExample__DOT____Vcellinp__sub__io_a),8);
+    bufp->fullCData(oldp+11,(vlSelfRef.ComplexExample__DOT____Vcellinp__sub__io_b),8);
+    bufp->fullCData(oldp+12,(vlSelfRef.ComplexExample__DOT___sub_io_out),8);
+    bufp->fullCData(oldp+13,(vlSelfRef.ComplexExample__DOT__sub__DOT__stateReg),8);
 }

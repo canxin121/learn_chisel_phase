@@ -5,9 +5,9 @@
 
 
 VL_ATTR_COLD void VRocketALU___024root__trace_init_sub__TOP__0(VRocketALU___024root* vlSelf, VerilatedVcd* tracep) {
-    if (false && vlSelf) {}  // Prevent unused
-    VRocketALU__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     VL_DEBUG_IF(VL_DBG_MSGF("+    VRocketALU___024root__trace_init_sub__TOP__0\n"); );
+    VRocketALU__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
+    auto& vlSelfRef = std::ref(*vlSelf).get();
     // Init
     const int c = vlSymsp->__Vm_baseCode;
     // Body
@@ -40,9 +40,9 @@ VL_ATTR_COLD void VRocketALU___024root__trace_init_sub__TOP__0(VRocketALU___024r
 }
 
 VL_ATTR_COLD void VRocketALU___024root__trace_init_top(VRocketALU___024root* vlSelf, VerilatedVcd* tracep) {
-    if (false && vlSelf) {}  // Prevent unused
-    VRocketALU__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     VL_DEBUG_IF(VL_DBG_MSGF("+    VRocketALU___024root__trace_init_top\n"); );
+    VRocketALU__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
+    auto& vlSelfRef = std::ref(*vlSelf).get();
     // Body
     VRocketALU___024root__trace_init_sub__TOP__0(vlSelf, tracep);
 }
@@ -53,9 +53,9 @@ void VRocketALU___024root__trace_chg_0(void* voidSelf, VerilatedVcd::Buffer* buf
 void VRocketALU___024root__trace_cleanup(void* voidSelf, VerilatedVcd* /*unused*/);
 
 VL_ATTR_COLD void VRocketALU___024root__trace_register(VRocketALU___024root* vlSelf, VerilatedVcd* tracep) {
-    if (false && vlSelf) {}  // Prevent unused
-    VRocketALU__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     VL_DEBUG_IF(VL_DBG_MSGF("+    VRocketALU___024root__trace_register\n"); );
+    VRocketALU__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
+    auto& vlSelfRef = std::ref(*vlSelf).get();
     // Body
     tracep->addConstCb(&VRocketALU___024root__trace_const_0, 0U, vlSelf);
     tracep->addFullCb(&VRocketALU___024root__trace_full_0, 0U, vlSelf);
@@ -82,25 +82,25 @@ VL_ATTR_COLD void VRocketALU___024root__trace_full_0(void* voidSelf, VerilatedVc
 }
 
 VL_ATTR_COLD void VRocketALU___024root__trace_full_0_sub_0(VRocketALU___024root* vlSelf, VerilatedVcd::Buffer* bufp) {
-    if (false && vlSelf) {}  // Prevent unused
-    VRocketALU__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     VL_DEBUG_IF(VL_DBG_MSGF("+    VRocketALU___024root__trace_full_0_sub_0\n"); );
+    VRocketALU__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
+    auto& vlSelfRef = std::ref(*vlSelf).get();
     // Init
     uint32_t* const oldp VL_ATTR_UNUSED = bufp->oldp(vlSymsp->__Vm_baseCode);
     // Body
-    bufp->fullQData(oldp+1,(vlSelf->RocketALU__DOT__in2_inv),64);
-    bufp->fullQData(oldp+3,(vlSelf->RocketALU__DOT__in1_xor_in2),64);
-    bufp->fullBit(oldp+5,(vlSelf->RocketALU__DOT__slt));
-    bufp->fullIData(oldp+6,(vlSelf->RocketALU__DOT__shin_hi),32);
-    bufp->fullQData(oldp+7,(vlSelf->RocketALU__DOT__shin),64);
-    bufp->fullQData(oldp+9,(vlSelf->RocketALU__DOT__out),64);
-    bufp->fullBit(oldp+11,(vlSelf->clock));
-    bufp->fullBit(oldp+12,(vlSelf->reset));
-    bufp->fullBit(oldp+13,(vlSelf->io_dw));
-    bufp->fullCData(oldp+14,(vlSelf->io_fn),5);
-    bufp->fullQData(oldp+15,(vlSelf->io_in2),64);
-    bufp->fullQData(oldp+17,(vlSelf->io_in1),64);
-    bufp->fullQData(oldp+19,(vlSelf->io_out),64);
-    bufp->fullQData(oldp+21,(vlSelf->io_adder_out),64);
-    bufp->fullBit(oldp+23,(vlSelf->io_cmp_out));
+    bufp->fullQData(oldp+1,(vlSelfRef.RocketALU__DOT__in2_inv),64);
+    bufp->fullQData(oldp+3,(vlSelfRef.RocketALU__DOT__in1_xor_in2),64);
+    bufp->fullBit(oldp+5,(vlSelfRef.RocketALU__DOT__slt));
+    bufp->fullIData(oldp+6,(vlSelfRef.RocketALU__DOT__shin_hi),32);
+    bufp->fullQData(oldp+7,(vlSelfRef.RocketALU__DOT__shin),64);
+    bufp->fullQData(oldp+9,(vlSelfRef.RocketALU__DOT__out),64);
+    bufp->fullBit(oldp+11,(vlSelfRef.clock));
+    bufp->fullBit(oldp+12,(vlSelfRef.reset));
+    bufp->fullBit(oldp+13,(vlSelfRef.io_dw));
+    bufp->fullCData(oldp+14,(vlSelfRef.io_fn),5);
+    bufp->fullQData(oldp+15,(vlSelfRef.io_in2),64);
+    bufp->fullQData(oldp+17,(vlSelfRef.io_in1),64);
+    bufp->fullQData(oldp+19,(vlSelfRef.io_out),64);
+    bufp->fullQData(oldp+21,(vlSelfRef.io_adder_out),64);
+    bufp->fullBit(oldp+23,(vlSelfRef.io_cmp_out));
 }

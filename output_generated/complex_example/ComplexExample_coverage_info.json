@@ -1,44 +1,78 @@
 {
   "topModuleName": "ComplexExample",
-  "currentWorkingDirectory": "/home/canxin/Documents/git/chisel_coverage_tool/.",
   "exportedPorts": [
     {
-      "portName": "_cond_pred",
+      "type": "mux_cond",
       "signals": [
       {
-        "fieldName": "ComplexExample__I__anotherSub__I__local__I___T",
+        "name": "_mux_cond_ComplexExample__M__ComplexExample__S___anotherSub_io_in_T",
         "type": "UInt<1>",
-        "info": " @[chisel_coverage_tool/src/modules/AnotherSubModule.scala 17:23]"
+        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\ComplexExample.scala 30:26]"
       },
       {
-        "fieldName": "ComplexExample__I__sub__I__local__I___T",
+        "name": "_mux_cond_ComplexExample__M__ComplexExample__S___sub_io_a_T",
         "type": "UInt<1>",
-        "info": " @[chisel_coverage_tool/src/modules/SubModule.scala 20:18]"
-      },
-      {
-        "fieldName": "ComplexExample__I__sub__I__local__I___T_1",
-        "type": "UInt<1>",
-        "info": " @[chisel_coverage_tool/src/modules/SubModule.scala 20:18]"
-      },
-      {
-        "fieldName": "ComplexExample__I__sub__I__local__I___T_2",
-        "type": "UInt<1>",
-        "info": " @[chisel_coverage_tool/src/modules/SubModule.scala 20:18]"
+        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\ComplexExample.scala 18:18]"
       }
       ]
     },
     {
-      "portName": "_reg_signals",
+      "type": "cond_pred",
       "signals": [
       {
-        "fieldName": "ComplexExample__I__anotherSub__I__local__I__delayedIn",
-        "type": "UInt",
-        "info": " @[chisel_coverage_tool/src/modules/AnotherSubModule.scala 12:26]"
+        "name": "_cond_pred_ComplexExample__I__anotherSub__M__AnotherSubModule__S___T",
+        "type": "UInt<1>",
+        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\AnotherSubModule.scala 17:23]"
       },
       {
-        "fieldName": "ComplexExample__I__sub__I__local__I__stateReg",
+        "name": "_cond_pred_ComplexExample__I__sub__M__SubModule__S___T",
+        "type": "UInt<1>",
+        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\SubModule.scala 20:18]"
+      },
+      {
+        "name": "_cond_pred_ComplexExample__I__sub__M__SubModule__S___T_1",
+        "type": "UInt<1>",
+        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\SubModule.scala 20:18]"
+      },
+      {
+        "name": "_cond_pred_ComplexExample__I__sub__M__SubModule__S___T_2",
+        "type": "UInt<1>",
+        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\SubModule.scala 20:18]"
+      },
+      {
+        "name": "_cond_pred_ComplexExample__M__ComplexExample__S___T",
+        "type": "UInt<1>",
+        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\ComplexExample.scala 22:22]"
+      },
+      {
+        "name": "_cond_pred_ComplexExample__M__ComplexExample__S___T_1",
+        "type": "UInt<1>",
+        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\ComplexExample.scala 33:27]"
+      },
+      {
+        "name": "_cond_pred_ComplexExample__M__ComplexExample__S___T_2",
+        "type": "UInt<1>",
+        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\ComplexExample.scala 35:33]"
+      },
+      {
+        "name": "_cond_pred_ComplexExample__M__ComplexExample__S___T_3",
+        "type": "UInt<1>",
+        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\ComplexExample.scala 37:33]"
+      }
+      ]
+    },
+    {
+      "type": "register",
+      "signals": [
+      {
+        "name": "_reg_signals_ComplexExample__I__anotherSub__M__AnotherSubModule__S__delayedIn",
+        "type": "UInt",
+        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\AnotherSubModule.scala 12:26]"
+      },
+      {
+        "name": "_reg_signals_ComplexExample__I__sub__M__SubModule__S__stateReg",
         "type": "UInt<8>",
-        "info": " @[chisel_coverage_tool/src/modules/SubModule.scala 14:25]"
+        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\SubModule.scala 14:25]"
       }
       ]
     }

@@ -46,7 +46,7 @@ VL_ATTR_COLD void VComplexExample___024root___eval_settle(VComplexExample___024r
 #ifdef VL_DEBUG
             VComplexExample___024root___dump_triggers__stl(vlSelf);
 #endif
-            VL_FATAL_MT("ComplexExample.sv", 55, "", "Settle region did not converge.");
+            VL_FATAL_MT("ComplexExample.sv", 56, "", "Settle region did not converge.");
         }
         __VstlIterCount = ((IData)(1U) + __VstlIterCount);
         __VstlContinue = 0U;
@@ -89,16 +89,38 @@ VL_ATTR_COLD void VComplexExample___024root___stl_sequent__TOP__0(VComplexExampl
     VComplexExample__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     auto& vlSelfRef = std::ref(*vlSelf).get();
     // Body
-    vlSelfRef._cond_pred_ComplexExample___05FI___05Fsub___05FI___05Flocal___05FI___05F_T 
-        = (0U == (IData)(vlSelfRef.io_topSel));
-    vlSelfRef._cond_pred_ComplexExample___05FI___05Fsub___05FI___05Flocal___05FI___05F_T_1 
-        = (1U == (IData)(vlSelfRef.io_topSel));
-    vlSelfRef._cond_pred_ComplexExample___05FI___05Fsub___05FI___05Flocal___05FI___05F_T_2 
-        = (2U == (IData)(vlSelfRef.io_topSel));
-    vlSelfRef._reg_signals_ComplexExample___05FI___05FanotherSub___05FI___05Flocal___05FI___05FdelayedIn 
+    vlSelfRef._reg_signals_ComplexExample___05FI___05FanotherSub___05FM___05FAnotherSubModule___05FS___05FdelayedIn 
         = vlSelfRef.ComplexExample__DOT__anotherSub__DOT__delayedIn;
-    vlSelfRef._reg_signals_ComplexExample___05FI___05Fsub___05FI___05Flocal___05FI___05FstateReg 
+    vlSelfRef._reg_signals_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05FstateReg 
         = vlSelfRef.ComplexExample__DOT__sub__DOT__stateReg;
+    vlSelfRef._cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T 
+        = (0U == (IData)(vlSelfRef.io_topSel));
+    vlSelfRef._cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T_1 
+        = (1U == (IData)(vlSelfRef.io_topSel));
+    vlSelfRef._cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T_2 
+        = (2U == (IData)(vlSelfRef.io_topSel));
+    vlSelfRef._cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T 
+        = (1U & ((IData)(vlSelfRef.io_topSel) >> 1U));
+    vlSelfRef._mux_cond_ComplexExample___05FM___05FComplexExample___05FS___05F_anotherSub_io_in_T 
+        = (1U & (IData)(vlSelfRef.io_topSel));
+    vlSelfRef._cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T_1 
+        = vlSelfRef._cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T;
+    vlSelfRef._cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T_2 
+        = vlSelfRef._cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T_1;
+    vlSelfRef._cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T_3 
+        = vlSelfRef._cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T_2;
+    vlSelfRef.ComplexExample__DOT____Vcellinp__sub__io_b 
+        = ((IData)(vlSelfRef._cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T)
+            ? (IData)(vlSelfRef.io_topInA) : (IData)(vlSelfRef.io_topInB));
+    if (vlSelfRef._mux_cond_ComplexExample___05FM___05FComplexExample___05FS___05F_anotherSub_io_in_T) {
+        vlSelfRef._mux_cond_ComplexExample___05FM___05FComplexExample___05FS___05F_sub_io_a_T = 1U;
+        vlSelfRef.ComplexExample__DOT____Vcellinp__sub__io_a 
+            = vlSelfRef.io_topInB;
+    } else {
+        vlSelfRef._mux_cond_ComplexExample___05FM___05FComplexExample___05FS___05F_sub_io_a_T = 0U;
+        vlSelfRef.ComplexExample__DOT____Vcellinp__sub__io_a 
+            = vlSelfRef.io_topInA;
+    }
     vlSelfRef.ComplexExample__DOT___sub_io_out = (0xffU 
                                                   & (((((IData)(vlSelfRef.ComplexExample__DOT__sub__DOT__stateReg) 
                                                         << 0x18U) 
@@ -106,16 +128,27 @@ VL_ATTR_COLD void VComplexExample___024root___stl_sequent__TOP__0(VComplexExampl
                                                           & (((IData)(1U) 
                                                               + (IData)(vlSelfRef.ComplexExample__DOT__sub__DOT__stateReg)) 
                                                              << 0x10U))) 
-                                                      | (((IData)(vlSelfRef.io_topInB) 
+                                                      | (((IData)(vlSelfRef.ComplexExample__DOT____Vcellinp__sub__io_b) 
                                                           << 8U) 
-                                                         | (IData)(vlSelfRef.io_topInA))) 
+                                                         | (IData)(vlSelfRef.ComplexExample__DOT____Vcellinp__sub__io_a))) 
                                                      >> 
                                                      (0x1fU 
                                                       & VL_SHIFTL_III(5,5,32, (IData)(vlSelfRef.io_topSel), 3U))));
-    vlSelfRef._cond_pred_ComplexExample___05FI___05FanotherSub___05FI___05Flocal___05FI___05F_T 
-        = (0x64U < (IData)(vlSelfRef.ComplexExample__DOT___sub_io_out));
-    vlSelfRef.io_topOut = (0xffU & ((IData)(vlSelfRef.ComplexExample__DOT__anotherSub__DOT__delayedIn) 
-                                    + (IData)(vlSelfRef._cond_pred_ComplexExample___05FI___05FanotherSub___05FI___05Flocal___05FI___05F_T)));
+    vlSelfRef.ComplexExample__DOT____Vcellinp__anotherSub__io_in 
+        = ((IData)(vlSelfRef._mux_cond_ComplexExample___05FM___05FComplexExample___05FS___05F_anotherSub_io_in_T)
+            ? (IData)(vlSelfRef.ComplexExample__DOT___sub_io_out)
+            : (IData)(vlSelfRef.io_topInA));
+    vlSelfRef._cond_pred_ComplexExample___05FI___05FanotherSub___05FM___05FAnotherSubModule___05FS___05F_T 
+        = (0x64U < (IData)(vlSelfRef.ComplexExample__DOT____Vcellinp__anotherSub__io_in));
+    vlSelfRef.io_topOut = (0xffU & (((0xff0000U & (
+                                                   ((IData)(vlSelfRef.io_topInA) 
+                                                    + (IData)(vlSelfRef.io_topInB)) 
+                                                   << 0x10U)) 
+                                     | (((IData)(vlSelfRef.ComplexExample__DOT___sub_io_out) 
+                                         << 8U) | (0xffU 
+                                                   & ((IData)(vlSelfRef.ComplexExample__DOT__anotherSub__DOT__delayedIn) 
+                                                      + (IData)(vlSelfRef._cond_pred_ComplexExample___05FI___05FanotherSub___05FM___05FAnotherSubModule___05FS___05F_T))))) 
+                                    >> (0x1fU & VL_SHIFTL_III(5,5,32, (IData)(vlSelfRef.io_topSel), 3U))));
 }
 
 VL_ATTR_COLD void VComplexExample___024root___eval_triggers__stl(VComplexExample___024root* vlSelf);
@@ -191,13 +224,22 @@ VL_ATTR_COLD void VComplexExample___024root___ctor_var_reset(VComplexExample___0
     vlSelf->io_topInB = VL_RAND_RESET_I(8);
     vlSelf->io_topSel = VL_RAND_RESET_I(2);
     vlSelf->io_topOut = VL_RAND_RESET_I(8);
-    vlSelf->_cond_pred_ComplexExample___05FI___05FanotherSub___05FI___05Flocal___05FI___05F_T = VL_RAND_RESET_I(1);
-    vlSelf->_cond_pred_ComplexExample___05FI___05Fsub___05FI___05Flocal___05FI___05F_T = VL_RAND_RESET_I(1);
-    vlSelf->_cond_pred_ComplexExample___05FI___05Fsub___05FI___05Flocal___05FI___05F_T_1 = VL_RAND_RESET_I(1);
-    vlSelf->_cond_pred_ComplexExample___05FI___05Fsub___05FI___05Flocal___05FI___05F_T_2 = VL_RAND_RESET_I(1);
-    vlSelf->_reg_signals_ComplexExample___05FI___05FanotherSub___05FI___05Flocal___05FI___05FdelayedIn = VL_RAND_RESET_I(8);
-    vlSelf->_reg_signals_ComplexExample___05FI___05Fsub___05FI___05Flocal___05FI___05FstateReg = VL_RAND_RESET_I(8);
+    vlSelf->_mux_cond_ComplexExample___05FM___05FComplexExample___05FS___05F_anotherSub_io_in_T = VL_RAND_RESET_I(1);
+    vlSelf->_mux_cond_ComplexExample___05FM___05FComplexExample___05FS___05F_sub_io_a_T = VL_RAND_RESET_I(1);
+    vlSelf->_cond_pred_ComplexExample___05FI___05FanotherSub___05FM___05FAnotherSubModule___05FS___05F_T = VL_RAND_RESET_I(1);
+    vlSelf->_cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T = VL_RAND_RESET_I(1);
+    vlSelf->_cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T_1 = VL_RAND_RESET_I(1);
+    vlSelf->_cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T_2 = VL_RAND_RESET_I(1);
+    vlSelf->_cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T = VL_RAND_RESET_I(1);
+    vlSelf->_cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T_1 = VL_RAND_RESET_I(1);
+    vlSelf->_cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T_2 = VL_RAND_RESET_I(1);
+    vlSelf->_cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T_3 = VL_RAND_RESET_I(1);
+    vlSelf->_reg_signals_ComplexExample___05FI___05FanotherSub___05FM___05FAnotherSubModule___05FS___05FdelayedIn = VL_RAND_RESET_I(8);
+    vlSelf->_reg_signals_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05FstateReg = VL_RAND_RESET_I(8);
     vlSelf->ComplexExample__DOT___sub_io_out = VL_RAND_RESET_I(8);
+    vlSelf->ComplexExample__DOT____Vcellinp__sub__io_b = VL_RAND_RESET_I(8);
+    vlSelf->ComplexExample__DOT____Vcellinp__sub__io_a = VL_RAND_RESET_I(8);
+    vlSelf->ComplexExample__DOT____Vcellinp__anotherSub__io_in = VL_RAND_RESET_I(8);
     vlSelf->ComplexExample__DOT__sub__DOT__stateReg = VL_RAND_RESET_I(8);
     vlSelf->ComplexExample__DOT__sub__DOT__unnamedblk1__DOT___GEN_0 = VL_RAND_RESET_I(32);
     vlSelf->ComplexExample__DOT__anotherSub__DOT__delayedIn = VL_RAND_RESET_I(8);

@@ -22,12 +22,34 @@ VL_INLINE_OPT void VComplexExample___024root___ico_sequent__TOP__0(VComplexExamp
     VComplexExample__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     auto& vlSelfRef = std::ref(*vlSelf).get();
     // Body
-    vlSelfRef._cond_pred_ComplexExample___05FI___05Fsub___05FI___05Flocal___05FI___05F_T 
+    vlSelfRef._cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T 
         = (0U == (IData)(vlSelfRef.io_topSel));
-    vlSelfRef._cond_pred_ComplexExample___05FI___05Fsub___05FI___05Flocal___05FI___05F_T_1 
+    vlSelfRef._cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T_1 
         = (1U == (IData)(vlSelfRef.io_topSel));
-    vlSelfRef._cond_pred_ComplexExample___05FI___05Fsub___05FI___05Flocal___05FI___05F_T_2 
+    vlSelfRef._cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T_2 
         = (2U == (IData)(vlSelfRef.io_topSel));
+    vlSelfRef._cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T 
+        = (1U & ((IData)(vlSelfRef.io_topSel) >> 1U));
+    vlSelfRef._mux_cond_ComplexExample___05FM___05FComplexExample___05FS___05F_anotherSub_io_in_T 
+        = (1U & (IData)(vlSelfRef.io_topSel));
+    vlSelfRef._cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T_1 
+        = vlSelfRef._cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T;
+    vlSelfRef._cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T_2 
+        = vlSelfRef._cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T_1;
+    vlSelfRef._cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T_3 
+        = vlSelfRef._cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T_2;
+    vlSelfRef.ComplexExample__DOT____Vcellinp__sub__io_b 
+        = ((IData)(vlSelfRef._cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T)
+            ? (IData)(vlSelfRef.io_topInA) : (IData)(vlSelfRef.io_topInB));
+    if (vlSelfRef._mux_cond_ComplexExample___05FM___05FComplexExample___05FS___05F_anotherSub_io_in_T) {
+        vlSelfRef._mux_cond_ComplexExample___05FM___05FComplexExample___05FS___05F_sub_io_a_T = 1U;
+        vlSelfRef.ComplexExample__DOT____Vcellinp__sub__io_a 
+            = vlSelfRef.io_topInB;
+    } else {
+        vlSelfRef._mux_cond_ComplexExample___05FM___05FComplexExample___05FS___05F_sub_io_a_T = 0U;
+        vlSelfRef.ComplexExample__DOT____Vcellinp__sub__io_a 
+            = vlSelfRef.io_topInA;
+    }
     vlSelfRef.ComplexExample__DOT___sub_io_out = (0xffU 
                                                   & (((((IData)(vlSelfRef.ComplexExample__DOT__sub__DOT__stateReg) 
                                                         << 0x18U) 
@@ -35,16 +57,27 @@ VL_INLINE_OPT void VComplexExample___024root___ico_sequent__TOP__0(VComplexExamp
                                                           & (((IData)(1U) 
                                                               + (IData)(vlSelfRef.ComplexExample__DOT__sub__DOT__stateReg)) 
                                                              << 0x10U))) 
-                                                      | (((IData)(vlSelfRef.io_topInB) 
+                                                      | (((IData)(vlSelfRef.ComplexExample__DOT____Vcellinp__sub__io_b) 
                                                           << 8U) 
-                                                         | (IData)(vlSelfRef.io_topInA))) 
+                                                         | (IData)(vlSelfRef.ComplexExample__DOT____Vcellinp__sub__io_a))) 
                                                      >> 
                                                      (0x1fU 
                                                       & VL_SHIFTL_III(5,5,32, (IData)(vlSelfRef.io_topSel), 3U))));
-    vlSelfRef._cond_pred_ComplexExample___05FI___05FanotherSub___05FI___05Flocal___05FI___05F_T 
-        = (0x64U < (IData)(vlSelfRef.ComplexExample__DOT___sub_io_out));
-    vlSelfRef.io_topOut = (0xffU & ((IData)(vlSelfRef.ComplexExample__DOT__anotherSub__DOT__delayedIn) 
-                                    + (IData)(vlSelfRef._cond_pred_ComplexExample___05FI___05FanotherSub___05FI___05Flocal___05FI___05F_T)));
+    vlSelfRef.ComplexExample__DOT____Vcellinp__anotherSub__io_in 
+        = ((IData)(vlSelfRef._mux_cond_ComplexExample___05FM___05FComplexExample___05FS___05F_anotherSub_io_in_T)
+            ? (IData)(vlSelfRef.ComplexExample__DOT___sub_io_out)
+            : (IData)(vlSelfRef.io_topInA));
+    vlSelfRef._cond_pred_ComplexExample___05FI___05FanotherSub___05FM___05FAnotherSubModule___05FS___05F_T 
+        = (0x64U < (IData)(vlSelfRef.ComplexExample__DOT____Vcellinp__anotherSub__io_in));
+    vlSelfRef.io_topOut = (0xffU & (((0xff0000U & (
+                                                   ((IData)(vlSelfRef.io_topInA) 
+                                                    + (IData)(vlSelfRef.io_topInB)) 
+                                                   << 0x10U)) 
+                                     | (((IData)(vlSelfRef.ComplexExample__DOT___sub_io_out) 
+                                         << 8U) | (0xffU 
+                                                   & ((IData)(vlSelfRef.ComplexExample__DOT__anotherSub__DOT__delayedIn) 
+                                                      + (IData)(vlSelfRef._cond_pred_ComplexExample___05FI___05FanotherSub___05FM___05FAnotherSubModule___05FS___05F_T))))) 
+                                    >> (0x1fU & VL_SHIFTL_III(5,5,32, (IData)(vlSelfRef.io_topSel), 3U))));
 }
 
 void VComplexExample___024root___eval_triggers__ico(VComplexExample___024root* vlSelf);
@@ -98,24 +131,24 @@ VL_INLINE_OPT void VComplexExample___024root___nba_sequent__TOP__0(VComplexExamp
     } else {
         vlSelfRef.ComplexExample__DOT__sub__DOT__unnamedblk1__DOT___GEN_0 
             = ((((IData)(vlSelfRef.ComplexExample__DOT__sub__DOT__stateReg) 
-                 << 0x18U) | (((IData)(vlSelfRef.io_topInA) 
-                               & (IData)(vlSelfRef.io_topInB)) 
+                 << 0x18U) | (((IData)(vlSelfRef.ComplexExample__DOT____Vcellinp__sub__io_a) 
+                               & (IData)(vlSelfRef.ComplexExample__DOT____Vcellinp__sub__io_b)) 
                               << 0x10U)) | ((0xff00U 
-                                             & (((IData)(vlSelfRef.io_topInA) 
-                                                 - (IData)(vlSelfRef.io_topInB)) 
+                                             & (((IData)(vlSelfRef.ComplexExample__DOT____Vcellinp__sub__io_a) 
+                                                 - (IData)(vlSelfRef.ComplexExample__DOT____Vcellinp__sub__io_b)) 
                                                 << 8U)) 
                                             | (0xffU 
-                                               & ((IData)(vlSelfRef.io_topInA) 
-                                                  + (IData)(vlSelfRef.io_topInB)))));
+                                               & ((IData)(vlSelfRef.ComplexExample__DOT____Vcellinp__sub__io_a) 
+                                                  + (IData)(vlSelfRef.ComplexExample__DOT____Vcellinp__sub__io_b)))));
         __Vdly__ComplexExample__DOT__sub__DOT__stateReg 
             = (0xffU & (vlSelfRef.ComplexExample__DOT__sub__DOT__unnamedblk1__DOT___GEN_0 
                         >> (0x1fU & VL_SHIFTL_III(5,32,32, (IData)(vlSelfRef.io_topSel), 3U))));
         vlSelfRef.ComplexExample__DOT__anotherSub__DOT__delayedIn 
-            = vlSelfRef.ComplexExample__DOT___sub_io_out;
+            = vlSelfRef.ComplexExample__DOT____Vcellinp__anotherSub__io_in;
     }
     vlSelfRef.ComplexExample__DOT__sub__DOT__stateReg 
         = __Vdly__ComplexExample__DOT__sub__DOT__stateReg;
-    vlSelfRef._reg_signals_ComplexExample___05FI___05Fsub___05FI___05Flocal___05FI___05FstateReg 
+    vlSelfRef._reg_signals_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05FstateReg 
         = vlSelfRef.ComplexExample__DOT__sub__DOT__stateReg;
     vlSelfRef.ComplexExample__DOT___sub_io_out = (0xffU 
                                                   & (((((IData)(vlSelfRef.ComplexExample__DOT__sub__DOT__stateReg) 
@@ -124,18 +157,29 @@ VL_INLINE_OPT void VComplexExample___024root___nba_sequent__TOP__0(VComplexExamp
                                                           & (((IData)(1U) 
                                                               + (IData)(vlSelfRef.ComplexExample__DOT__sub__DOT__stateReg)) 
                                                              << 0x10U))) 
-                                                      | (((IData)(vlSelfRef.io_topInB) 
+                                                      | (((IData)(vlSelfRef.ComplexExample__DOT____Vcellinp__sub__io_b) 
                                                           << 8U) 
-                                                         | (IData)(vlSelfRef.io_topInA))) 
+                                                         | (IData)(vlSelfRef.ComplexExample__DOT____Vcellinp__sub__io_a))) 
                                                      >> 
                                                      (0x1fU 
                                                       & VL_SHIFTL_III(5,5,32, (IData)(vlSelfRef.io_topSel), 3U))));
-    vlSelfRef._reg_signals_ComplexExample___05FI___05FanotherSub___05FI___05Flocal___05FI___05FdelayedIn 
+    vlSelfRef._reg_signals_ComplexExample___05FI___05FanotherSub___05FM___05FAnotherSubModule___05FS___05FdelayedIn 
         = vlSelfRef.ComplexExample__DOT__anotherSub__DOT__delayedIn;
-    vlSelfRef._cond_pred_ComplexExample___05FI___05FanotherSub___05FI___05Flocal___05FI___05F_T 
-        = (0x64U < (IData)(vlSelfRef.ComplexExample__DOT___sub_io_out));
-    vlSelfRef.io_topOut = (0xffU & ((IData)(vlSelfRef.ComplexExample__DOT__anotherSub__DOT__delayedIn) 
-                                    + (IData)(vlSelfRef._cond_pred_ComplexExample___05FI___05FanotherSub___05FI___05Flocal___05FI___05F_T)));
+    vlSelfRef.ComplexExample__DOT____Vcellinp__anotherSub__io_in 
+        = ((IData)(vlSelfRef._mux_cond_ComplexExample___05FM___05FComplexExample___05FS___05F_anotherSub_io_in_T)
+            ? (IData)(vlSelfRef.ComplexExample__DOT___sub_io_out)
+            : (IData)(vlSelfRef.io_topInA));
+    vlSelfRef._cond_pred_ComplexExample___05FI___05FanotherSub___05FM___05FAnotherSubModule___05FS___05F_T 
+        = (0x64U < (IData)(vlSelfRef.ComplexExample__DOT____Vcellinp__anotherSub__io_in));
+    vlSelfRef.io_topOut = (0xffU & (((0xff0000U & (
+                                                   ((IData)(vlSelfRef.io_topInA) 
+                                                    + (IData)(vlSelfRef.io_topInB)) 
+                                                   << 0x10U)) 
+                                     | (((IData)(vlSelfRef.ComplexExample__DOT___sub_io_out) 
+                                         << 8U) | (0xffU 
+                                                   & ((IData)(vlSelfRef.ComplexExample__DOT__anotherSub__DOT__delayedIn) 
+                                                      + (IData)(vlSelfRef._cond_pred_ComplexExample___05FI___05FanotherSub___05FM___05FAnotherSubModule___05FS___05F_T))))) 
+                                    >> (0x1fU & VL_SHIFTL_III(5,5,32, (IData)(vlSelfRef.io_topSel), 3U))));
 }
 
 void VComplexExample___024root___eval_triggers__act(VComplexExample___024root* vlSelf);
@@ -201,7 +245,7 @@ void VComplexExample___024root___eval(VComplexExample___024root* vlSelf) {
 #ifdef VL_DEBUG
             VComplexExample___024root___dump_triggers__ico(vlSelf);
 #endif
-            VL_FATAL_MT("ComplexExample.sv", 55, "", "Input combinational region did not converge.");
+            VL_FATAL_MT("ComplexExample.sv", 56, "", "Input combinational region did not converge.");
         }
         __VicoIterCount = ((IData)(1U) + __VicoIterCount);
         __VicoContinue = 0U;
@@ -217,7 +261,7 @@ void VComplexExample___024root___eval(VComplexExample___024root* vlSelf) {
 #ifdef VL_DEBUG
             VComplexExample___024root___dump_triggers__nba(vlSelf);
 #endif
-            VL_FATAL_MT("ComplexExample.sv", 55, "", "NBA region did not converge.");
+            VL_FATAL_MT("ComplexExample.sv", 56, "", "NBA region did not converge.");
         }
         __VnbaIterCount = ((IData)(1U) + __VnbaIterCount);
         __VnbaContinue = 0U;
@@ -228,7 +272,7 @@ void VComplexExample___024root___eval(VComplexExample___024root* vlSelf) {
 #ifdef VL_DEBUG
                 VComplexExample___024root___dump_triggers__act(vlSelf);
 #endif
-                VL_FATAL_MT("ComplexExample.sv", 55, "", "Active region did not converge.");
+                VL_FATAL_MT("ComplexExample.sv", 56, "", "Active region did not converge.");
             }
             vlSelfRef.__VactIterCount = ((IData)(1U) 
                                          + vlSelfRef.__VactIterCount);

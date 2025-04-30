@@ -1,728 +1,693 @@
 <script setup lang="ts">
-import { ref, watch, nextTick, reactive } from 'vue';
-// Import EditOutlined and Modal
-import { FileTextOutlined, CaretRightOutlined, CaretDownOutlined, EditOutlined } from "@ant-design/icons-vue";
-import { Card as ACard, Collapse as ACollapse, CollapsePanel as ACollapsePanel, Tag as ATag, Modal as AModal, Input as AInput, Button as AButton, Tooltip as ATooltip } from 'ant-design-vue'; // Add Modal, Input, Button, Tooltip
+import { ref, computed, watch, nextTick } from 'vue';
+import { Card as ACard, Row as ARow, Col as ACol, DirectoryTree as ADirectoryTree, Spin as ASpin, Alert as AAlert, Button as AButton, Empty as AEmpty, Tag as ATag } from 'ant-design-vue';
+import { CodeOutlined, LoadingOutlined, PlusSquareOutlined, MinusSquareOutlined } from "@ant-design/icons-vue";
 import { useCoverageStore } from "../stores/coverageStore";
-import { formatCoverage, getNodeStyle, getConditionTagColor, getBitTagColor, formatCount, formatPercent } from '../utils/coverageUtils';
-import type { CSSProperties } from 'vue';
+import type { InstanceSignalTree, SignalInfo } from '../types/CoverageInfo';
+import type { ConditionCoveragePoint, RegisterCoveragePoint } from '../types/CoverageReport';
+import { formatCoverage, getNodeStyle, getConditionTagColor, formatCount, formatPercent, parseSignalName } from '../utils/coverageUtils';
 import hljs from 'highlight.js';
-import 'highlight.js/styles/vs.css'; // 使用 VS Code 风格
+import scala from 'highlight.js/lib/languages/scala';
+import 'highlight.js/styles/vs.css';
 
-interface CoveragePoint {
-  id: string;
-  name: string;
-  type: 'predicate' | 'mux' | 'register' | 'register_bit' | 'unknown';
-  coverage?: number;
-  details: any;
-  sourceLocation?: { filePath: string; line: number; column: number };
+// Register Scala language
+hljs.registerLanguage('scala', scala);
+
+// --- Type Definitions ---
+interface InstanceTreeNode {
+  key: string; // Unique path of the instance (e.g., "root__I__sub1")
+  title: string; // Display title: "instanceName (moduleName)"
+  moduleName: string;
+  children?: InstanceTreeNode[];
+  isLeaf: boolean;
+  // Add reference to the original node to access signals on selection
+  rawNode: InstanceSignalTree;
 }
-interface AnnotatedLine {
-  lineNum: number;
-  content: string; // 原始文本内容
-  highlightedContent: string; // 高亮后的 HTML 内容
-  isHighlighted: boolean;
-  coveragePoints: CoveragePoint[];
-  aggregateCoverage?: number;
-  annotationStyle: CSSProperties;
+
+interface LineCoverageInfo {
+  signalInfo: SignalInfo;
+  coverageData?: ConditionCoveragePoint | RegisterCoveragePoint;
+  parsedName: ReturnType<typeof parseSignalName>;
+  instancePath: string[]; // Absolute path of the instance the signal belongs to (i.e., the path of the currently selected instance)
 }
-// 使用 Pinia Store 替代 props
+
+// --- Store and Refs ---
 const coverageStore = useCoverageStore();
-const sourceViewerContainerRef = ref<HTMLElement | null>(null);
-const fileRefs = ref<Record<string, HTMLElement | null>>({});
-const activeFileKeys = ref<string[]>([]);
-// 新增：管理展开状态的行
-const expandedLines = reactive<Record<string, Set<number>>>({});
-const CondPrefix = "_cond_pred_";
-const MuxPrefix = "_mux_cond_";
-const RegPrefix = "_reg_signals_";
-// 修改：获取更详细的行注释信息
-const getAnnotatedLines = (filePath: string, fileContent: string): AnnotatedLine[] => {
-  if (!fileContent || !coverageStore.coverageInfo || !coverageStore.coverageReport) {
-    return (fileContent || '').split('\n').map((line, index) => ({
-      lineNum: index + 1,
-      content: line,
-      highlightedContent: hljs.highlight(line, { language: 'scala', ignoreIllegals: true }).value, // 指定语言为 scala
-      isHighlighted: false,
-      coveragePoints: [],
-      annotationStyle: {}
-    }));
-  }
-  const lines = fileContent.split('\n');
-  const lineAnnotations: Record<number, CoveragePoint[]> = {};
-  // 从覆盖率报告和信息中收集所有覆盖点
-  coverageStore.coverageInfo.exportedPorts.forEach(port => {
-    port.signals.forEach(sigInfo => {
-      if (sigInfo.filePath === filePath && sigInfo.line !== undefined && sigInfo.line !== null) {
-        const lineIdx = sigInfo.line - 1;
-        if (lineIdx >= 0 && lineIdx < lines.length) {
-          // 初始化行注释数组（如果不存在）
-          if (!lineAnnotations[lineIdx]) {
-            lineAnnotations[lineIdx] = [];
-          }
-          // 创建源位置对象（只有在filePath和line都有值时）
-          const sourceLocation = sigInfo.filePath && sigInfo.line !== null && sigInfo.line !== undefined
-            ? {
-              filePath: sigInfo.filePath,
-              line: sigInfo.line,
-              column: sigInfo.column ?? 0
-            }
-            : undefined;
-          const fieldName = sigInfo.fieldName;
-          console.log(`检查行 ${lineIdx + 1} 的信号: ${fieldName}`);
-          // 查找条件谓词覆盖点
-          const predicate = coverageStore.coverageReport!.conditional_predicates.find(p =>
-            p.name === fieldName || p.name === `${CondPrefix}${fieldName}`);
-          if (predicate) {
-            console.log(`找到条件谓词覆盖点: ${predicate.name}`);
-            lineAnnotations[lineIdx].push({
-              id: `pred-${predicate.name}`,
-              name: predicate.name,
-              type: 'predicate',
-              coverage: predicate.coverage_percent,
-              details: predicate,
-              sourceLocation
-            });
-            return; // 已找到匹配，继续下一个信号
-          }
-          // 查找多路复用条件覆盖点
-          const mux = coverageStore.coverageReport!.mux_conditions.find(m =>
-            m.name === fieldName || m.name === `${MuxPrefix}${fieldName}`);
-          if (mux) {
-            console.log(`找到多路复用覆盖点: ${mux.name}`);
-            lineAnnotations[lineIdx].push({
-              id: `mux-${mux.name}`,
-              name: mux.name,
-              type: 'mux',
-              coverage: mux.coverage_percent,
-              details: mux,
-              sourceLocation
-            });
-            return; // 已找到匹配，继续下一个信号
-          }
-          // 查找寄存器覆盖点 - 修正比较逻辑
-          const register = coverageStore.coverageReport!.register_coverage.find(r =>
-            r.name === fieldName || r.name === `${RegPrefix}${fieldName}`);
-          if (register) {
-            console.log(`找到寄存器覆盖点: ${register.name}, 宽度: ${register.width}`);
-            lineAnnotations[lineIdx].push({
-              id: `reg-${register.name}`,
-              name: register.name,
-              type: 'register',
-              coverage: register.coverage_percent,
-              details: register,
-              sourceLocation
-            });
-            // 为寄存器的每个位添加覆盖点
-            register.bit_details.forEach(bit => {
-              const bitCoverage = (bit.hit_zero ? 50 : 0) + (bit.hit_one ? 50 : 0);
-              lineAnnotations[lineIdx].push({
-                id: `reg-bit-${register.name}-${bit.bit}`,
-                name: `${register.name}[${bit.bit}]`,
-                type: 'register_bit',
-                coverage: bitCoverage,
-                details: bit,
-                sourceLocation
-              });
-            });
-          }
-        }
-      }
-    });
-  });
-  // 添加调试日志，显示找到多少个覆盖点
-  Object.entries(lineAnnotations).forEach(([lineIdx, points]) => {
-    console.log(`行 ${parseInt(lineIdx) + 1} 共找到 ${points.length} 个覆盖点`);
-    points.forEach(p => console.log(`  - ${p.type}: ${p.name} (${p.coverage}%)`));
-  });
-  return lines.map((line, index) => {
-    const lineNum = index + 1;
-    const coveragePoints = lineAnnotations[index] || [];
-    // 计算行的聚合覆盖率（使用最低的覆盖率作为指标）
-    let aggregateCoverage: number | undefined = undefined;
-    if (coveragePoints.length > 0) {
-      const coverages = coveragePoints
-        .map(p => p.coverage)
-        .filter((c): c is number => c !== undefined);
-      if (coverages.length > 0) {
-        aggregateCoverage = Math.min(...coverages);
-      }
-    }
-    const isHighlighted = filePath === coverageStore.selectedSourcePath && lineNum === coverageStore.highlightLine;
-    // 指定语言为 scala 进行高亮，忽略可能的错误以提高容错性
-    const highlightedContent = hljs.highlight(line, { language: 'scala', ignoreIllegals: true }).value;
+const sourceCodeContainerRef = ref<HTMLElement | null>(null);
+
+// --- State ---
+const selectedInstanceKey = ref<string | null>(null); // Key of the selected instance path
+const selectedInstanceNode = ref<InstanceTreeNode | null>(null); // Store the full selected node info
+const displayedSourceContent = ref<string | null>(null);
+const displayedSourceModuleName = ref<string | null>(null);
+const isSourceLoading = ref(false);
+const sourceError = ref<string | null>(null);
+
+// Line-level coverage data (only includes signals from the currently selected instance in the current file)
+const coverageDataByLine = ref<Record<number, LineCoverageInfo[]>>({});
+const expandedLines = ref<Set<number>>(new Set());
+
+// --- Computed Properties ---
+
+// Convert InstanceSignalTree to Ant Design Tree data
+const instanceTreeData = computed((): InstanceTreeNode[] => {
+  const rootInstance = coverageStore.coverageInfo?.instanceSignalMap;
+  if (!rootInstance) return [];
+
+  const transformNode = (node: InstanceSignalTree, path: string[]): InstanceTreeNode => {
+    const currentPath = [...path, node.instanceName];
+    const nodeKey = currentPath.join('__I__');
+
     return {
-      lineNum,
-      content: line, // 保留原始文本
-      highlightedContent, // 存储高亮后的 HTML
-      isHighlighted,
-      coveragePoints,
-      aggregateCoverage,
-      annotationStyle: aggregateCoverage !== undefined ? getNodeStyle(aggregateCoverage) : {}
+      key: nodeKey,
+      title: `${node.instanceName} (${node.moduleName})`,
+      moduleName: node.moduleName,
+      children: node.subInstances.map(sub => transformNode(sub, currentPath)),
+      isLeaf: node.subInstances.length === 0,
+      rawNode: node, // Store reference to the original node
+    };
+  };
+
+  // Start conversion from the root instance (path starts as an empty array)
+  return [transformNode(rootInstance, [])];
+});
+
+// Highlight source code
+const highlightedSourceCode = computed(() => {
+  if (displayedSourceContent.value && !sourceError.value) {
+    try {
+      return hljs.highlight(displayedSourceContent.value, { language: 'scala', ignoreIllegals: true }).value;
+    } catch (e) {
+      console.error("Highlighting error:", e);
+      return displayedSourceContent.value; // Fallback to plain text
+    }
+  }
+  return '';
+});
+
+// Calculate lines with coverage data
+const linesWithCoverage = computed(() => {
+  if (!highlightedSourceCode.value) return [];
+  const lines = highlightedSourceCode.value.split('\n');
+  return lines.map((content, index) => {
+    const lineNumber = index + 1;
+    // Filter coverageInfos to only include those belonging to the *currently selected* instance
+    const coverageInfos = (coverageDataByLine.value[lineNumber] || []).filter(info =>
+      info.instancePath.join('__I__') === selectedInstanceKey.value
+    );
+    return {
+      lineNumber,
+      content, // Already highlighted HTML
+      coverageInfos, // Now filtered
+      isExpanded: expandedLines.value.has(lineNumber),
     };
   });
-};
-// 新增：切换行的展开状态
-const toggleLineExpansion = (filePath: string, lineNum: number) => {
-  if (!expandedLines[filePath]) {
-    expandedLines[filePath] = new Set<number>();
-  }
-  if (expandedLines[filePath].has(lineNum)) {
-    expandedLines[filePath].delete(lineNum);
+});
+
+
+// Path array of the currently selected instance
+const selectedInstancePathArray = computed(() => {
+  return selectedInstanceKey.value ? selectedInstanceKey.value.split('__I__') : [];
+});
+
+
+// --- Methods ---
+
+// Toggle line expansion state
+const toggleLineExpansion = (lineNumber: number) => {
+  if (expandedLines.value.has(lineNumber)) {
+    expandedLines.value.delete(lineNumber);
   } else {
-    expandedLines[filePath].add(lineNum);
+    expandedLines.value.add(lineNumber);
   }
-};
-// 新增：检查行是否展开
-const isLineExpanded = (filePath: string, lineNum: number): boolean => {
-  return !!expandedLines[filePath]?.has(lineNum);
-};
-// 新增：检查内容是否为错误消息
-const isErrorContent = (content: string | undefined): boolean => {
-  return typeof content === 'string' && content.startsWith("Error:");
-};
-// 新增：Modal 状态
-const isModalVisible = ref(false);
-const currentEditingFilePath = ref<string | null>(null);
-const newRootDirInput = ref('');
-
-// 新增：打开编辑根目录模态框
-const openEditRootModal = (filePath: string) => {
-  currentEditingFilePath.value = filePath;
-  // 从 store 获取当前用户定义的根目录（如果有）
-  newRootDirInput.value = coverageStore.userDefinedRootDirs[filePath] || '';
-  isModalVisible.value = true;
+  expandedLines.value = new Set(expandedLines.value); // Force reactivity
 };
 
-// 新增：处理模态框确认
-const handleModalOk = () => {
-  if (currentEditingFilePath.value) {
-    // 调用 store action 更新根目录
-    coverageStore.updateFileRoot(currentEditingFilePath.value, newRootDirInput.value);
+// Calculate and update line-level coverage data for the currently selected instance in the currently displayed file
+const updateCoverageDataForSelectedInstance = () => {
+  const data: Record<number, LineCoverageInfo[]> = {};
+  const currentInstanceNode = selectedInstanceNode.value; // Use the stored selected node
+  const currentInstancePathArray = selectedInstancePathArray.value;
+
+  console.log(`[updateCoverageData] Start: Updating for selected instance: ${currentInstancePathArray.join('.') || '(none)'}`);
+
+  // 1. Check prerequisites
+  if (!currentInstanceNode || // Must have a selected instance node
+    !coverageStore.coverageReport ||
+    !displayedSourceContent.value || // Must have source content
+    currentInstancePathArray.length === 0) // Must have an instance path
+  {
+    coverageDataByLine.value = {};
+    expandedLines.value.clear();
+    console.log('[updateCoverageData] Exiting early - missing required data (selected node, report, source content, or instance path).');
+    return;
   }
-  isModalVisible.value = false;
-  currentEditingFilePath.value = null;
-  newRootDirInput.value = '';
-};
 
-// 新增：处理模态框取消
-const handleModalCancel = () => {
-  isModalVisible.value = false;
-  currentEditingFilePath.value = null;
-  newRootDirInput.value = '';
-};
+  // 2. Access the raw InstanceSignalTree data of the selected node
+  const selectedRawNode = currentInstanceNode.rawNode;
+  const report = coverageStore.coverageReport;
 
-watch([() => coverageStore.selectedSourcePath, () => coverageStore.highlightLine, () => coverageStore.selectionTrigger],
-  ([newPath, newLine], []) => {
-    if (newPath && newLine !== null) {
-      const needsExpansion = !activeFileKeys.value.includes(newPath);
-      if (needsExpansion) {
-        activeFileKeys.value = [...activeFileKeys.value, newPath];
+  // 3. Iterate through the signals of the selected instance
+  selectedRawNode.signals.forEach(signalInfo => {
+    // Core matching logic: signal line number is valid
+    if (signalInfo.line !== null && signalInfo.line !== undefined && signalInfo.line > 0) {
+      const lineNumber = signalInfo.line;
+      const parsed = parseSignalName(signalInfo.name);
+      let coverageData: ConditionCoveragePoint | RegisterCoveragePoint | undefined = undefined;
+
+      // Find coverage data in the report
+      switch (parsed.type) {
+        case 'predicate':
+          coverageData = report.conditional_predicates?.find(p => p.name === signalInfo.name);
+          break;
+        case 'mux':
+          coverageData = report.mux_conditions?.find(m => m.name === signalInfo.name);
+          break;
+        case 'register':
+          coverageData = report.register_coverage?.find(r => r.name === signalInfo.name);
+          break;
       }
-      nextTick(() => {
-        const scrollAction = () => {
-          nextTick(() => {
-            scrollToFileAndLine(newPath, newLine);
-            // 自动展开含有高亮行的覆盖点信息
-            if (newPath && !expandedLines[newPath]) {
-              expandedLines[newPath] = new Set<number>();
-            }
-            if (newPath) {
-              expandedLines[newPath].add(newLine);
-            }
-          });
-        };
-        if (needsExpansion) {
-          setTimeout(scrollAction, 150);
-        } else {
-          setTimeout(scrollAction, 50);
-        }
-      });
+      // console.log(`[updateCoverageData]   Signal: ${signalInfo.name} (Line ${lineNumber}), Found in report: ${!!coverageData}`);
+
+      // Create line info
+      const lineInfo: LineCoverageInfo = {
+        signalInfo,
+        coverageData,
+        parsedName: parsed,
+        instancePath: currentInstancePathArray, // Use the path of the currently selected instance
+      };
+
+      if (!data[lineNumber]) {
+        data[lineNumber] = [];
+      }
+      data[lineNumber].push(lineInfo);
     }
-  }, { flush: 'post' });
-const scrollToFileAndLine = (filePath: string, line: number) => {
-  const container = sourceViewerContainerRef.value;
-  const panelContentElement = fileRefs.value[filePath];
-  if (container && panelContentElement) {
-    const lineElement = panelContentElement.querySelector(`.code-line.line-${line}`) as HTMLElement;
-    if (lineElement) {
-      const containerRect = container.getBoundingClientRect();
-      const lineRect = lineElement.getBoundingClientRect();
-      const scrollTopTarget = container.scrollTop + (lineRect.top - containerRect.top) - (containerRect.height / 2) + (lineRect.height / 2);
-      console.log(`Scrolling container to ${scrollTopTarget} for line ${line} in ${filePath}`);
-      container.scrollTo({
-        top: scrollTopTarget,
-        behavior: 'smooth'
-      });
+    // else if (signalInfo.line === null || signalInfo.line === undefined || signalInfo.line <= 0) {
+    //    console.log(`[updateCoverageData]   Signal ${signalInfo.name} has invalid line number: ${signalInfo.line}`);
+    // }
+  });
+
+  // 4. Update state
+  console.log('[updateCoverageData] End: Final data object for selected instance:', JSON.parse(JSON.stringify(data)));
+  coverageDataByLine.value = data;
+  // Optional: clear expansion state or keep it
+  // expandedLines.value.clear();
+};
+
+
+// Handle instance tree selection
+const handleInstanceSelect = (keys: (string | number)[], { node }: { node: any /* AntTreeNode, but use InstanceTreeNode type */ }) => {
+  if (keys.length === 0 || !node) {
+    selectedInstanceKey.value = null;
+    selectedInstanceNode.value = null; // Clear selected node
+    displayedSourceContent.value = null;
+    displayedSourceModuleName.value = null;
+    sourceError.value = null;
+    coverageDataByLine.value = {};
+    expandedLines.value.clear();
+    return;
+  }
+
+  const selectedKey = String(keys[0]);
+  // node.dataRef contains the original InstanceTreeNode data
+  const selectedNodeData = node.dataRef as InstanceTreeNode;
+
+  selectedInstanceKey.value = selectedKey;
+  selectedInstanceNode.value = selectedNodeData; // Store selected node info
+  isSourceLoading.value = true;
+  sourceError.value = null;
+  displayedSourceContent.value = null;
+  coverageDataByLine.value = {};
+  expandedLines.value.clear();
+
+  const moduleName = selectedNodeData.moduleName;
+
+  displayedSourceModuleName.value = moduleName;
+
+  console.log(`Selected instance: ${selectedNodeData.title}, Module: ${moduleName}`);
+
+  // Get ModuleInfo from store (using moduleName as key)
+  const moduleInfo = coverageStore.coverageInfo?.moduleInfoMap?.[moduleName];
+
+  if (moduleInfo) {
+    // Check content directly
+    if (moduleInfo.content === null || moduleInfo.content === undefined) {
+      sourceError.value = `Source content for module "${moduleName}" is not available or could not be loaded.`;
+      console.warn(sourceError.value);
+      // Attempt to update coverage (might be empty)
+      updateCoverageDataForSelectedInstance();
+    } else if (moduleInfo.content.startsWith("Error reading file:")) { // Keep error check based on content prefix
+      sourceError.value = moduleInfo.content;
+      console.error(`Error reading file for module "${moduleName}": ${moduleInfo.content}`);
+      // Attempt to update coverage (might be empty)
+      updateCoverageDataForSelectedInstance();
     } else {
-      console.warn(`Target line element ${line} not found in ${filePath}.`);
+      displayedSourceContent.value = moduleInfo.content;
+      // After source code loads successfully, update coverage data
+      updateCoverageDataForSelectedInstance(); // <--- Core call
+      nextTick(() => {
+        sourceCodeContainerRef.value?.scrollTo({ top: 0 });
+      });
     }
   } else {
-    console.warn(`Source viewer container or panel content element for "${filePath}" not found for scrolling.`);
+    sourceError.value = `Module information for "${moduleName}" not found in coverage info.`;
+    console.error(sourceError.value);
+    // Clear coverage data
+    updateCoverageDataForSelectedInstance(); // Will exit early
   }
-};
-const setFileRef = (el: any, filePath: string) => {
-  if (el) {
-    fileRefs.value[filePath] = el as HTMLElement;
-  }
-};
-watch(() => coverageStore.coverageInfo?.sourceFiles, () => {
-  fileRefs.value = {};
-  // 重置展开状态
-  Object.keys(expandedLines).forEach(key => {
-    expandedLines[key] = new Set<number>();
-  });
-  // Check if active keys still exist, remove if not
-  activeFileKeys.value = activeFileKeys.value.filter(key => coverageStore.coverageInfo?.sourceFiles[key] !== undefined);
 
-}, { deep: true }); // Use deep watch if necessary, though keys changing might be enough
+  isSourceLoading.value = false;
+};
+
+// --- Watchers ---
+// Watch for coverageInfo changes (usually when loading a new file)
+watch(() => coverageStore.coverageInfo, (newInfo, oldInfo) => {
+  if (newInfo !== oldInfo) {
+    console.log("Coverage info changed, clearing source viewer state.");
+    selectedInstanceKey.value = null;
+    selectedInstanceNode.value = null;
+    displayedSourceContent.value = null;
+    displayedSourceModuleName.value = null;
+    sourceError.value = null;
+    coverageDataByLine.value = {};
+    expandedLines.value.clear();
+  }
+}, { immediate: false });
+
+// Watch for coverageReport changes
+watch(() => coverageStore.coverageReport, () => {
+  console.log("Coverage report changed, updating line coverage data if an instance is selected.");
+  // Only update if an instance is selected and source code is displayed
+  if (selectedInstanceKey.value && displayedSourceContent.value) {
+    updateCoverageDataForSelectedInstance();
+  }
+}, { deep: true });
+
 </script>
-<template>
-  <a-card title="Source Code Viewer" style="width: 100%;">
-    <div ref="sourceViewerContainerRef" class="multi-source-viewer-container">
-      <div
-        v-if="coverageStore.coverageInfo && coverageStore.coverageInfo.sourceFiles && Object.keys(coverageStore.coverageInfo.sourceFiles).length > 0">
-        <!-- Use filePath as key for v-for and collapse panel -->
-        <a-collapse v-model:activeKey="activeFileKeys">
-          <a-collapse-panel v-for="(content, filePath) in coverageStore.coverageInfo.sourceFiles" :key="filePath">
-            <!-- Custom Header Slot -->
-            <template #header>
-              <div class="panel-header">
-                <span class="file-path-text">{{ filePath }}</span>
-                <!-- Edit Root Directory Button -->
-                <a-tooltip title="Edit Root Directory for this File">
-                  <a-button type="text" size="small" class="edit-root-button" @click.stop="openEditRootModal(filePath)">
-                    <template #icon><EditOutlined /></template>
-                  </a-button>
-                </a-tooltip>
-              </div>
-            </template>
-            <!-- Panel Content -->
-            <div :ref="el => setFileRef(el, filePath)">
-              <!-- 新增：检查内容是否为错误 -->
-              <div v-if="isErrorContent(content)" class="error-content-message">
-                <p>无法读取或解析此文件。</p>
-                <p>{{ content }}</p>
-                <p>请点击标题栏中的 <EditOutlined /> 图标设置正确的根目录。</p>
-              </div>
-              <!-- 否则，显示源代码 -->
-              <pre v-else class="source-code-viewer hljs"><code
-                ><div v-for="line in getAnnotatedLines(filePath, content || '')" :key="line.lineNum"
-                  :class="['code-line', `line-${line.lineNum}`, { 'highlighted-line': line.isHighlighted }]"
-                  ><div class="line-content-wrapper"
-                    ><span v-if="line.coveragePoints.length > 0" class="expand-button"
-                        @click="toggleLineExpansion(filePath, line.lineNum)"
-                      ><caret-right-outlined v-if="!isLineExpanded(filePath, line.lineNum)" /><caret-down-outlined v-else /></span
-                    ><span v-else class="expand-placeholder"></span
-                    ><span class="line-number">{{ line.lineNum }}</span
-                    ><span class="line-content" :style="line.annotationStyle"
-                      ><span v-html="line.highlightedContent"></span></span
-                    ><span v-if="line.aggregateCoverage !== undefined" class="line-annotation"
-                        :style="line.annotationStyle"
-                        :title="`Coverage: ${formatCoverage(line.aggregateCoverage)}, Points: ${line.coveragePoints.length}`"
-                      >{{ formatCoverage(line.aggregateCoverage) }}</span></div
-                  ><div v-if="isLineExpanded(filePath, line.lineNum) && line.coveragePoints.length > 0"
-                       class="coverage-points-details"
-                    ><div v-for="point in line.coveragePoints" :key="point.id" class="coverage-point"
-                      ><div class="coverage-point-header"
-                        ><span class="node-text" :style="getNodeStyle(point.coverage)">{{ point.name }}</span
-                        ><span v-if="point.coverage !== undefined" class="coverage-value"
-                          :style="getNodeStyle(point.coverage)"
-                          >({{ formatCoverage(point.coverage) }})</span
-                        ><span class="point-type">{{ point.type }}</span></div
-                      ><div v-if="point.type === 'predicate'" class="node-details condition-details"
-                        ><a-tag :color="getConditionTagColor(point.details.hit_true)">True</a-tag
-                        ><span class="detail-count">({{ formatCount(point.details.count_true) }}, 
-                          {{ formatPercent(point.details.true_percentage) }})</span
-                        ><a-tag :color="getConditionTagColor(point.details.hit_false)">False</a-tag
-                        ><span class="detail-count">({{ formatCount(point.details.count_false) }}, 
-                          {{ formatPercent(point.details.false_percentage) }})</span></div
-                      ><div v-if="point.type === 'mux'" class="node-details condition-details"
-                        ><a-tag :color="getConditionTagColor(point.details.hit_true)">True</a-tag
-                        ><span class="detail-count">({{ formatCount(point.details.count_true) }}, 
-                          {{ formatPercent(point.details.true_percentage) }})</span
-                        ><a-tag :color="getConditionTagColor(point.details.hit_false)">False</a-tag
-                        ><span class="detail-count">({{ formatCount(point.details.count_false) }}, 
-                          {{ formatPercent(point.details.false_percentage) }})</span></div
-                      ><div v-if="point.type === 'register'" class="node-details register-summary-details"
-                        ><span class="detail-count"
-                          >Width: {{ point.details.width }}, Hit: {{ point.details.bins_hit }}/{{ point.details.bins_total }}</span></div
-                      ><div v-if="point.type === 'register_bit'" class="node-details bit-details"
-                        ><a-tag :color="getBitTagColor(point.details.hit_zero)">0</a-tag
-                        ><span class="detail-count">({{ formatCount(point.details.count_zero) }}, 
-                          {{ formatPercent(point.details.zero_percentage) }})</span
-                        ><a-tag :color="getBitTagColor(point.details.hit_one)">1</a-tag
-                        ><span class="detail-count">({{ formatCount(point.details.count_one) }}, 
-                          {{ formatPercent(point.details.one_percentage) }})</span
-                        ><span v-if="point.details.missing" class="missing-indicator"
-                          >({{ point.details.missing }})</span></div></div></div></div></code
-              ></pre>
-            </div>
-          </a-collapse-panel>
-        </a-collapse>
-      </div>
-      <div
-        v-else-if="coverageStore.coverageInfo && coverageStore.coverageInfo.sourceFiles && Object.keys(coverageStore.coverageInfo.sourceFiles).length === 0"
-        class="empty-source-view">
-        <p>(No source files found in the loaded Coverage Info)</p>
-      </div>
-      <div v-else-if="!coverageStore.coverageInfo" class="empty-source-view">
-        <p>(Coverage Info file not loaded)</p>
-      </div>
-      <div v-else class="empty-source-view">
-        <p>Select an item with source information
-          <FileTextOutlined /> in the coverage trees to view its code here.
-        </p>
-      </div>
-    </div>
 
-    <!-- Edit Root Directory Modal -->
-    <a-modal v-model:open="isModalVisible" title="Edit Root Directory" @ok="handleModalOk" @cancel="handleModalCancel">
-      <p v-if="currentEditingFilePath">Enter the correct root directory for file:</p>
-      <p><strong>{{ currentEditingFilePath }}</strong></p>
-      <a-input v-model:value="newRootDirInput" placeholder="/path/to/your/project/root" />
-      <template #footer>
-        <a-button key="back" @click="handleModalCancel">Cancel</a-button>
-        <a-button key="submit" type="primary" @click="handleModalOk">Update Root</a-button>
-      </template>
-    </a-modal>
+<template>
+  <a-card class="source-viewer-card" title="Instance Source Viewer">
+    <template v-if="coverageStore.coverageInfo?.instanceSignalMap">
+      <a-row :gutter="16" class="source-viewer-layout">
+        <!-- Instance Tree Column -->
+        <a-col :span="8" class="tree-column">
+          <div class="tree-container">
+            <a-directory-tree v-if="instanceTreeData.length > 0" :tree-data="instanceTreeData" :showLine="true"
+              :default-expand-all="false" :selectable="true"
+              :selectedKeys="selectedInstanceKey ? [selectedInstanceKey] : []" @select="handleInstanceSelect" blockNode
+              :fieldNames="{ title: 'title', key: 'key', children: 'children' }">
+              <!-- Ant Tree handles ellipsis with fieldNames, no custom title slot needed -->
+            </a-directory-tree>
+            <a-empty v-else description="Instance tree is empty or loading..." />
+          </div>
+        </a-col>
+
+        <!-- Source Code Column -->
+        <a-col :span="16" class="source-column">
+          <div class="source-container" ref="sourceCodeContainerRef">
+            <a-spin :spinning="isSourceLoading" :indicator="LoadingOutlined" size="large" tip="Loading source code...">
+              <div v-if="selectedInstanceKey">
+                <!-- Source Header (Simplified) -->
+                <div class="source-header">
+                  <span class="module-name">
+                    Module: <strong>{{ displayedSourceModuleName ?? 'N/A' }}</strong>
+                  </span>
+                </div>
+
+                <!-- Error Display (Simplified) -->
+                <div v-if="sourceError" class="error-display">
+                  <a-alert type="error" :message="`Error loading source code for module ${displayedSourceModuleName}`" show-icon>
+                    <template #description>
+                      <p>{{ sourceError }}</p>
+                    </template>
+                  </a-alert>
+                </div>
+
+                <!-- Source Code -->
+                <pre v-else-if="displayedSourceContent" class="source-code-viewer hljs vs">
+                  <div v-for="line in linesWithCoverage" :key="line.lineNumber" class="line-container">
+                    <div class="line-content-wrapper">
+                      <!-- Toggle Button -->
+                      <span class="line-toggle">
+                        <a-button v-if="line.coverageInfos.length > 0" type="text" size="small"
+                          @click="toggleLineExpansion(line.lineNumber)" :title="line.isExpanded ? 'Collapse coverage details' : 'Expand coverage details'">
+                          <template #icon>
+                            <component :is="line.isExpanded ? MinusSquareOutlined : PlusSquareOutlined" />
+                          </template>
+                        </a-button>
+                        <span v-else class="toggle-placeholder"></span>
+                      </span>
+                      <!-- Line Number -->
+                      <span class="line-number">{{ line.lineNumber }}</span>
+                      <!-- Line Content (Highlighted) -->
+                      <code class="line-content" v-html="line.content"></code>
+                    </div>
+                    <!-- Coverage Details -->
+                    <div v-if="line.isExpanded && line.coverageInfos.length > 0" class="coverage-details-line">
+                      <div v-for="(info, index) in line.coverageInfos" :key="`${line.lineNumber}-${index}-${info.signalInfo.name}`"
+                        class="coverage-item">
+                        <!-- Display Signal Name (Instance path not needed, all from current instance) -->
+                        <span class="signal-path" :title="info.signalInfo.name">
+                          {{ info.parsedName.signal }}
+                        </span>
+
+                        <!-- Display coverage data based on type -->
+                        <template v-if="info.coverageData">
+                          <!-- Condition Coverage -->
+                          <span v-if="info.parsedName.type === 'predicate' || info.parsedName.type === 'mux'"
+                                class="coverage-tags condition-details">
+                            <a-tag :color="getConditionTagColor((info.coverageData as ConditionCoveragePoint).hit_true)">True</a-tag>
+                            <span class="detail-count">({{ formatCount((info.coverageData as ConditionCoveragePoint).count_true) }}, {{ formatPercent((info.coverageData as ConditionCoveragePoint).true_percentage) }})</span>
+                            <a-tag :color="getConditionTagColor((info.coverageData as ConditionCoveragePoint).hit_false)">False</a-tag>
+                            <span class="detail-count">({{ formatCount((info.coverageData as ConditionCoveragePoint).count_false) }}, {{ formatPercent((info.coverageData as ConditionCoveragePoint).false_percentage) }})</span>
+                            <span class="coverage-percent" :style="getNodeStyle(info.coverageData.coverage_percent)">({{ formatCoverage(info.coverageData.coverage_percent) }})</span>
+                          </span>
+                          <!-- Register Coverage -->
+                          <span v-else-if="info.parsedName.type === 'register'"
+                                class="coverage-tags register-details">
+                            (W: {{ (info.coverageData as RegisterCoveragePoint).width }}, Hit: {{ (info.coverageData as RegisterCoveragePoint).bins_hit }}/{{ (info.coverageData as RegisterCoveragePoint).bins_total }})
+                            <span class="coverage-percent" :style="getNodeStyle(info.coverageData.coverage_percent)">({{ formatCoverage(info.coverageData.coverage_percent) }})</span>
+                          </span>
+                        </template>
+                        <!-- No data in report -->
+                        <span v-else class="coverage-tags no-data">
+                          (No coverage data in report)
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </pre>
+
+                <!-- No Content (but no error) (Simplified) -->
+                <div v-else-if="!isSourceLoading" class="empty-content">
+                  <a-empty description="Source content for this module is empty or unavailable." />
+                </div>
+
+              </div>
+              <!-- Placeholder when no instance is selected -->
+              <div v-else class="empty-selection">
+                <CodeOutlined style="font-size: 24px; margin-bottom: 10px;" />
+                <p>Select an instance from the tree on the left to view its module's source code and coverage.</p>
+              </div>
+            </a-spin>
+          </div>
+        </a-col>
+      </a-row>
+    </template>
+    <!-- Placeholder when coverage info is not loaded -->
+    <template v-else>
+      <div class="empty-info">
+        <a-empty description="Please load a coverage info file first to build the instance tree." />
+      </div>
+    </template>
 
   </a-card>
 </template>
+
 <style scoped>
-:deep(.ant-card-head) {
-  padding: 0 16px;
-  min-height: 40px;
-}
-
-:deep(.ant-card-head-title) {
-  padding: 10px 0;
-  font-size: 16px;
-}
-
-:deep(.ant-card-body) {
-  padding: 0;
-}
-
-.multi-source-viewer-container {
-  max-height: 90vh; /* 增大最大高度 */
-  overflow-y: auto;
-}
-
-.multi-source-viewer-container :deep(.ant-collapse) {
-  background-color: transparent;
-  border: none;
-  border-top: 1px solid #f0f0f0;
-}
-
-.multi-source-viewer-container :deep(.ant-collapse-item) {
-  background-color: #fff;
-  border: 1px solid #e8e8e8;
-  border-top: none;
-  border-radius: 0;
-  margin-bottom: 0;
-}
-
-.multi-source-viewer-container :deep(.ant-collapse-item:last-child) {
-  border-bottom: 1px solid #e8e8e8;
-}
-
-.multi-source-viewer-container :deep(.ant-collapse-item > .ant-collapse-header) {
-  /* Adjust padding to accommodate the button */
-  padding: 8px 36px 8px 12px; /* Add padding on the right */
-  position: relative; /* Needed for absolute positioning of the button */
-  background-color: #fafafa;
-  border-bottom: 1px solid #e8e8e8;
-  border-radius: 0;
-  font-weight: bold;
-  color: #555;
-  /* Add sticky positioning */
-  position: sticky;
-  top: 0;
-  z-index: 1;
-}
-
-/* Style the custom header content */
-.panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between; /* Pushes button to the right */
+/* --- Overall Layout and Containers --- */
+.source-viewer-card {
   width: 100%;
-}
-
-.file-path-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex-grow: 1; /* Allow text to take available space */
-  margin-right: 8px; /* Space before button */
-}
-
-.edit-root-button {
-  position: absolute; /* Position relative to header */
-  right: 12px; /* Position from the right edge */
-  top: 50%;
-  transform: translateY(-50%); /* Center vertically */
-  color: #888;
-  padding: 2px 4px; /* Smaller padding */
-  line-height: 1; /* Adjust line height */
-  height: auto; /* Adjust height */
-}
-
-.edit-root-button:hover {
-  color: #1890ff;
-  background-color: #e6f7ff;
-}
-
-.source-code-viewer {
-  padding: 10px 0;
-  margin: 0;
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 13px;
-  line-height: 1.4;
-  background-color: #fff;
-  counter-reset: line;
-  white-space: pre;
-}
-
-.line-content-wrapper {
+  margin-top: 16px;
+  height: 75vh;
+  /* Adjust as needed */
   display: flex;
+  flex-direction: column;
+}
+
+.source-viewer-card :deep(.ant-card-body) {
   padding: 0;
-  position: relative;
-  align-items: center;
-  line-height: 1.4em;
-  min-height: 1.4em;
-}
-
-.code-line {
-  position: relative;
-  min-height: 1.4em;
-  line-height: 1.4em;
-}
-
-.code-line:hover {
-  background-color: #f5f5f5;
-}
-
-.highlighted-line {
-  background-color: #fffbe6 !important;
-  outline: 1px solid #ffe58f;
-}
-
-.expand-button {
-  width: 14px;
-  height: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #1890ff;
-  margin-left: 10px;
-  margin-right: 4px;
-  flex-shrink: 0;
-  font-size: 12px;
-  line-height: 1;
-}
-
-.expand-button:hover {
-  background-color: #e6f7ff;
-  border-radius: 2px;
-}
-
-.expand-placeholder {
-  width: 14px;
-  margin-left: 10px;
-  margin-right: 4px;
-  flex-shrink: 0;
-}
-
-.line-number {
-  display: inline-block;
-  width: 40px;
-  padding-right: 10px;
-  text-align: right;
-  color: #aaa;
-  user-select: none;
-  flex-shrink: 0;
-  font-size: 12px;
-  line-height: 1.4em;
-  margin-left: 0;
-}
-
-.line-content {
   flex-grow: 1;
-  white-space: pre;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.4em;
-  padding: 0;
-  margin: 0;
-}
-
-.line-content :deep(span) {
-  white-space: pre;
-  line-height: 1.4em;
-}
-
-.line-annotation {
-  display: inline-block;
-  align-items: center;
-  font-size: 0.8em;
-  padding: 0 5px;
-  background-color: rgba(200, 200, 200, 0.7);
-  border-radius: 3px;
-  color: #333;
-  opacity: 0.7;
-  pointer-events: none;
-  height: 1.4em;
-  line-height: 1.4em;
-  white-space: nowrap;
-  flex-shrink: 0;
-  margin-left: 10px;
-  margin-right: 10px;
-}
-
-.coverage-points-details {
-  padding: 3px 10px 3px calc(10px + 14px + 4px + 40px + 10px);
-  background-color: #f9f9f9;
-  border-top: 1px dotted #ddd;
-  border-bottom: 1px dotted #ddd;
-  margin-bottom: 1px;
-}
-
-.coverage-point {
-  background-color: #fff;
-  border: 1px solid #eee;
-  border-radius: 3px;
-  margin-bottom: 4px;
-  padding: 4px 8px;
-  font-size: 12px;
-}
-
-.coverage-point-header {
   display: flex;
-  align-items: center;
-  flex-wrap: nowrap;
   overflow: hidden;
-  margin-bottom: 4px;
-  line-height: 1;
-  padding: 2px 0;
-  min-height: 26px;
 }
 
-.node-text {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex-shrink: 1;
-  min-width: 50px;
-  font-weight: bold;
-  line-height: 1.6;
-}
-
-.coverage-value {
-  margin-left: 8px;
-  white-space: nowrap;
-  flex-shrink: 0;
-  font-weight: bold;
-}
-
-.point-type {
-  font-style: italic;
-  color: #666;
-  margin-left: 8px;
-  padding: 0 4px;
-  background: #f0f0f0;
-  border-radius: 2px;
-  font-size: 11px;
-  flex-shrink: 0;
-  line-height: 1.6;
-}
-
-.node-details {
+.source-viewer-layout {
+  width: 100%;
+  height: 100%;
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 2px;
+}
+
+/* --- Left and Right Columns --- */
+.tree-column {
+  height: 100%;
+  border-right: 1px solid #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.source-column {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* --- Tree Container --- */
+.tree-container {
+  padding: 10px;
+  overflow: auto;
+  flex-grow: 1;
+}
+
+/* --- Source Container --- */
+.source-container {
+  flex-grow: 1;
+  overflow: auto;
+  /* This should handle the scrolling */
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.source-container :deep(.ant-spin-nested-loading),
+.source-container :deep(.ant-spin-container) {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.source-container :deep(.ant-spin-container) {
+  flex-grow: 1;
+  /* Ensure spinner container grows */
+  display: flex;
+  /* Ensure flex layout for child */
+  flex-direction: column;
+  /* Ensure flex layout for child */
+}
+
+
+/* --- Source Header --- */
+.source-header {
+  padding: 8px 16px;
   background-color: #fafafa;
-  border-radius: 2px;
-  padding: 6px;
-  min-height: 24px;
-  line-height: 1.6;
-}
-
-.condition-details,
-.bit-details {
-  line-height: 1.6;
-}
-
-.condition-details .ant-tag,
-.bit-details .ant-tag {
-  margin: 0;
-  padding: 0 5px;
-  line-height: 18px;
-  font-size: 0.85em;
-}
-
-.detail-count {
-  font-size: 0.85em;
-  color: #555;
-  margin-right: 6px;
+  border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.point-name {
-  display: none;
-}
-
-.point-coverage {
-  display: none;
-}
-
-.register-summary-details {
-  font-style: italic;
+.module-name {
+  font-size: 0.9em;
   color: #555;
-  background-color: #f5f5f5;
-  border-radius: 2px;
-  line-height: inherit;
 }
 
-.missing-indicator {
-  margin-left: 5px;
-  font-size: 0.8em;
-  color: #ff4d4f;
-  font-style: italic;
-  white-space: nowrap;
+/* --- Error Display --- */
+.error-display {
+  padding: 16px;
   flex-shrink: 0;
 }
 
-.empty-source-view {
-  text-align: center;
-  padding: 40px;
-  color: #888;
-}
-
-.empty-source-view p {
-  margin-bottom: 5px;
-}
-
-/* 新增：错误消息样式 */
-.error-content-message {
-  padding: 20px;
-  text-align: center;
-  color: #faad14; /* Warning color */
-  background-color: #fffbe6; /* Light warning background */
-  border: 1px solid #ffe58f; /* Warning border */
-  margin: 10px;
-  border-radius: 4px;
-}
-
-.error-content-message p {
+.error-display p {
   margin-bottom: 8px;
 }
 
-.error-content-message .anticon {
-  color: #1890ff; /* Match button color */
+/* --- Source Code Viewer (pre tag) --- */
+.source-code-viewer {
+  flex-grow: 1;
+  padding: 10px 0;
+  margin: 0;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+  font-size: 13px;
+  line-height: 0.1em;
+  white-space: pre;
+  background-color: #fff;
+  /* Content is scrolled by the parent .source-container */
+}
+
+/* --- Line Container --- */
+.line-container {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  border-left: 3px solid transparent;
+}
+
+.line-container:hover {
+  background-color: #f7f7f7;
+}
+
+/* --- Line Content Wrapper (Button, Line Number, Code) --- */
+.line-content-wrapper {
+  display: flex;
+  align-items: center;
+  min-height: calc(13px * 1.5); /* Maintain minimum height */
+}
+
+/* --- Line Expand/Collapse Toggle Button --- */
+.line-toggle {
+  width: 28px;
+  flex-shrink: 0;
+  padding-left: 4px;
+  display: flex; /* Use flexbox */
+  align-items: center; /* Vertically center the button */
+  justify-content: center; /* Horizontally center the button */
+  height: 100%; /* Ensure toggle span takes full height of wrapper */
+}
+
+.line-toggle .ant-btn {
+  padding: 0 4px;
+  height: 18px;
+  display: inline-flex; /* Ensure icon inside button is centered */
+  align-items: center;
+  justify-content: center;
+}
+
+.toggle-placeholder {
+  display: inline-block;
+  width: 18px; /* Match button width */
+  height: 18px; /* Match button height */
+}
+
+/* --- Line Number --- */
+.line-number {
+  width: 45px;
+  text-align: right;
+  padding-right: 10px;
+  color: #aaa;
+  user-select: none;
+  flex-shrink: 0;
+  /* Ensure line-number aligns well with centered items */
+  line-height: calc(13px * 1.5); /* Match min-height of wrapper */
+}
+
+/* --- Line Code Content --- */
+.line-content {
+  flex-grow: 1;
+  padding-right: 16px;
+  /* Ensure code content aligns well */
+  line-height: calc(13px * 1.5); /* Match min-height of wrapper */
+}
+
+/* --- Coverage Details Line --- */
+.coverage-details-line {
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
+  border-left: 3px solid #1890ff;
+  margin-left: 32px;
+  /* Indent */
+  margin-right: 16px;
+  margin-top: 2px;
+  margin-bottom: 4px;
+  padding: 6px 10px;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+/* --- Single Coverage Item --- */
+.coverage-item {
+  margin-bottom: 4px;
+  padding-bottom: 4px;
+  border-bottom: 1px dashed #eee;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.coverage-item:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+/* --- Signal Path --- */
+.signal-path {
+  font-weight: bold;
+  color: #333;
+  margin-right: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 45%;
+  display: inline-block;
+  line-height: 1.4; /* Added line-height for better vertical display */
+}
+
+/* --- Coverage Tags and Counts --- */
+.coverage-tags {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.condition-details .ant-tag,
+.register-details .ant-tag {
+  margin: 0;
+  padding: 0 5px;
+  font-size: 0.9em;
+}
+
+.detail-count {
+  font-size: 0.9em;
+  color: #555;
+  margin-right: 6px;
+}
+
+.coverage-percent {
+  font-size: 0.9em;
+  margin-left: 4px;
+}
+
+.register-details {
+  color: #555;
+}
+
+.no-data {
+  color: #aaa;
+  font-style: italic;
+}
+
+/* --- Empty States --- */
+.empty-selection,
+.empty-info,
+.empty-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 20px;
+  text-align: center;
+  color: #888;
+  flex-grow: 1;
+}
+
+/* --- Tree Node Styles --- */
+/* Ant Tree's default blockNode and fieldNames handle title overflow well */
+:deep(.ant-tree .ant-tree-node-content-wrapper) {
+  padding: 1px 5px;
+  line-height: 1.8;
+}
+
+:deep(.ant-tree .ant-tree-node-content-wrapper:hover) {
+  background-color: #e6f7ff;
+}
+
+:deep(.ant-tree .ant-tree-node-selected .ant-tree-node-content-wrapper) {
+  background-color: #bae7ff;
 }
 </style>
