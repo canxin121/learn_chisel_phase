@@ -1,10 +1,10 @@
 import type { CSSProperties } from 'vue';
 import type { CoverageReport, ConditionCoveragePoint, RegisterCoveragePoint } from "../types/CoverageReport";
-// 导入更新后的 CoverageInfo, ModuleInfo, 和新的 InstanceSignalTree
+// 导入 CoverageInfo, ModuleInfo, 和 InstanceSignalTree
 import type { CoverageInfo, SignalInfo, ModuleInfo, InstanceSignalTree } from "../types/CoverageInfo";
 import type { TreeNode } from "../types/TreeNode";
 
-// --- 常量 (保持不变) ---
+// --- 常量 ---
 const InstanceSeparator = "__I__";
 const ModuleMarker = "__M__";
 const SignalMarker = "__S__";
@@ -15,7 +15,7 @@ const CondPrefix = "_cond_pred_";
 const MuxPrefix = "_mux_cond_";
 const RegPrefix = "_reg_signals_";
 
-// --- 解析 (parseSignalName 仍然有用) ---
+// --- 解析 ---
 export function parseSignalName(rawName: string): { path: string[]; originatingModule: string; signal: string; type: 'predicate' | 'mux' | 'register' | 'unknown' } {
   // 确保正确提取 originatingModule
   let name = rawName;
@@ -103,13 +103,13 @@ export function parseSignalName(rawName: string): { path: string[]; originatingM
 }
 
 
-// 重写: buildCoverageTrees - 遍历 instanceSignalMap 和 report 来构建类型化的树。
+// 构建覆盖率树
 export function buildCoverageTrees(report: CoverageReport, instanceSignalMap: InstanceSignalTree | null): { predicates: TreeNode[], mux: TreeNode[], registers: TreeNode[] } {
   const predicateSignals: TreeNode[] = [];
   const muxSignals: TreeNode[] = [];
   const registerSignals: TreeNode[] = [];
 
-  // 辅助函数，用于从 instanceSignalMap 收集装饰过的信号 TreeNode
+  // 辅助函数：收集信号节点
   const collectSignalsRecursive = (instanceNode: InstanceSignalTree, currentPath: string[]) => {
     // 确保根实例名称包含在路径中
     const currentInstancePath = [...currentPath, instanceNode.instanceName];
@@ -143,35 +143,33 @@ export function buildCoverageTrees(report: CoverageReport, instanceSignalMap: In
         // console.warn(`[buildCoverageTrees] No coverage data found in report for signal: ${signalInfo.fieldName}`);
         // 决定是否包含没有覆盖率数据的信号
         // return; // 选项：跳过报告中没有的信号
-        coveragePercent = undefined; // 选项：包含但标记为无覆盖率数据
+        coveragePercent = undefined; // 包含但标记为无覆盖率数据
       } else {
         coveragePercent = coverageData.coverage_percent;
       }
 
-      // 直接从 SignalInfo 确定源位置
+      // 确定源位置
       const sourceLocation = signalInfo.filePath && signalInfo.line !== null && signalInfo.line !== undefined
         ? { filePath: signalInfo.filePath, line: signalInfo.line, column: signalInfo.column ?? 0 }
         : undefined;
 
       // 为此信号创建 TreeNode
       const signalNode: TreeNode = {
-        // 使用 fieldName 作为唯一性键
-        key: signalInfo.name,
-        label: parsed.signal, // 使用解析后的信号名称进行显示
+        key: signalInfo.name, // 唯一键
+        label: parsed.signal, // 显示名称
         isSignal: true,
         coverage: coveragePercent,
-        // 使用 *当前* 正在处理的实例节点的 moduleName
-        originatingModule: instanceNode.moduleName,
+        originatingModule: instanceNode.moduleName, // 模块名称
         sourceLocation: sourceLocation,
-        // 存储详情视图和选择所需的数据
+        // 附加数据
         data: {
-          ...(coverageData ?? {}), // 如果找到覆盖率数据，则展开
-          rawSignalInfo: signalInfo, // 如果需要，保留原始信号信息
-          parsedName: parsed, // 保留解析后的组件
-          instancePath: currentInstancePath, // 存储完整的实例路径，包括根
-          type: parsed.type, // 存储类型
+          ...(coverageData ?? {}), // 覆盖率数据
+          rawSignalInfo: signalInfo, // 原始信号信息
+          parsedName: parsed, // 解析后的名称
+          instancePath: currentInstancePath, // 实例路径
+          type: parsed.type, // 类型
         },
-        // children: undefined, // 在此模型中，信号不应有子节点
+        // children: undefined,
       };
 
       if (targetList) {
@@ -181,118 +179,106 @@ export function buildCoverageTrees(report: CoverageReport, instanceSignalMap: In
 
     // 递归处理子实例
     instanceNode.subInstances.forEach(subInstance => {
-      // 将更新后的路径向下传递
-      collectSignalsRecursive(subInstance, currentInstancePath);
+      collectSignalsRecursive(subInstance, currentInstancePath); // 传递路径
     });
   };
 
-  // 如果 instanceSignalMap 存在，则开始收集
+  // 开始收集
   if (instanceSignalMap) {
-    // 从根开始递归。路径在根 *之前* 为空。
-    collectSignalsRecursive(instanceSignalMap, []);
+    collectSignalsRecursive(instanceSignalMap, []); // 从根开始
   } else {
     console.warn("[buildCoverageTrees] instanceSignalMap is null, cannot build trees.");
   }
 
 
-  // 辅助函数，用于从信号节点的平面列表构建分层树
+  // 辅助函数：构建分层树
   const buildTreeFromSignalList = (signalNodes: TreeNode[]): TreeNode[] => {
-    const rootMap = new Map<string, TreeNode>(); // 键是顶层实例名称
+    const rootMap = new Map<string, TreeNode>(); // 顶层实例映射
 
     signalNodes.forEach(signalNode => {
       const instancePath = signalNode.data?.instancePath as string[] | undefined;
-      // 期望 instancePath 至少有一个元素（根实例名称）
+      // 检查 instancePath
       if (!instancePath || instancePath.length === 0) {
         console.warn(`[buildTreeFromSignalList] Signal node ${signalNode.key} is missing a valid instancePath.`);
-        return; // 没有路径无法放置节点
+        return; // 跳过
       }
 
       let currentChildrenMap: Map<string, TreeNode> | null = null;
       let parentNode: TreeNode | null = null;
       let nodeKeyPrefix = '';
 
-      // 在 rootMap 中遍历/创建实例路径
-      // 第一个元素是根实例，后续是子实例
+      // 遍历/创建实例路径
       for (let i = 0; i < instancePath.length; i++) {
-        const part = instancePath[i]; // 此级别的实例名称
+        const part = instancePath[i]; // 实例名称
         const isRootLevel = i === 0;
         const currentLevelMap = isRootLevel ? rootMap : currentChildrenMap;
-        // 键生成：使用完整路径段通过分隔符连接
-        const nodeKey = i === 0 ? part : `${nodeKeyPrefix}${InstanceSeparator}${part}`;
+        const nodeKey = i === 0 ? part : `${nodeKeyPrefix}${InstanceSeparator}${part}`; // 节点键
 
         let currentNode: TreeNode;
 
         if (!currentLevelMap || !currentLevelMap.has(part)) {
-          // 如果可能，查找此实例级别的模块名称
-          // 这需要搜索原始的 instanceSignalMap 结构，这里比较复杂。
-          // 我们将依赖信号节点中存储的模块名称来显示原始模块。
-          // 对于实例节点，如果没有更复杂的映射，我们可能无法轻易获得模块名称。
+          // 查找模块名称比较复杂，依赖信号节点信息
           currentNode = {
             key: nodeKey,
             label: part, // 实例名称
             children: [],
             isSignal: false,
             coverage: undefined,
-            originatingModule: undefined, // 实例节点不直接产生信号
+            originatingModule: undefined, // 实例节点
             sourceLocation: undefined,
-            data: { instancePath: instancePath.slice(0, i + 1) } // 存储到此实例的路径
+            data: { instancePath: instancePath.slice(0, i + 1) } // 实例路径
           };
           if (parentNode) {
             parentNode.children!.push(currentNode);
           } else {
-            // 这是根实例节点
-            rootMap.set(part, currentNode);
+            rootMap.set(part, currentNode); // 根实例节点
           }
-          if (currentLevelMap) currentLevelMap.set(part, currentNode); // 添加到 map 中以供查找
+          if (currentLevelMap) currentLevelMap.set(part, currentNode); // 添加到 map
         } else {
           currentNode = currentLevelMap.get(part)!;
-          // 确保它被标记为实例节点并具有 children 数组
+          // 确保是实例节点并有 children
           currentNode.isSignal = false;
           if (!currentNode.children) currentNode.children = [];
         }
 
         parentNode = currentNode;
-        nodeKeyPrefix = nodeKey; // 更新下一级别键生成的前缀
-        // 更新下一次迭代的 children map（如果不是最后一部分）
+        nodeKeyPrefix = nodeKey; // 更新前缀
+        // 更新 children map
         if (i < instancePath.length - 1) {
           currentChildrenMap = new Map(currentNode.children!.map(child => [child.label, child]));
         }
       }
 
 
-      // 将实际的信号节点添加为最终实例节点 (parentNode) 下的叶子节点
+      // 添加信号节点
       if (parentNode) {
-        // 移除：不要覆盖在 collectSignalsRecursive 中设置的唯一键
         // signalNode.key = `${parentNode.key}${SignalMarker}${signalNode.label}`;
-        // 确保父节点有 children 数组
         if (!parentNode.children) parentNode.children = [];
         parentNode.children!.push(signalNode);
-        // 排序子节点？也许稍后在聚合期间进行。
+        // 排序子节点
       } else {
-        // 如果 instancePath 始终至少包含根元素，则不应发生这种情况
         console.error(`[buildTreeFromSignalList] Failed to find parent node for signal ${signalNode.key}. Path:`, instancePath);
-        // 作为后备，添加到根，但这表明存在问题。
-        rootMap.set(signalNode.key, signalNode); // 使用唯一的信号键
+        rootMap.set(signalNode.key, signalNode); // 后备：添加到根
       }
     });
 
-    // 将根 map 的值转换为数组并排序
+    // 转换并排序
     return Array.from(rootMap.values()).sort((a, b) => a.label.localeCompare(b.label));
   };
 
 
-  // 构建各个树
+  // 构建树
   const predicateTree = buildTreeFromSignalList(predicateSignals);
   const muxTree = buildTreeFromSignalList(muxSignals);
   const registerTree = buildTreeFromSignalList(registerSignals);
 
 
-  // --- 聚合覆盖率计算 (保持不变，应用于新树) ---
+  // --- 聚合覆盖率计算 ---
   const aggregateCoverageRecursive = (node: TreeNode): number | undefined => {
     if (node.isSignal) {
       return node.coverage;
     }
-    // 在访问 length 之前检查 children 是否存在
+    // 检查 children
     if (node.children && node.children.length > 0) {
       const childCoverages = node.children
         .map(aggregateCoverageRecursive)
@@ -303,7 +289,7 @@ export function buildCoverageTrees(report: CoverageReport, instanceSignalMap: In
         return node.coverage;
       }
     }
-    node.coverage = undefined; // 如果没有子节点或没有有效覆盖率，则显式设置为 undefined
+    node.coverage = undefined; // 无有效覆盖率
     return undefined;
   };
 
@@ -314,7 +300,7 @@ export function buildCoverageTrees(report: CoverageReport, instanceSignalMap: In
   applyAggregation(predicateTree);
   applyAggregation(muxTree);
   applyAggregation(registerTree);
-  // --- 结束聚合 ---
+  // ---
 
   return {
     predicates: predicateTree,
@@ -324,7 +310,7 @@ export function buildCoverageTrees(report: CoverageReport, instanceSignalMap: In
 }
 
 
-// --- 格式化函数 (保持不变) ---
+// --- 格式化函数 ---
 export const formatCoverage = (coverage?: number): string => {
   if (coverage === undefined || coverage === null) return "-";
   return `${coverage.toFixed(1)}%`;
@@ -341,7 +327,7 @@ export const formatCount = (value?: number): string => {
   return value.toString();
 };
 
-// --- 样式函数 (保持不变) ---
+// --- 样式函数 ---
 export const getNodeStyle = (coverage?: number): CSSProperties => {
   if (coverage === undefined || coverage === null || coverage === 100) {
     return {};

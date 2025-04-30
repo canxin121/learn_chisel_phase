@@ -7,7 +7,7 @@ import FileUpload from './components/FileUpload.vue';
 import CoverageSummary from './components/CoverageSummary.vue';
 import CoverageDetails from './components/CoverageDetails.vue';
 import SourceViewer from './components/SourceViewer.vue';
-import ModuleRootDirEditor from './components/ModuleRootDirEditor.vue'; // 导入新组件
+import ModuleRootDirEditor from './components/ModuleRootDirEditor.vue'; // 导入组件
 
 // 使用 Pinia Store
 const coverageStore = useCoverageStore();
@@ -24,22 +24,22 @@ const coverageStore = useCoverageStore();
           <!-- 文件上传组件 -->
           <FileUpload />
 
-          <!-- 模块根目录编辑器 (当 info 加载后显示) -->
+          <!-- 模块根目录编辑器 -->
           <ModuleRootDirEditor v-if="coverageStore.coverageInfo" />
 
           <!-- 摘要组件 -->
           <CoverageSummary />
 
-          <!-- 将 Details 和 Source Viewer 组合在 v-if 下 -->
+          <!-- 详情和源代码查看器 -->
           <template v-if="coverageStore.coverageReport">
             <!-- 详情组件 -->
             <CoverageDetails />
 
-            <!-- SourceViewer 现在正确地使用 store 中的 moduleInfoMap -->
+            <!-- 源代码查看器 -->
             <SourceViewer />
           </template>
 
-          <!-- 未加载报告时的消息 (使用 v-else) -->
+          <!-- 未加载报告时的消息 -->
           <a-card v-else>
             <p style="text-align: center; color: #888;">Please upload a coverage report file to view the analysis.</p>
           </a-card>

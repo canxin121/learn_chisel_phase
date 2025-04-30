@@ -5,45 +5,41 @@ import type { Key } from 'ant-design-vue/es/table/interface';
 import { FolderOpenOutlined, SaveOutlined } from '@ant-design/icons-vue';
 import { useCoverageStore } from "../stores/coverageStore";
 import { open } from '@tauri-apps/plugin-dialog';
-// 导入 ModuleInfo 和 SourceFileIdentifier
 import type { ModuleInfo, SourceFileIdentifier } from '../types/CoverageInfo';
 
 const coverageStore = useCoverageStore();
 
-// 修改：接口现在表示单个源文件条目
 interface SourceFileTableItem {
-    key: string; // 唯一键: moduleName::relativePath
+    key: string; // 唯一键
     moduleName: string;
     relativePath: string;
     rootDir: string | null;
 }
 
-const newRootDir = ref(''); // 输入的新根目录
-// selectedRowKeys 现在存储选定的 SourceFileTableItem 的唯一键
-const selectedRowKeys = ref<Key[]>([]); // 表格中选中的行键
-const isApplying = ref(false); // 是否正在应用新的根目录
+const newRootDir = ref(''); // 新根目录
+const selectedRowKeys = ref<Key[]>([]); // 选中的行键
+const isApplying = ref(false); // 应用状态
 
-// 修改：将 moduleInfoMap 扁平化为源文件列表
 const tableData = computed((): SourceFileTableItem[] => {
     if (!coverageStore.coverageInfo?.moduleInfoMap) {
         return [];
     }
     const items: SourceFileTableItem[] = [];
-    // 遍历模块信息映射
+    // 遍历模块
     Object.entries(coverageStore.coverageInfo.moduleInfoMap).forEach(([moduleName, moduleInfo]: [string, ModuleInfo]) => {
         if (moduleInfo.sourceFiles) {
-            // 遍历模块内的源文件
+            // 遍历文件
             Object.entries(moduleInfo.sourceFiles).forEach(([relativePath, sourceFileInfo]) => {
                 items.push({
-                    key: `${moduleName}::${relativePath}`, // 创建唯一键
+                    key: `${moduleName}::${relativePath}`, // 键
                     moduleName: moduleName,
                     relativePath: relativePath,
-                    rootDir: sourceFileInfo.rootDir ?? null, // 获取当前根目录
+                    rootDir: sourceFileInfo.rootDir ?? null, // 根目录
                 });
             });
         }
     });
-    // 可选：对项目进行排序，例如按模块名称然后按相对路径
+    // 排序项目
     items.sort((a, b) => {
         if (a.moduleName !== b.moduleName) {
             return a.moduleName.localeCompare(b.moduleName);
@@ -53,49 +49,47 @@ const tableData = computed((): SourceFileTableItem[] => {
     return items;
 });
 
-// 修改：列现在反映 SourceFileTableItem
 const columns: TableColumnsType<SourceFileTableItem> = [
     {
         title: 'Module Name',
         dataIndex: 'moduleName',
         key: 'moduleName',
-        ellipsis: true, // 启用省略号
+        ellipsis: true, // 省略号
         width: 200,
     },
     {
         title: 'Relative Path',
         dataIndex: 'relativePath',
         key: 'relativePath',
-        ellipsis: true, // 启用省略号
+        ellipsis: true, // 省略号
     },
     {
         title: 'Current Root Dir',
         dataIndex: 'rootDir',
         key: 'rootDir',
-        ellipsis: true, // 启用省略号
-        // 自定义渲染以显示 'N/A'
-        customRender: ({ text }: { text: string | null }) => text || 'N/A',
+        ellipsis: true, // 省略号
+        customRender: ({ text }: { text: string | null }) => text || 'N/A', // 自定义渲染
     },
 ];
 
-// 表格行选择配置
+// 行选择配置
 const rowSelection = reactive({
-    selectedRowKeys: selectedRowKeys, // 绑定选中的键
+    selectedRowKeys: selectedRowKeys, // 选中键
     onChange: (keys: Key[]) => {
-        selectedRowKeys.value = keys; // 更新选中的键
+        selectedRowKeys.value = keys; // 更新选中键
     },
 });
 
-// 打开目录选择对话框
+// 选择目录
 const selectDirectory = async () => {
     try {
         const selected = await open({
-            directory: true, // 只允许选择目录
-            multiple: false, // 只允许选择一个
-            title: 'Select New Root Directory', // 对话框标题
+            directory: true, // 目录
+            multiple: false, // 单选
+            title: 'Select New Root Directory', // 标题
         });
         if (selected && typeof selected === 'string') {
-            newRootDir.value = selected; // 更新输入框的值
+            newRootDir.value = selected; // 更新输入
         }
     } catch (err) {
         message.error(`Failed to open directory dialog: ${err}`);
@@ -103,8 +97,7 @@ const selectDirectory = async () => {
     }
 };
 
-// 修改：应用逻辑现在针对选定的源文件
-// 应用新的根目录到选定的源文件
+// 应用新根目录
 const applyNewRootDir = async () => {
     if (selectedRowKeys.value.length === 0) {
         message.warn('Please select at least one source file to update.');
@@ -116,15 +109,14 @@ const applyNewRootDir = async () => {
     }
     isApplying.value = true;
 
-    // 将选定的键 (moduleName::relativePath) 映射回 SourceFileIdentifier 对象
+    // 映射键到标识符
     const identifiersToUpdate: SourceFileIdentifier[] = selectedRowKeys.value.map(key => {
         const [moduleName, relativePath] = String(key).split('::');
         return { moduleName, relativePath };
-    }).filter(id => id.moduleName && id.relativePath); // 基本验证
+    }).filter(id => id.moduleName && id.relativePath); // 验证
 
     if (identifiersToUpdate.length !== selectedRowKeys.value.length) {
          console.warn("Some selected keys could not be parsed into identifiers:", selectedRowKeys.value);
-         // 可选地通知用户
     }
 
     if (identifiersToUpdate.length === 0) {
@@ -135,17 +127,17 @@ const applyNewRootDir = async () => {
 
 
     try {
-        // 调用更新后的 store action，传入标识符列表
+        // 调用 store action
         await coverageStore.updateFileRootBatch(identifiersToUpdate, newRootDir.value);
 
         message.success(`Batch root directory update request processed successfully for ${identifiersToUpdate.length} source file(s).`);
-        selectedRowKeys.value = []; // 成功后清除选择
-        newRootDir.value = ''; // 成功后清除输入
+        selectedRowKeys.value = []; // 清除选择
+        newRootDir.value = ''; // 清除输入
 
     } catch (error) {
         message.error(`Batch root directory update request failed. See console or previous messages for details.`);
         console.error("Error during batch root directory update process:", error);
-        // 决定是否在失败时清除选择
+        // 清除选择
         // selectedRowKeys.value = [];
     } finally {
         isApplying.value = false;
@@ -153,19 +145,16 @@ const applyNewRootDir = async () => {
 };
 </script>
 <template>
-    <!-- 添加 defaultActiveKey 属性 -->
     <a-collapse accordion :defaultActiveKey="['1']">
-        <!-- 修改了标题 -->
         <a-collapse-panel key="1" header="Source File Root Directory Editor">
             <a-space direction="vertical" style="width: 100%">
-                <!-- 如果未加载 info 文件，显示警告 -->
+                <!-- 未加载 info 文件警告 -->
                 <a-alert v-if="!coverageStore.originalInfoFilePath" type="warning"
                     message="Load a Coverage Info file to manage source file paths." show-icon />
-                <!-- 如果已加载 info 文件，显示编辑器 -->
+                <!-- 编辑器 -->
                 <template v-if="coverageStore.originalInfoFilePath">
                     <a-row :gutter="16" align="bottom">
                         <a-col flex="auto">
-                            <!-- 修改了 tooltip -->
                             <a-tooltip
                                 title="Enter the new root directory for the selected source file(s).">
                                 <a-input v-model:value="newRootDir" placeholder="Enter New Root Directory Path"
@@ -183,29 +172,27 @@ const applyNewRootDir = async () => {
                             </a-tooltip>
                         </a-col>
                         <a-col flex="none">
-                            <!-- 应用按钮，禁用条件：未选择行或未输入新路径 -->
+                            <!-- 应用按钮 -->
                             <a-button type="primary" @click="applyNewRootDir" :loading="isApplying"
                                 :disabled="selectedRowKeys.length === 0 || !newRootDir">
                                 <template #icon>
                                     <SaveOutlined />
                                 </template>
-                                <!-- 显示选中数量 -->
-                                Apply to Selected ({{ selectedRowKeys.length }})
+                                Apply to Selected ({{ selectedRowKeys.length }}) <!-- 选中数量 -->
                             </a-button>
                         </a-col>
                     </a-row>
-                    <!-- 表格使用更新后的列和数据 -->
+                    <!-- 表格 -->
                     <a-table :dataSource="tableData" :columns="columns" :row-selection="rowSelection" size="small"
                         bordered :pagination="{ pageSize: 10, hideOnSinglePage: true }" :scroll="{ y: 300 }">
                         <template #bodyCell="{ column, text }">
-                            <!-- 对需要省略号的列进行自定义渲染并添加 tooltip -->
-                            <!-- 修改：检查新的键 -->
+                            <!-- 自定义渲染省略号列 -->
                             <template v-if="column.key === 'moduleName' || column.key === 'relativePath' || column.key === 'rootDir'">
                                 <a-tooltip :title="text">
                                     <span>{{ text || 'N/A' }}</span>
                                 </a-tooltip>
                             </template>
-                            <!-- 如果需要，为其他列提供后备 -->
+                            <!-- 其他列后备 -->
                             <template v-else>
                                 {{ text }}
                             </template>
