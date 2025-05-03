@@ -217,8 +217,9 @@ object CoverageTool {
               )
             val jsonPath =
               s"$specificOutputDir/${moduleName}_coverage_info.json"
-            FileUtil.writeToFile(jsonPath, coverageInfoJson)
-            println(s"  成功写入 $jsonPath")
+            // 将 overwrite 设置为 false
+            FileUtil.writeToFile(jsonPath, coverageInfoJson, overwrite = false)
+            println(s"  成功写入 $jsonPath (如果不存在)") // 更新日志消息
           } catch {
             case e: Exception =>
               println(s"   生成或写入 Coverage Info JSON 时出错: ${e.getMessage}")

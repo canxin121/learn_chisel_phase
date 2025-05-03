@@ -1,0 +1,545 @@
+{
+  "topModuleName": "RocketALU",
+  "exportedPorts": [
+    {
+      "type": "mux_cond",
+      "signals": [
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___bext_mask_T_1",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 124:22]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___in2_inv_T",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 87:20]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___io_cmp_out_T_2",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 96:41]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___io_out_T_1",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 180:48]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___logic_T_14",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 122:18]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___logic_T_6",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 121:18]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___orcb_T_1",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 143:45]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___orcb_T_10",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 143:45]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___orcb_T_13",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 143:45]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___orcb_T_16",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 143:45]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___orcb_T_19",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 143:45]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___orcb_T_22",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 143:45]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___orcb_T_4",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 143:45]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___orcb_T_7",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 143:45]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___out_T",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 163:47]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___out_T_2",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 163:47]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 138:20]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_1",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 139:8]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_10",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_11",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_12",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_13",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_14",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_15",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_16",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_17",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_18",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_19",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_20",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_21",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_22",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_23",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_24",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_25",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_26",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_27",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_28",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_29",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_30",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_31",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_32",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_33",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_34",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_35",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_36",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_37",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_38",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_39",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_40",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_41",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_42",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_43",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_44",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_45",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_46",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_47",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_48",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_49",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_5",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_50",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_51",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_52",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_53",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_54",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_55",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_56",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_57",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_58",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_59",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_6",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_60",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_61",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_62",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_63",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_64",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_65",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_66",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_67",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_68",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_69",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_7",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_8",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___popc_in_T_9",
+        "type": "UInt<1>",
+        "info": " @[src/main/scala/chisel3/util/Mux.scala 50:70]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___rot_shamt_T",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 157:22]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___rotin_T",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 158:18]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___rotout_T",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 161:19]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___rotout_T_2",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 161:55]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___shin_T_7",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 108:17]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___shin_hi_32_T_3",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 103:28]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___shin_hi_T",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 104:24]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___shout_T_4",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 111:18]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___shout_T_6",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 112:18]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___slt_T_2",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 94:8]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___slt_T_4",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 95:8]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___tz_in_T_116",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 132:62]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___tz_in_T_118",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 132:62]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___tz_in_T_120",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 132:62]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___unary_T_12",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 145:45]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___unary_T_14",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 145:45]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___unary_T_16",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 145:45]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___unary_T_18",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 145:45]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___unary_T_20",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 145:45]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___unary_T_3",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 149:20]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S___unary_T_8",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 150:20]"
+      },
+      {
+        "name": "_mux_cond_RocketALU__M__RocketALU__S__io__s__cmp_out",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 154:23]"
+      }
+      ]
+    },
+    {
+      "type": "cond_pred",
+      "signals": [
+      {
+        "name": "_cond_pred_RocketALU__M__RocketALU__S___T_1",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\ALU.scala 180:28]"
+      }
+      ]
+    }
+  ]
+}

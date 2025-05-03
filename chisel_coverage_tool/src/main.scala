@@ -18,7 +18,10 @@ import freechips.rocketchip.rocket.ALU._
 import freechips.rocketchip.util._
 import _root_.circt.stage.ChiselStage
 import freechips.rocketchip.system.DefaultConfig
-import freechips.rocketchip.tile.{RocketTileParams, TileKey}
+import freechips.rocketchip.tile.{RocketTileParams, TileKey, LookupByHartIdImpl}
+import freechips.rocketchip.tile.RocketTile
+import org.chipsalliance.diplomacy.lazymodule.LazyModule
+import freechips.rocketchip.system.ExampleRocketSystem
 
 object Main {
   def main(args: Array[String]): Unit = {
@@ -45,7 +48,16 @@ object Main {
       ),
       (() => new RegModule(), "reg_module"),
       (() => new ComplexExample(), "complex_example"),
-      (() => new ALU(), "rocket_alu")
+      (() => new ALU(), "rocket_alu"),
+      (() => new MulDiv(MulDivParams(), width = 64), "rocket_muldiv"),
+      (
+        () => {
+          val ldut = LazyModule(new ExampleRocketSystem)
+          val dut = chisel3.Module(ldut.module)
+          dut
+        },
+        "rocket_tile"
+      )
     )
 
     modulesToProcess.foreach { case (moduleGenerator, outputSubDir) =>

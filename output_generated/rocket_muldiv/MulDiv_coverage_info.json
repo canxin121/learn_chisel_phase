@@ -1,0 +1,185 @@
+{
+  "topModuleName": "MulDiv",
+  "exportedPorts": [
+    {
+      "type": "mux_cond",
+      "signals": [
+      {
+        "name": "_mux_cond_MulDiv__M__MulDiv__S___T_5",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 81:29]"
+      },
+      {
+        "name": "_mux_cond_MulDiv__M__MulDiv__S___T_8",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 81:29]"
+      },
+      {
+        "name": "_mux_cond_MulDiv__M__MulDiv__S___count_T_6",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 168:38]"
+      },
+      {
+        "name": "_mux_cond_MulDiv__M__MulDiv__S___hiOut_T_1",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 177:18]"
+      },
+      {
+        "name": "_mux_cond_MulDiv__M__MulDiv__S___hiOut_T_3",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 177:39]"
+      },
+      {
+        "name": "_mux_cond_MulDiv__M__MulDiv__S___hi_T",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 82:29]"
+      },
+      {
+        "name": "_mux_cond_MulDiv__M__MulDiv__S___hi_T_3",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 82:29]"
+      },
+      {
+        "name": "_mux_cond_MulDiv__M__MulDiv__S___loOut_T_3",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 176:18]"
+      },
+      {
+        "name": "_mux_cond_MulDiv__M__MulDiv__S___state_T_1",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 165:36]"
+      },
+      {
+        "name": "_mux_cond_MulDiv__M__MulDiv__S__cmdHi",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 169:19]"
+      },
+      {
+        "name": "_mux_cond_MulDiv__M__MulDiv__S__cmdMul",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 165:17]"
+      },
+      {
+        "name": "_mux_cond_MulDiv__M__MulDiv__S__eOut",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 120:55]"
+      },
+      {
+        "name": "_mux_cond_MulDiv__M__MulDiv__S__neg_out",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 139:19]"
+      },
+      {
+        "name": "_mux_cond_MulDiv__M__MulDiv__S__resHi",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 89:19]"
+      },
+      {
+        "name": "_mux_cond_MulDiv__M__MulDiv__S__unrolls_less",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 134:14]"
+      }
+      ]
+    },
+    {
+      "type": "cond_pred",
+      "signals": [
+      {
+        "name": "_cond_pred_MulDiv__M__MulDiv__S___T_10",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 92:57]"
+      },
+      {
+        "name": "_cond_pred_MulDiv__M__MulDiv__S___T_11",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 93:27]"
+      },
+      {
+        "name": "_cond_pred_MulDiv__M__MulDiv__S___T_12",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 96:25]"
+      },
+      {
+        "name": "_cond_pred_MulDiv__M__MulDiv__S___T_13",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 101:57]"
+      },
+      {
+        "name": "_cond_pred_MulDiv__M__MulDiv__S___T_14",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 106:50]"
+      },
+      {
+        "name": "_cond_pred_MulDiv__M__MulDiv__S___T_16",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 124:55]"
+      },
+      {
+        "name": "_cond_pred_MulDiv__M__MulDiv__S___T_17",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 129:50]"
+      },
+      {
+        "name": "_cond_pred_MulDiv__M__MulDiv__S___T_18",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 138:42]"
+      },
+      {
+        "name": "_cond_pred_MulDiv__M__MulDiv__S___T_20",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 159:28]"
+      },
+      {
+        "name": "_cond_pred_MulDiv__M__MulDiv__S___T_22",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 161:34]"
+      },
+      {
+        "name": "_cond_pred_MulDiv__M__MulDiv__S___T_23",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 164:22]"
+      }
+      ]
+    },
+    {
+      "type": "register",
+      "signals": [
+      {
+        "name": "_reg_signals_MulDiv__M__MulDiv__S__count",
+        "type": "UInt<7>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 54:18]"
+      },
+      {
+        "name": "_reg_signals_MulDiv__M__MulDiv__S__divisor",
+        "type": "UInt<65>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 60:20]"
+      },
+      {
+        "name": "_reg_signals_MulDiv__M__MulDiv__S__isHi",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 58:17]"
+      },
+      {
+        "name": "_reg_signals_MulDiv__M__MulDiv__S__neg_out",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 57:20]"
+      },
+      {
+        "name": "_reg_signals_MulDiv__M__MulDiv__S__remainder",
+        "type": "UInt<130>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 61:22]"
+      },
+      {
+        "name": "_reg_signals_MulDiv__M__MulDiv__S__resHi",
+        "type": "UInt<1>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 59:18]"
+      },
+      {
+        "name": "_reg_signals_MulDiv__M__MulDiv__S__state",
+        "type": "UInt<3>",
+        "info": " @[\\\\src\\\\main\\\\scala\\\\rocket\\\\Multiplier.scala 51:22]"
+      }
+      ]
+    }
+  ]
+}
