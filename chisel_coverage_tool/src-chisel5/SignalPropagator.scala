@@ -5,6 +5,9 @@ package ir
 // 导入 firrtl.Utils 中的辅助函数和类型定义
 import firrtl.Utils.{throwInternalError, BoolType} // 导入 BoolType, IntWidth
 import firrtl.ir.Info
+import firrtl.ir.BundleType // 确保导入 BundleType
+import firrtl.ir.VectorType // 确保导入 VectorType
+import firrtl.ir.GroundType // 确保导入 GroundType
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
@@ -26,10 +29,9 @@ case class ExportedSignalInfo(
 /** 描述添加到顶层模块的整个导出端口的信息
   *
   * @param portName
-  *   添加到顶层模块的新端口的名称 (例如 "_cond_pred", "_mux_cond", "_reg_signals")。
+  *   添加到顶层模块的新端口的名称 (例如 "_cp", "_mc", "_rs")。
   * @param exportedSignals
-  *   一个序列，包含该端口 Bundle 内所有字段（信号）的详细信息 (`ExportedSignalInfo`)。
-  *   字段名是压缩后的名称。
+  *   一个序列，包含该端口 Bundle 内所有字段（信号）的详细信息 (`ExportedSignalInfo`)。 字段名是压缩后的名称。
   */
 case class TopLevelExportInfo(
     portName: String,
@@ -55,15 +57,14 @@ case class PropagatorConfig(
   *      对于每个模块：
   *      a. 收集其本地目标信号。 b. 检查其子模块实例。如果子模块已经过处理并输出了目标信号，则收集这些来自子模块的信号。 c.
   *         如果存在本地信号或来自子模块的信号，则：
-  *         i. 创建一个新的输出端口（类型为
-  *            `BundleType`），其字段对应于所有需要传播的信号。字段名称是压缩后的唯一名称。
-  *            ii. 解析信号类型，如果原始类型是 `UnknownType` 且 `defaultTypeForUnknown`
+  *         i. 创建一个新的输出端口（类型为 `BundleType`），其字段对应于所有需要传播的信号。字段名称是压缩后的唯一名称。 ii.
+  *            解析信号类型，如果原始类型是 `UnknownType` 且 `defaultTypeForUnknown`
   *            已设置，则使用默认类型。否则，保留原始类型或（对于寄存器等）在 `UnknownType` 时报错。 iii. 对于源自本地
   *            `DefNode`（非顶层定义）的信号，可能需要创建中间 `DefWire` 并连接 `DefNode` 到该线。 iv.
   *            将所有来源（本地信号、中间线、子模块端口字段）连接到新输出端口的相应字段。 v. 返回转换后的模块和新端口信息。 4.
   *            最终，顶层模块将包含一个输出端口，其中捆绑了整个设计中所有被传播的信号。 5. （新增）`transform`
-  *            方法现在返回一个元组 `(Circuit,
-  *            Option[TopLevelExportInfo], Map[String, String])`，其中包含转换后的电路、关于顶层模块新增端口的详细信息（如果添加了端口），以及一个从压缩名称映射回原始名称的字典。
+  *            方法现在返回一个元组 `(Circuit, Option[TopLevelExportInfo], Map[String,
+  *            String])`，其中包含转换后的电路、关于顶层模块新增端口的详细信息（如果添加了端口），以及一个从压缩名称映射回原始名称的字典。
   */
 object SignalPropagator {
 
@@ -74,12 +75,14 @@ object SignalPropagator {
     private var counter = 0
 
     def compress(originalName: String): String = {
-      originalToCompressed.getOrElseUpdate(originalName, {
-        val compressed = s"_s$counter"
-        counter += 1
-        compressedToOriginal(compressed) = originalName
-        compressed
-      })
+      originalToCompressed.getOrElseUpdate(
+        originalName, {
+          val compressed = s"_s$counter"
+          counter += 1
+          compressedToOriginal(compressed) = originalName
+          compressed
+        }
+      )
     }
 
     def getDictionary(): Map[String, String] = compressedToOriginal.toMap
@@ -121,8 +124,71 @@ object SignalPropagator {
 
   case class ModuleTransformResult(
       transformedModule: DefModule,
-      signalPortInfo: Option[(String, BundleType, Map[String, Info])] // Map key is compressed name
+      signalPortInfo: Option[
+        (String, BundleType, Map[String, Info])
+      ] // Map key is compressed name
   )
+
+  // --- 新增：辅助函数，用于递归扁平化信号表达式和名称 ---
+  /** 递归地将信号（特别是寄存器）展开为其标量元素。
+    *
+    * @param baseExpr
+    *   访问信号的基础表达式 (例如 Reference("myReg", ...))
+    * @param baseOriginalName
+    *   信号的原始基础名称 (例如 "Top__I__inst__M__MyModule__S__myReg")
+    * @param signalType
+    *   信号的 FIRRTL 类型
+    * @param originInfo
+    *   原始来源信息
+    * @return
+    *   一个序列，包含每个标量元素的信息： (扁平化原始名称, 标量访问表达式, 标量类型, 原始Info)
+    */
+  private def flattenSignalExpr(
+      baseExpr: Expression,
+      baseOriginalName: String,
+      signalType: Type,
+      originInfo: Info
+  ): Seq[(String, Expression, Type, Info)] = {
+    val results = ListBuffer[(String, Expression, Type, Info)]()
+
+    def run(
+        currentExpr: Expression,
+        currentName: String,
+        currentType: Type
+    ): Unit = {
+      currentType match {
+        case vt @ VectorType(elementType, size) =>
+          if (size > 0) {
+            (0 until size).foreach { i =>
+              // 递归处理每个元素，追加索引到名称和表达式
+              val elementExpr = SubIndex(currentExpr, i, elementType)
+              val elementName = s"${currentName}_$i"
+              run(elementExpr, elementName, elementType)
+            }
+          } // 零长度向量忽略
+        case bt @ BundleType(fields) =>
+          fields.foreach { field =>
+            // 递归处理每个字段，追加字段名到名称和表达式
+            val fieldExpr = SubField(currentExpr, field.name, field.tpe)
+            val fieldName = s"${currentName}_${field.name}" // 使用下划线分隔 Bundle 字段
+            run(fieldExpr, fieldName, field.tpe)
+          }
+        case gt: GroundType =>
+          // 基本情况：遇到标量类型，添加结果
+          results += ((currentName, currentExpr, gt, originInfo))
+        case otherType =>
+          // 对于其他类型（例如 Analog），如果需要，可以按原样处理或发出警告
+          // 当前行为：将其视为“标量”并添加
+          println(
+            s"[WARN] SignalPropagator.flattenSignalExpr: Encountered non-ground/vector/bundle type '${otherType.serialize}' for base '$baseOriginalName'. Treating as scalar."
+          )
+          results += ((currentName, currentExpr, otherType, originInfo))
+      }
+    }
+
+    run(baseExpr, baseOriginalName, signalType)
+    results.toList
+  }
 
   // --- 辅助函数 ---
   private def collectTopLevelNames(
@@ -295,6 +361,7 @@ object SignalPropagator {
               )
               ExportedSignalInfo(field.name, field.tpe, originInfo)
             }
+            .distinct // 添加 distinct 来移除重复项
             .sortBy(_.fieldName)
           TopLevelExportInfo(portName, exportedSignals)
       }
@@ -313,6 +380,7 @@ object SignalPropagator {
       nameCompressor: NameCompressor
   ): ModuleTransformResult = {
 
+    // --- 修改本地信号处理以支持扁平化 ---
     val localSignalSources: List[LocalSignalSource] =
       internalSignalsMap
         .get(module.name)
@@ -321,35 +389,94 @@ object SignalPropagator {
             .distinctBy { case (expr, info) =>
               (expr.serialize, info.serialize)
             }
-            .map { case (signalExpr, originInfo) =>
-              if (getRootReferenceName(signalExpr).isEmpty) {
+            .flatMap { case (signalExpr, originInfo) => // 改为 flatMap
+              val rootRefNameOpt = getRootReferenceName(signalExpr)
+              if (rootRefNameOpt.isEmpty) {
                 throwInternalError(
                   s"SignalPropagator.transformModule: 在模块 ${module.name} 中发现不符合假设的 ${config.signalName}: ${signalExpr.serialize}. " +
                     "无法获取根引用名称。"
                 )
               }
-              val originalSignalType = signalExpr.tpe
+
               val signalBaseId = getSignalBaseIdentifier(
                 signalExpr,
                 config.signalName
               )
               val instancePathPrefix =
                 currentInstancePath.mkString(InstanceSeparator)
-              val originalUniqueFieldName =
+              val originalBaseFieldName = // 这是未扁平化的基础名称
                 s"${instancePathPrefix}${ModuleMarker}${module.name}${SignalMarker}$signalBaseId"
-              LocalSignalSource(
-                originalUniqueFieldName,
-                SignalOriginInfo(signalExpr, originalSignalType, originInfo)
-              )
+
+              // --- 开始扁平化逻辑 (仅对寄存器信号 _rs 生效) ---
+              if (config.outputPortName == "_rs") {
+                signalExpr match {
+                  case ref @ Reference(_, tpe) =>
+                    flattenSignalExpr(
+                      ref,
+                      originalBaseFieldName,
+                      tpe,
+                      originInfo
+                    )
+                      .map {
+                        case (
+                              flattenedName,
+                              scalarExpr,
+                              scalarType,
+                              info
+                            ) =>
+                          LocalSignalSource(
+                            flattenedName, // 使用扁平化后的名称
+                            SignalOriginInfo(
+                              scalarExpr,
+                              scalarType,
+                              info
+                            ) // 使用标量信息
+                          )
+                      }
+                  case otherExpr =>
+                    // 对于非 Reference 的寄存器源（理论上不应发生，因为提取器应返回 Reference）
+                    // 按原样处理，不进行扁平化，并发出警告
+                    println(
+                      s"[WARN] SignalPropagator: Register signal source in ${module.name} is not a simple Reference: ${otherExpr.serialize}. Flattening might be incomplete."
+                    )
+                    Seq(
+                      LocalSignalSource(
+                        originalBaseFieldName,
+                        SignalOriginInfo(
+                          otherExpr,
+                          otherExpr.tpe,
+                          originInfo
+                        )
+                      )
+                    )
+                }
+              } else {
+                // --- 对于非寄存器信号，保持原有逻辑 ---
+                Seq(
+                  LocalSignalSource(
+                    originalBaseFieldName, // 使用原始（未扁平化）名称
+                    SignalOriginInfo(
+                      signalExpr,
+                      signalExpr.tpe,
+                      originInfo
+                    ) // 使用原始表达式和类型
+                  )
+                )
+              }
+            // --- 结束扁平化逻辑 ---
             }
         }
         .getOrElse(Nil)
         .toList
 
+    // --- 子信号处理逻辑基本不变，假设子模块已完成扁平化 ---
     val childSignalSources = mutable.ListBuffer[ChildSignalSource]()
     val childInstanceResults = mutable.Map[String, ModuleTransformResult]()
 
-    def findInstancesAndCollectChildSignals(statement: Statement, isInConditionalContext: Boolean): Unit =
+    def findInstancesAndCollectChildSignals(
+        statement: Statement,
+        isInConditionalContext: Boolean
+    ): Unit =
       statement match {
         case inst: DefInstance =>
           val childModuleName = inst.module
@@ -366,21 +493,28 @@ object SignalPropagator {
                 if childPortName == config.outputPortName =>
               val instanceRef = Reference(
                 inst.name,
-                UnknownType
+                UnknownType // 类型在这里不重要，会被 SubField 覆盖
               )
-              val childSignalPortAccess = SubField(
+              val childSignalPortAccessBase = SubField(
                 instanceRef,
                 childPortName,
                 childBundleType
               )
 
               childBundleType.fields.foreach { field =>
-                val originalFieldName = nameCompressor.getDictionary().getOrElse(field.name,
-                  throwInternalError(s"SignalPropagator: 在压缩字典中找不到压缩名称 ${field.name} 对应的原始名称。")
-                )
+                // field.name 是压缩后的名称 (e.g., _s10)
+                // 我们需要通过字典找到原始的、扁平化的名称 (e.g., Top__I__childInst__M__ChildMod__S__regVec_0)
+                val originalFlattenedFieldName = nameCompressor
+                  .getDictionary()
+                  .getOrElse(
+                    field.name,
+                    throwInternalError(
+                      s"SignalPropagator: 在压缩字典中找不到压缩名称 ${field.name} (来自实例 ${inst.name} 的端口 ${childPortName}) 对应的原始名称。"
+                    )
+                  )
 
                 val fieldAccessExpr =
-                  SubField(childSignalPortAccess, field.name, field.tpe)
+                  SubField(childSignalPortAccessBase, field.name, field.tpe)
 
                 val originInfoForField = childInfoMap.getOrElse(
                   field.name, {
@@ -391,24 +525,28 @@ object SignalPropagator {
                   }
                 )
                 val originInfo = SignalOriginInfo(
-                  fieldAccessExpr,
-                  field.tpe,
+                  fieldAccessExpr, // 表达式访问子模块端口的扁平化字段
+                  field.tpe, // 子模块端口字段的类型（应为标量）
                   originInfoForField
                 )
                 childSignalSources += ChildSignalSource(
                   inst.name,
-                  originalFieldName,
+                  originalFlattenedFieldName, // 使用从字典查到的原始扁平化名称
                   originInfo,
                   isInConditionalContext
                 )
               }
-            case _ => ()
+            case _ => () // 子模块没有输出此类型的信号端口
           }
-        case Block(stmts) => stmts.foreach(findInstancesAndCollectChildSignals(_, isInConditionalContext))
+        // ... (rest of findInstancesAndCollectChildSignals remains the same) ...
+        case Block(stmts) =>
+          stmts.foreach(
+            findInstancesAndCollectChildSignals(_, isInConditionalContext)
+          )
         case Conditionally(_, _, conseq, alt) =>
           findInstancesAndCollectChildSignals(conseq, true);
           findInstancesAndCollectChildSignals(alt, true)
-        case _ => ()
+        case _ =>
       }
     findInstancesAndCollectChildSignals(module.body, false)
 
@@ -419,41 +557,64 @@ object SignalPropagator {
       return ModuleTransformResult(module, None)
     }
 
-    val fieldInfoOriginalNameTriples: Seq[(Field, Info, String)] = allSignalSources.map { source =>
-      val (originalFieldName, originalType, originInfo) = source match {
-        case LocalSignalSource(ofname, sigOrigin) =>
-          (ofname, sigOrigin.signalType, sigOrigin.originInfo)
-        case ChildSignalSource(_, ofname, sigOrigin, _) =>
-          (ofname, sigOrigin.signalType, sigOrigin.originInfo)
+    // --- Bundle 创建逻辑不变，依赖于 allSignalSources 中的 originalFieldName ---
+    val fieldInfoOriginalNameTriples: Seq[(Field, Info, String)] =
+      allSignalSources.map { source =>
+        // source.originalFieldName 现在是扁平化的名称
+        val (originalFieldName, originalType, originInfo) = source match {
+          case LocalSignalSource(ofname, sigOrigin) =>
+            (ofname, sigOrigin.signalType, sigOrigin.originInfo)
+          case ChildSignalSource(_, ofname, sigOrigin, _) =>
+            (ofname, sigOrigin.signalType, sigOrigin.originInfo)
+        }
+
+        val compressedFieldName =
+          nameCompressor.compress(originalFieldName) // 压缩扁平化名称
+
+        // 类型检查：此时 originalType 应该是标量类型
+        originalType match {
+          case UnknownType =>
+            config.defaultTypeForUnknown match {
+              case Some(defaultTpe) =>
+                println(
+                  s"[INFO] SignalPropagator: 模块 '${module.name}' 中原始字段 '$originalFieldName' (压缩为 '$compressedFieldName') 类型未知，使用默认 ${defaultTpe.serialize}。"
+                )
+                (
+                  Field(compressedFieldName, Default, defaultTpe),
+                  originInfo,
+                  originalFieldName
+                )
+              case None =>
+                // 对于寄存器，UnknownType 通常不应该发生，因为 DefRegister 有类型
+                // 但如果发生，并且没有默认值，则报错
+                throwInternalError(
+                  s"SignalPropagator: 模块 '${module.name}' 中原始字段 '$originalFieldName' (压缩为 '$compressedFieldName') 解析为 UnknownType，且未指定 defaultTypeForUnknown。"
+                )
+            }
+          case gt: GroundType =>
+            (
+              Field(compressedFieldName, Default, gt),
+              originInfo,
+              originalFieldName
+            )
+          case otherType =>
+            // 如果扁平化后仍然不是 GroundType (理论上不应发生，除非 flattenSignalExpr 逻辑有误或处理了特殊类型)
+            throwInternalError(
+              s"SignalPropagator: 模块 '${module.name}' 中原始字段 '$originalFieldName' (压缩为 '$compressedFieldName') 在扁平化后类型不是 GroundType: ${otherType.serialize}."
+            )
+
+        }
       }
-
-      val compressedFieldName = nameCompressor.compress(originalFieldName)
-
-      val finalFieldType = originalType match {
-        case UnknownType =>
-          config.defaultTypeForUnknown match {
-            case Some(defaultTpe) =>
-              println(
-                s"[INFO] SignalPropagator: 模块 '${module.name}' 中原始字段 '$originalFieldName' (压缩为 '$compressedFieldName') 类型未知，使用默认 ${defaultTpe.serialize}。"
-              )
-              defaultTpe
-            case None =>
-              throwInternalError(
-                s"SignalPropagator: 模块 '${module.name}' 中原始字段 '$originalFieldName' (压缩为 '$compressedFieldName') 解析为 UnknownType，且未指定 defaultTypeForUnknown。"
-              )
-          }
-        case validTpe => validTpe
-      }
-      (Field(compressedFieldName, Default, finalFieldType), originInfo, originalFieldName)
-    }
-
-    val finalUniqueFieldInfoMap = mutable.LinkedHashMap[String, (Field, Info, String)]()
+    // ... (rest of bundle creation logic: finalUniqueFieldInfoMap, finalUniqueBundleFields, finalInfoMap) ...
+    val finalUniqueFieldInfoMap =
+      mutable.LinkedHashMap[String, (Field, Info, String)]()
     fieldInfoOriginalNameTriples.foreach { case (field, info, originalName) =>
       val compressedName = field.name
       if (finalUniqueFieldInfoMap.contains(compressedName)) {
-         println(
-           s"[WARN] SignalPropagator: 在模块 ${module.name} 的输出 Bundle ${config.outputPortName} 中检测到重复压缩字段名 '${compressedName}' (原始: '${finalUniqueFieldInfoMap(compressedName)._3}' vs '${originalName}')。将保留第一个遇到的版本。"
-         )
+        // 警告信息现在可能更有用，因为它显示了扁平化的原始名称
+        println(
+          s"[WARN] SignalPropagator: 在模块 ${module.name} 的输出 Bundle ${config.outputPortName} 中检测到重复压缩字段名 '${compressedName}' (原始: '${finalUniqueFieldInfoMap(compressedName)._3}' vs '${originalName}')。将保留第一个遇到的版本。"
+        )
       } else {
         finalUniqueFieldInfoMap(compressedName) = (field, info, originalName)
       }
@@ -473,7 +634,9 @@ object SignalPropagator {
       return ModuleTransformResult(module, None)
     }
 
-    val combinedBundleType = BundleType(finalUniqueBundleFields)
+    val combinedBundleType = BundleType(
+      finalUniqueBundleFields
+    ) // Bundle 现在只包含标量字段
 
     val newOutputSignalPort =
       Port(module.info, config.outputPortName, Output, combinedBundleType)
@@ -481,49 +644,70 @@ object SignalPropagator {
       _.name == config.outputPortName
     ) :+ newOutputSignalPort
 
+    // --- 中间线逻辑基本不变，但现在处理的是标量信号 ---
     val localSignalsNeedingIntermediateWire =
-      mutable.Map[String, (Expression, Type, String)]()
+      mutable.Map[
+        String,
+        (Expression, Type, String)
+      ]() // Key is now flattened original name
 
     val conditionalChildSignalsNeedingIntermediateWire =
-      mutable.Map[String, (String, Type, String)]()
+      mutable
+        .Map[String, (String, Type, String)]() // Key is flattened original name
 
     localSignalSources.foreach {
-      case LocalSignalSource(originalFieldName, SignalOriginInfo(expr, originalType, _)) =>
-        getRootReferenceName(expr) match {
+      case LocalSignalSource(
+            originalFlattenedName, // 现在是扁平化名称
+            SignalOriginInfo(scalarExpr, scalarType, _)
+          ) =>
+        // 检查 scalarExpr 的根引用是否是顶层定义
+        getRootReferenceName(scalarExpr) match {
           case Some(rootRefName) if !topLevelNames.contains(rootRefName) =>
-            val resolvedWireType = originalType match {
-              case UnknownType =>
+            // scalarType 应该是 GroundType 或解析后的默认类型
+            val resolvedWireType = scalarType match {
+              case UnknownType => // 不太可能发生，但以防万一
                 config.defaultTypeForUnknown.getOrElse(
                   throwInternalError(
-                    s"SignalPropagator: 模块 '${module.name}' 中，本地信号 '${expr.serialize}' (根 $rootRefName, 原始字段 $originalFieldName) 解析为 UnknownType，且未指定默认类型。"
+                    s"SignalPropagator: 模块 '${module.name}' 中，本地信号 '${scalarExpr.serialize}' (根 $rootRefName, 原始扁平化字段 $originalFlattenedName) 解析为 UnknownType，且未指定默认类型。"
                   )
                 )
               case validTpe => validTpe
             }
-            val compressedFieldName = nameCompressor.compress(originalFieldName)
+            val compressedFieldName =
+              nameCompressor.compress(originalFlattenedName)
             val intermediateWireName =
               s"${config.intermediateWirePrefix}${compressedFieldName}"
-            localSignalsNeedingIntermediateWire(rootRefName) =
-              (expr, resolvedWireType, intermediateWireName)
-          case _ =>
+            // 使用原始扁平化名称作为 Key，存储标量表达式、类型和中间线名
+            localSignalsNeedingIntermediateWire(originalFlattenedName) =
+              (scalarExpr, resolvedWireType, intermediateWireName)
+          case _ => // 顶层信号或无法确定根名称（理论上不应发生）
         }
     }
 
     childSignalSources.foreach {
-      case ChildSignalSource(instName, originalFieldName, sigOrigin, isConditional) if isConditional =>
-         val resolvedWireType = sigOrigin.signalType match {
-              case UnknownType =>
-                 throwInternalError(
-                    s"SignalPropagator: 模块 '${module.name}' 中，来自条件实例 '$instName' 的信号 (原始字段 '$originalFieldName') 解析为 UnknownType。"
-                  )
-              case validTpe => validTpe
-            }
-         val compressedFieldName = nameCompressor.compress(originalFieldName)
-         val intermediateWireName = s"${config.intermediateWirePrefix}${compressedFieldName}"
-         conditionalChildSignalsNeedingIntermediateWire(originalFieldName) = (instName, resolvedWireType, intermediateWireName)
+      case ChildSignalSource(
+            instName,
+            originalFlattenedName, // 现在是扁平化名称
+            sigOrigin,
+            isConditional
+          ) if isConditional =>
+        val resolvedWireType = sigOrigin.signalType match { // signalType 应该是标量
+          case UnknownType =>
+            throwInternalError(
+              s"SignalPropagator: 模块 '${module.name}' 中，来自条件实例 '$instName' 的信号 (原始扁平化字段 '$originalFlattenedName') 解析为 UnknownType。"
+            )
+          case validTpe => validTpe
+        }
+        val compressedFieldName = nameCompressor.compress(originalFlattenedName)
+        val intermediateWireName =
+          s"${config.intermediateWirePrefix}${compressedFieldName}"
+        // 使用原始扁平化名称作为 Key
+        conditionalChildSignalsNeedingIntermediateWire(originalFlattenedName) =
+          (instName, resolvedWireType, intermediateWireName)
       case _ =>
     }
 
+    // ... (Intermediate wire definitions and default connections remain similar, using compressedWireName and resolvedType) ...
     val localIntermediateWireDefs: Seq[DefWire] =
       localSignalsNeedingIntermediateWire.values.map {
         case (_, resolvedType, compressedWireName) =>
@@ -532,7 +716,8 @@ object SignalPropagator {
 
     val childIntermediateWireDefs: Seq[DefWire] =
       conditionalChildSignalsNeedingIntermediateWire.values.map {
-          case (_, resolvedType, compressedWireName) => DefWire(NoInfo, compressedWireName, resolvedType)
+        case (_, resolvedType, compressedWireName) =>
+          DefWire(NoInfo, compressedWireName, resolvedType)
       }.toSeq
 
     val localIntermediateWireDefaults: Seq[Statement] =
@@ -543,60 +728,127 @@ object SignalPropagator {
 
     val childIntermediateWireDefaults: Seq[Statement] =
       conditionalChildSignalsNeedingIntermediateWire.values.map {
-          case (_, resolvedType, compressedWireName) => IsInvalid(NoInfo, Reference(compressedWireName, resolvedType))
+        case (_, resolvedType, compressedWireName) =>
+          IsInvalid(NoInfo, Reference(compressedWireName, resolvedType))
       }.toSeq
 
-    val intermediateWireDefs = localIntermediateWireDefs ++ childIntermediateWireDefs
-    val intermediateWireDefaultConnects = localIntermediateWireDefaults ++ childIntermediateWireDefaults
+    val intermediateWireDefs =
+      localIntermediateWireDefs ++ childIntermediateWireDefs
+    val intermediateWireDefaultConnects =
+      localIntermediateWireDefaults ++ childIntermediateWireDefaults
 
-    val nodesConnectedToIntermediateWire = mutable.Set[String]()
-    val conditionalInstancesConnected = mutable.Set[String]()
+    // --- 中间连接逻辑调整：匹配基于原始扁平化名称 ---
+    val nodesConnectedToIntermediateWire =
+      mutable.Set[String]() // Stores originalFlattenedName
+    val conditionalInstancesConnected =
+      mutable.Set[String]() // Stores originalFlattenedName
 
     def addIntermediateConnections(statement: Statement): Seq[Statement] =
       statement match {
         case nodeDef @ DefNode(info, nodeName, nodeValue) =>
-          localSignalsNeedingIntermediateWire.get(nodeName) match {
-            case Some((_, resolvedWireType, compressedWireName))
-                if !nodesConnectedToIntermediateWire.contains(nodeName) =>
-              val intermediateWireRef = Reference(compressedWireName, resolvedWireType)
-              val nodeRef = Reference(nodeName, nodeValue.tpe)
-              val connectStmt = Connect(info, intermediateWireRef, nodeRef)
-              nodesConnectedToIntermediateWire += nodeName
-              Seq(nodeDef, connectStmt)
-            case _ => Seq(nodeDef)
-          }
+          // 需要检查是否有任何 *扁平化* 的本地信号源自此 Node
+          val connects = localSignalsNeedingIntermediateWire.collect {
+            case (
+                  origFlatName,
+                  (scalarExpr, resolvedWireType, compressedWireName)
+                )
+                if getRootReferenceName(scalarExpr).contains(nodeName) &&
+                  !nodesConnectedToIntermediateWire.contains(origFlatName) =>
+              // 连接 Node 到对应的中间线
+              val intermediateWireRef =
+                Reference(compressedWireName, resolvedWireType)
+              val nodeRef = Reference(nodeName, nodeValue.tpe) // Node 本身
+              // 注意：这里可能需要更复杂的逻辑来连接 Node 的 *部分* 到中间线
+              // 但对于简单情况（Node 直接等于标量表达式），这样可以工作
+              // 如果 scalarExpr 是 SubField/SubIndex of nodeRef，则连接 nodeRef 可能不正确
+              // 暂时假设 scalarExpr 就是 nodeRef (或其等效引用)
+              // TODO: Review this connection logic for complex nodeValue cases
+              if (scalarExpr.serialize != nodeRef.serialize) {
+                println(
+                  s"[WARN] SignalPropagator: Connecting Node '$nodeName' directly to intermediate wire '$compressedWireName' for flattened signal '$origFlatName'. Source expression was '${scalarExpr.serialize}'. This might be incorrect if the node is complex."
+                )
+              }
+              val connectStmt = Connect(
+                info,
+                intermediateWireRef,
+                nodeRef
+              ) // Connect the node itself
+              nodesConnectedToIntermediateWire += origFlatName
+              connectStmt
+          }.toSeq
+          Seq(nodeDef) ++ connects
+
         case regDef @ DefRegister(info, regName, regType, clock, reset, init) =>
-           localSignalsNeedingIntermediateWire.get(regName) match {
-            case Some((_, resolvedWireType, compressedWireName))
-                if !nodesConnectedToIntermediateWire.contains(regName) =>
-              val intermediateWireRef = Reference(compressedWireName, resolvedWireType)
-              val regRef = Reference(regName, regType)
-              val connectStmt = Connect(info, intermediateWireRef, regRef)
-              nodesConnectedToIntermediateWire += regName
-              Seq(regDef, connectStmt)
-            case _ => Seq(regDef)
-          }
+          // 检查是否有任何 *扁平化* 的本地信号源自此 Register
+          val connects = localSignalsNeedingIntermediateWire.collect {
+            case (
+                  origFlatName,
+                  (
+                    scalarExpr @ (_: SubField | _: SubIndex | _: Reference),
+                    resolvedWireType,
+                    compressedWireName
+                  ) // scalarExpr 应该是对寄存器或其部分的访问
+                )
+                if getRootReferenceName(scalarExpr).contains(regName) &&
+                  !nodesConnectedToIntermediateWire.contains(origFlatName) =>
+              val intermediateWireRef =
+                Reference(compressedWireName, resolvedWireType)
+              // 连接 scalarExpr (访问寄存器标量部分) 到中间线
+              val connectStmt = Connect(info, intermediateWireRef, scalarExpr)
+              nodesConnectedToIntermediateWire += origFlatName
+              connectStmt
+          }.toSeq
+          Seq(regDef) ++ connects
+
         case inst @ DefInstance(info, instName, moduleName, _) =>
-          val connectsToAdd = conditionalChildSignalsNeedingIntermediateWire.collect {
-             case (originalFieldName, (`instName`, wireType, compressedWireName)) if !conditionalInstancesConnected.contains(originalFieldName) =>
+          val connectsToAdd =
+            conditionalChildSignalsNeedingIntermediateWire.collect {
+              case (
+                    originalFlattenedName, // Key is now flattened name
+                    (`instName`, wireType, compressedWireName)
+                  )
+                  if !conditionalInstancesConnected.contains(
+                    originalFlattenedName // Check against flattened name
+                  ) =>
+                // 查找对应的 ChildSignalSource 以获取原始表达式
                 val sourceInfoOpt = allSignalSources.collectFirst {
-                    case cs @ ChildSignalSource(`instName`, `originalFieldName`, _, true) => cs
+                  case cs @ ChildSignalSource(
+                        `instName`,
+                        `originalFlattenedName`, // Match flattened name
+                        _,
+                        true
+                      ) =>
+                    cs
                 }
                 sourceInfoOpt match {
-                    case Some(ChildSignalSource(_, _, sigOrigin, _)) =>
-                        val intermediateWireRef = Reference(compressedWireName, wireType)
-                        if (sigOrigin.sourceExpression.tpe != wireType && sigOrigin.sourceExpression.tpe != UnknownType) {
-                             println(s"[WARN] SignalPropagator: 类型不匹配，连接条件实例 ${instName} 的信号 (原始: ${originalFieldName}, 压缩: ${nameCompressor.compress(originalFieldName)}) (${sigOrigin.sourceExpression.tpe.serialize}) 到中间线 ${compressedWireName} (${wireType.serialize})")
-                        }
-                        val connectStmt = Connect(info, intermediateWireRef, sigOrigin.sourceExpression)
-                        conditionalInstancesConnected += originalFieldName
-                        connectStmt
-                    case None =>
-                        throwInternalError(s"SignalPropagator: 找不到条件实例 ${instName} 信号 (原始: ${originalFieldName}) 的源信息。")
+                  case Some(ChildSignalSource(_, _, sigOrigin, _)) =>
+                    val intermediateWireRef =
+                      Reference(compressedWireName, wireType)
+                    // sigOrigin.sourceExpression 应该是访问子模块输出端口的扁平化字段
+                    if (
+                      sigOrigin.sourceExpression.tpe != wireType && sigOrigin.sourceExpression.tpe != UnknownType
+                    ) {
+                      println(
+                        s"[WARN] SignalPropagator: Type mismatch connecting conditional instance ${instName}'s signal (original flat: ${originalFlattenedName}, compressed: ${nameCompressor
+                            .compress(originalFlattenedName)}) (${sigOrigin.sourceExpression.tpe.serialize}) to intermediate wire ${compressedWireName} (${wireType.serialize})"
+                      )
+                    }
+                    val connectStmt = Connect(
+                      info,
+                      intermediateWireRef,
+                      sigOrigin.sourceExpression // Connect the subfield/subindex expression
+                    )
+                    conditionalInstancesConnected += originalFlattenedName // Mark flattened name as connected
+                    connectStmt
+                  case None =>
+                    throwInternalError(
+                      s"SignalPropagator: Cannot find source info for conditional instance ${instName} signal (original flat: ${originalFlattenedName})."
+                    )
                 }
-          }.toSeq
+            }.toSeq
           Seq(inst) ++ connectsToAdd
 
+        // ... (Block, Conditionally remain the same, recursively calling addIntermediateConnections) ...
         case block @ Block(stmts) =>
           Seq(block.copy(stmts = stmts.flatMap(addIntermediateConnections)))
         case conditional @ Conditionally(info, pred, conseq, alt) =>
@@ -619,46 +871,69 @@ object SignalPropagator {
     val bodyWithIntermediateConnectsAdded: Seq[Statement] =
       existingBodyStmts.flatMap(addIntermediateConnections)
 
-    val finalPortFieldConnects: Seq[Connect] = finalUniqueFieldInfoMap.values.map {
-      case (field, _, originalFieldName) =>
-        val portFieldAccess = SubField(
-          Reference(newOutputSignalPort.name, newOutputSignalPort.tpe),
-          field.name,
-          field.tpe
-        )
-
-        val sourceInfo = allSignalSources
-          .find(_.originalFieldName == originalFieldName)
-          .getOrElse(
-            throwInternalError(
-              s"SignalPropagator: 模块 ${module.name} 找不到原始字段 '${originalFieldName}' (压缩为 '${field.name}') 对应的信号源。"
-            )
+    // --- 最终端口连接逻辑不变，依赖于 allSignalSources 和中间线查找 ---
+    val finalPortFieldConnects: Seq[Connect] =
+      finalUniqueFieldInfoMap.values.map {
+        case (field, _, originalFlattenedName) => // Name is flattened
+          val portFieldAccess = SubField(
+            Reference(newOutputSignalPort.name, newOutputSignalPort.tpe),
+            field.name, // Compressed name
+            field.tpe // Scalar type
           )
 
-        val connectSourceExpression: Expression = sourceInfo match {
-          case LocalSignalSource(_, origin @ SignalOriginInfo(_, _, _)) =>
-            getRootReferenceName(origin.sourceExpression) match {
-              case Some(rootRefName)
-                  if localSignalsNeedingIntermediateWire.contains(rootRefName) =>
-                val (_, resolvedWireType, compressedWireName) =
-                  localSignalsNeedingIntermediateWire(rootRefName)
-                Reference(compressedWireName, resolvedWireType)
-              case _ =>
-                origin.sourceExpression
-            }
-          case ChildSignalSource(_, childOriginalFieldName, origin, isConditional) =>
-             if (isConditional) {
-                 conditionalChildSignalsNeedingIntermediateWire.get(childOriginalFieldName) match {
-                     case Some((_, wireType, compressedWireName)) => Reference(compressedWireName, wireType)
-                     case None => throwInternalError(s"SignalPropagator: 找不到条件子信号 (原始: ${childOriginalFieldName}) 的中间线信息。")
-                 }
-             } else {
-                 origin.sourceExpression
-             }
-        }
-        Connect(NoInfo, portFieldAccess, connectSourceExpression)
-    }.toSeq
+          val sourceInfo = allSignalSources
+            .find(
+              _.originalFieldName == originalFlattenedName
+            ) // Find by flattened name
+            .getOrElse(
+              throwInternalError(
+                s"SignalPropagator: Module ${module.name} cannot find signal source for original flattened field '${originalFlattenedName}' (compressed to '${field.name}')."
+              )
+            )
 
+          val connectSourceExpression: Expression = sourceInfo match {
+            case LocalSignalSource(
+                  origFlatName,
+                  origin @ SignalOriginInfo(_, _, _)
+                ) =>
+              // 检查此扁平化信号是否需要中间线
+              localSignalsNeedingIntermediateWire.get(origFlatName) match {
+                case Some((_, resolvedWireType, compressedWireName)) =>
+                  // 连接来自中间线
+                  Reference(compressedWireName, resolvedWireType)
+                case None =>
+                  // 直接连接原始标量表达式
+                  origin.sourceExpression
+              }
+            case ChildSignalSource(
+                  _,
+                  childOriginalFlattenedName,
+                  origin,
+                  isConditional
+                ) =>
+              if (isConditional) {
+                // 检查此条件子信号是否需要中间线
+                conditionalChildSignalsNeedingIntermediateWire.get(
+                  childOriginalFlattenedName
+                ) match {
+                  case Some((_, wireType, compressedWireName)) =>
+                    // 连接来自中间线
+                    Reference(compressedWireName, wireType)
+                  case None =>
+                    // 理论上不应发生，因为条件信号总是创建中间线
+                    throwInternalError(
+                      s"SignalPropagator: Cannot find intermediate wire info for conditional child signal (original flat: ${childOriginalFlattenedName})."
+                    )
+                }
+              } else {
+                // 直接连接来自子模块端口的标量字段访问表达式
+                origin.sourceExpression
+              }
+          }
+          Connect(NoInfo, portFieldAccess, connectSourceExpression)
+      }.toSeq
+
+    // ... (Final body assembly and return remain the same) ...
     val finalBodyStmts: Seq[Statement] =
       intermediateWireDefs ++
         intermediateWireDefaultConnects ++
@@ -670,7 +945,9 @@ object SignalPropagator {
 
     ModuleTransformResult(
       transformedModule,
-      Some((config.outputPortName, combinedBundleType, finalInfoMap))
+      Some(
+        (config.outputPortName, combinedBundleType, finalInfoMap)
+      ) // finalInfoMap keys are compressed names
     )
   }
 }
@@ -728,8 +1005,8 @@ object ConditionallyPredPropagator {
 
   private val config = PropagatorConfig(
     signalName = "predicate",
-    outputPortName = "_cond_pred",
-    intermediateWirePrefix = "_cond_pred_prop_wire_",
+    outputPortName = "_cp",
+    intermediateWirePrefix = "_cp_prop_wire_",
     localSignalExtractor = Extractor.extract,
     defaultTypeForUnknown = Some(BoolType)
   )
@@ -826,8 +1103,8 @@ object MuxCondPropagator {
 
   private val config = PropagatorConfig(
     signalName = "condition",
-    outputPortName = "_mux_cond",
-    intermediateWirePrefix = "_mux_cond_prop_wire_",
+    outputPortName = "_mc",
+    intermediateWirePrefix = "_mc_prop_wire_",
     localSignalExtractor = Extractor.extract,
     defaultTypeForUnknown = Some(BoolType)
   )
@@ -840,10 +1117,11 @@ object MuxCondPropagator {
 
 /** 寄存器信号传播器
   *
-  * 使用 `SignalPropagator` 框架来传播 FIRRTL 中所有寄存器 (`DefRegister`,
-  * `DefRegisterWithReset`) 的值。
+  * 使用 `SignalPropagator` 框架来传播 FIRRTL 中所有寄存器 (`DefRegister`) 的 **标量** 值。向量和
+  * Bundle 类型的寄存器会被递归展开。
   */
 object RegisterSignalPropagator {
+  // RegisterExtractor 保持不变，它只负责识别顶层 DefRegister
   private object RegisterExtractor {
     private val cache =
       mutable.WeakHashMap[Circuit, Map[String, Seq[(Expression, Info)]]]()
@@ -861,7 +1139,10 @@ object RegisterSignalPropagator {
             .getOrElseUpdate(
               currentModuleName,
               mutable.ListBuffer[(Expression, Info)]()
-            ) += ((Reference(name, tpe), info))
+            ) += ((
+            Reference(name, tpe),
+            info
+          )) // Extractor returns the Reference to the whole register
         case Block(stmts) => stmts.foreach(findRegistersInStmt)
         case Conditionally(_, _, conseq, alt) =>
           findRegistersInStmt(conseq); findRegistersInStmt(alt)
@@ -882,14 +1163,16 @@ object RegisterSignalPropagator {
     }
   }
 
+  // Config 保持不变
   private val config = PropagatorConfig(
     signalName = "register signal",
-    outputPortName = "_reg_signals",
+    outputPortName = "_rs",
     intermediateWirePrefix = "_reg_prop_wire_",
     localSignalExtractor = RegisterExtractor.extract,
-    defaultTypeForUnknown = None
+    defaultTypeForUnknown = None // 寄存器类型应该是已知的
   )
 
+  // transform 调用不变
   def transform(
       circuit: Circuit
   ): (Circuit, Option[TopLevelExportInfo], Map[String, String]) =

@@ -9,6 +9,9 @@ import java.nio.charset.StandardCharsets
 import java.io.{InputStream, IOException} // 导入 InputStream
 import scala.collection.mutable.ListBuffer // <-- 新增导入
 
+// 导入 CoverageTool 中定义的 NameDictionaries
+import firrtl.ir.NameDictionaries
+
 object CoverageCollectorGenerator {
 
   // --- Helper Functions (Moved from CoverageTool) ---
@@ -145,8 +148,8 @@ object CoverageCollectorGenerator {
     * ignores Bundles and warns on other unexpected types.
     *
     * @param baseSignalName
-    *   The C++ base name for the signal (e.g., "_reg_signals_Top_I_myVec").
-    *   Indices will be appended.
+    *   The C++ base name for the signal (e.g., "_rs_Top_I_myVec"). Indices will
+    *   be appended.
     * @param signalType
     *   The FIRRTL type of the signal or sub-signal.
     * @param sb
@@ -235,7 +238,7 @@ object CoverageCollectorGenerator {
 
     exportInfos.foreach { info =>
       val portPrefix = info.portName
-      if (portPrefix.startsWith("_cond_pred")) {
+      if (portPrefix.startsWith("_cp")) {
         info.exportedSignals.foreach { signal =>
           if (
             signal.fieldtype != BoolType && signal.fieldtype != ClockType && signal.fieldtype != ResetType && signal.fieldtype != AsyncResetType
@@ -256,7 +259,7 @@ object CoverageCollectorGenerator {
           )
           condPointsCount += 1
         }
-      } else if (portPrefix.startsWith("_mux_cond")) {
+      } else if (portPrefix.startsWith("_mc")) {
         info.exportedSignals.foreach { signal =>
           if (
             signal.fieldtype != BoolType && signal.fieldtype != ClockType && signal.fieldtype != ResetType && signal.fieldtype != AsyncResetType
@@ -277,7 +280,7 @@ object CoverageCollectorGenerator {
           )
           muxPointsCount += 1
         }
-      } else if (portPrefix.startsWith("_reg_signals")) {
+      } else if (portPrefix.startsWith("_rs")) {
         info.exportedSignals.foreach { signal =>
           val initialSignalFullName = s"${portPrefix}_${signal.fieldName}"
           emplaceBackSb.append(
@@ -336,100 +339,112 @@ object CoverageCollectorGenerator {
     *   顶层模块名称
     * @param exportInfos
     *   端口和信号信息列表 (信号名是压缩后的)
-    * @param nameDictionary
-    *   从压缩名称映射到原始完整名称的字典
+    * @param nameDictionaries
+    *   // <-- 修改参数类型 包含 mux, cond, reg 三个独立名称字典的结构
     * @return
     *   JSON 格式的字符串
     */
   def generateCoverageInfoJson(
       topModuleName: String,
       exportInfos: List[TopLevelExportInfo],
-      nameDictionary: Map[String, String] // <-- 新增参数
+      nameDictionaries: NameDictionaries // <-- 修改参数类型
   ): String = {
     val portsJson = exportInfos
       .map { portInfo =>
-        val portTypeString = portInfo.portName match {
-          case "_cond_pred"   => "cond_pred"
-          case "_mux_cond"    => "mux_cond"
-          case "_reg_signals" => "register"
-          case other          => escapeJsonString(other)
-        }
-
-        // 展开信号，但这次保留压缩名称和原始名称
-        val flattenedSignalsWithNames = portInfo.exportedSignals.flatMap { signal =>
-          // signal.fieldName 是压缩名称
-          val compressedName = signal.fieldName
-          // 从字典中查找原始名称
-          val originalFullName = nameDictionary.getOrElse(
-            compressedName, {
-              println(
-                s"[WARN] CoverageGenerator: Cannot find original name for compressed name '$compressedName' in dictionary. Using compressed name as original."
-              )
-              compressedName // Fallback
-            }
-          )
-          // 构建完整的压缩信号名称 (用于查找 C++ 侧)
-          val fullCompressedSignalName = s"${portInfo.portName}_$compressedName"
-
-          // 展开类型，但传递原始名称和压缩名称
-          flattenSignalInfo(
-            originalFullName, // 传递原始名称给 flatten 函数
-            signal.fieldtype,
-            signal.info
-          ).map { flatData =>
-            (
-              fullCompressedSignalName, // 完整的压缩名称
-              flatData.originalName, // 完整的原始名称 (来自 flattenSignalInfo)
-              flatData.scalarType,
-              flatData.info
-            )
+        val (portTypeString, relevantDictionary) =
+          portInfo.portName match { // <-- 根据端口名选择字典
+            case "_cp" => ("cond_pred", nameDictionaries.cond)
+            case "_mc" => ("mux_cond", nameDictionaries.mux)
+            case "_rs" => ("register", nameDictionaries.reg)
+            case other =>
+              (
+                escapeJsonString(other),
+                Map.empty[String, String]
+              ) // 未知端口类型，使用空字典
           }
+
+        // 获取当前端口涉及的压缩信号名
+        val portCompressedNames =
+          portInfo.exportedSignals.map(_.fieldName).toSet
+
+        // 过滤出当前端口相关的名称映射 (从对应的字典中过滤)
+        val portSpecificNameDictionary =
+          relevantDictionary.filter { // <-- 使用 relevantDictionary
+            case (compressed, _) => portCompressedNames.contains(compressed)
+          }
+
+        // 生成当前端口的 nameMapping JSON 对象
+        val nameMappingJson = portSpecificNameDictionary
+          .map { case (compressed, original) =>
+            s"""      "${escapeJsonString(compressed)}": "${escapeJsonString(
+                original
+              )}""""
+          }
+          .mkString(",\n")
+
+        // 展开信号，保留压缩名称和原始名称
+        val flattenedSignalsWithNames = portInfo.exportedSignals.flatMap {
+          signal =>
+            val compressedName = signal.fieldName
+            // 从对应的字典查找原始名称
+            val originalFullName =
+              relevantDictionary.getOrElse( // <-- 使用 relevantDictionary
+                compressedName, {
+                  println(
+                    s"[WARN] CoverageGenerator: Cannot find original name for compressed name '$compressedName' in ${portTypeString} dictionary. Using compressed name as original."
+                  )
+                  compressedName // Fallback
+                }
+              )
+            val fullCompressedSignalName =
+              s"${portInfo.portName}_$compressedName"
+
+            // flattenSignalInfo 保持不变，因为它处理类型展开
+            flattenSignalInfo(
+              originalFullName, // 传递正确的原始名称
+              signal.fieldtype,
+              signal.info
+            ).map { flatData =>
+              (
+                fullCompressedSignalName, // 完整压缩名 (带端口前缀)
+                flatData.originalName, // 原始信号名 (来自字典)
+                flatData.scalarType, // 展开后的类型
+                flatData.info // 原始信息
+              )
+            }
         }
 
-        // 生成信号 JSON，包含压缩名和原始名
+        // 生成信号 JSON (逻辑不变)
         val signalsJson = flattenedSignalsWithNames
           .sortBy(_._2) // 按原始名称排序
           .map { case (compName, origName, scalarType, info) =>
             s"""      {
-               |        "compressed_name": "${escapeJsonString(
-                compName // 完整的压缩名称
-              )}",
-               |        "original_name": "${escapeJsonString(
-                origName // 完整的原始名称
-              )}",
+               |        "compressed_name": "${escapeJsonString(compName)}",
                |        "type": "${escapeJsonString(scalarType.serialize)}",
                |        "info": "${escapeJsonString(info.serialize)}"
                |      }""".stripMargin
           }
           .mkString(",\n")
 
+        // 构建端口的 JSON 对象 (逻辑不变)
         s"""    {
            |      "type": "$portTypeString",
            |      "signals": [
            |$signalsJson
-           |      ]
+           |      ],
+           |      "name_mapping": {
+           |$nameMappingJson
+           |      }
            |    }""".stripMargin
       }
       .mkString(",\n")
 
-    // 生成 nameMapping JSON 对象
-    val nameMappingJson = nameDictionary
-      .map { case (compressed, original) =>
-        s"""    "${escapeJsonString(compressed)}": "${escapeJsonString(
-            original
-          )}""""
-      }
-      .mkString(",\n")
-
-    // 生成顶层 JSON 结构，包含 nameMapping
+    // 生成顶层 JSON 结构 (逻辑不变)
     s"""{
-       |  "topModuleName": "${escapeJsonString(topModuleName)}",
-       |  "exportedPorts": [
+       |  "top_module_name": "${escapeJsonString(topModuleName)}",
+       |  "exported_ports": [
        |$portsJson
-       |  ],
-       |  "nameMapping": {
-       |$nameMappingJson
-       |  }
+       |  ]
        |}""".stripMargin
   }
 

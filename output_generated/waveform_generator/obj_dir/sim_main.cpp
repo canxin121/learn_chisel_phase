@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
   // Simulation settings
   vluint64_t sim_time_steps = 0;
   // Allow overriding max simulation time
-  vluint64_t max_sim_time_steps = 10000;
+  vluint64_t max_sim_time_steps = 1000000;
 
   // Create and initialize Coverage Collector
   CoverageCollector coverage_collector;
@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
               << e.what() << std::endl;
     if (tfp) {
       tfp->close();
-    }         // tfp managed by unique_ptr
+    } // tfp managed by unique_ptr
     return 1; // Exit on initialization failure
   }
 
@@ -105,22 +105,46 @@ int main(int argc, char **argv) {
       }
 
       // --- Stimulus Generation (User Placeholder) ---
-      // TODO: Add stimulus generation logic here based on sim_time_steps or
-      // global_time Example: Toggle an input every 20 steps after reset release
-      // if (top->reset == 0 && (sim_time_steps % 20 == 0)) {
-      //    // Assuming an input 'io_some_input' exists and is bool/CData
-      //    // top->io_some_input = !top->io_some_input;
-      // }
+      // Drive inputs only when not in reset
+      if (top->reset == 0) {
+        // Example: Cycle through wave types every 50 steps
+        if ((sim_time_steps - 5) % 50 ==
+            0) { // Start cycling after reset release (step 5)
+          top->io_waveType = (top->io_waveType + 1) & 0x3; // Cycle 0, 1, 2, 3
+          std::cout << "[" << global_time << "] Changing io_waveType to "
+                    << (int)top->io_waveType << std::endl;
+        }
+
+        // Example: Change frequency control every 200 steps
+        if ((sim_time_steps - 5) % 200 ==
+            10) { // Offset to avoid clash with waveType change
+          top->io_freqCtrl = (top->io_freqCtrl + 51) &
+                             0xFFFF; // Increment freqCtrl, wrap around
+          std::cout << "[" << global_time << "] Changing io_freqCtrl to "
+                    << top->io_freqCtrl << std::endl;
+        }
+
+        // Example: Change phase offset every 300 steps
+        if ((sim_time_steps - 5) % 300 == 20) { // Offset further
+          top->io_phaseOffset = (top->io_phaseOffset + 1000) &
+                                0xFFFF; // Increment phaseOffset, wrap around
+          std::cout << "[" << global_time << "] Changing io_phaseOffset to "
+                    << top->io_phaseOffset << std::endl;
+        }
+
+      } else {
+        // Default values during reset (optional, depends on design needs)
+        top->io_waveType = 0;
+        top->io_freqCtrl = 100;  // Example initial value
+        top->io_phaseOffset = 0; // Example initial value
+      }
+      // --- End Stimulus Generation ---
 
       // --- Clock Toggle and Evaluation ---
       top->clock = 0; // Falling edge
       top->eval();    // Evaluate combinational logic
       if (tfp)
         tfp->dump(global_time); // Dump VCD at falling edge
-
-      // --- Coverage Update ---
-      // No internal try-catch needed here as update() has one
-      coverage_collector.update();
 
       // Advance time for rising edge
       contextp->time(sim_time_steps * 10 +
@@ -131,6 +155,12 @@ int main(int argc, char **argv) {
       top->eval();    // Evaluate sequential logic and combinational logic again
       if (tfp)
         tfp->dump(global_time); // Dump VCD at rising edge
+
+      // --- Coverage Update ---
+      if (top->reset == 0) { // Only update coverage when not in reset
+        // No internal try-catch needed here as update() has one
+        coverage_collector.update();
+      }
 
       sim_time_steps++; // Increment logical time step count
     }
@@ -152,7 +182,7 @@ int main(int argc, char **argv) {
 
   // Set final time for waveform dump if needed
   if (!contextp
-           ->gotFinish()) { // Avoid setting time if $$finish already occurred
+           ->gotFinish()) { // Avoid setting time if $finish already occurred
     contextp->time(sim_time_steps * 10);
     global_time = contextp->time();
   }
@@ -194,9 +224,9 @@ int main(int argc, char **argv) {
               << std::endl;
   }
 
-  // Check for Verilator errors or $$finish
+  // Check for Verilator errors or $finish
   if (contextp->gotFinish()) {
-    std::cout << "Verilator simulation stopped by $$finish" << std::endl;
+    std::cout << "Verilator simulation stopped by $finish" << std::endl;
   }
 
   return 0;

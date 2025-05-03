@@ -3,19 +3,13 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+const UNKNOWN_MODULE_PLACEHOLDER: &str = "__UNKNOWN_MODULE__";
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
 pub struct SignalInfo {
-    // TopModuleNameAsTopInstanceName__I__subinstance1__I__subinstance2__M__SubInstance2Module__S__signal1__s__out
-    // 上述是一个 探针信号名称, 首先是 将TopModule的名字作为顶层实例的名字, 然后使用__I__连接实例路径, 然后使用__M__标志最后一个实例的Module名称, 然后使用__S__标注信号名称, __s__则是代替信号中的`.`
-    // 可以保证M标志的Module名称是 唯一的
     pub compressed_name: String,
-    pub original_name: String,
     pub r#type: String,
     pub info: String,
-    // info包含下面三个字段的值
-    // 一个示例是         "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Reg.scala 13:24]"
-    // file_path will store the relative path extracted from the info string
     #[serde(default)]
     pub file_path: Option<String>,
     #[serde(default)]
@@ -25,100 +19,77 @@ pub struct SignalInfo {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
 pub struct ExportedPort {
     pub r#type: String,
     pub signals: Vec<SignalInfo>,
-    // "nameMapping": {
-    //     "_s0": "WaveformGenerator__M__WaveformGenerator__S__phaseAcc",
-    //     "_s1": "WaveformGenerator__M__WaveformGenerator__S___T_1",
-    //     "_s3": "WaveformGenerator__M__WaveformGenerator__S___T_3",
-    //     "_s2": "WaveformGenerator__M__WaveformGenerator__S___T_2"
-    //   }
-    // 这里的 name_mapping 是一个映射关系，key 是压缩名称，value 是原始名称
-    // 并且这里不包含前缀, 前缀不被压缩
-    name_mapping: HashMap<String, String>, // 映射关系
+    pub name_mapping: HashMap<String, String>,
 }
 
-// NEW: Structure to hold info about a single source file associated with a module
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-#[serde(rename_all = "camelCase")]
 pub struct SourceFileInfo {
-    // The relative path extracted from signal info (acts as key in ModuleInfo map)
-    // Stored here for potential convenience, though redundant with the map key.
     relative_path: String,
-    // User-defined root directory for this specific source file
     root_dir: Option<String>,
-    // Loaded content of the source file
     content: Option<String>,
 }
 
-// MODIFIED: ModuleInfo now holds a map of source files
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-#[serde(rename_all = "camelCase")]
 pub struct ModuleInfo {
-    // Map where key is the relative file path (from signal info)
-    // and value is the detailed info for that source file.
     #[serde(default)]
     source_files: HashMap<String, SourceFileInfo>,
 }
 
 #[derive(Default, Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
 pub struct InstanceSignalTree {
-    pub instance_name: String, // Make fields public
-    pub module_name: String,   // Make fields public
+    pub instance_name: String,
+    pub module_name: String,
     #[serde(default)]
-    pub sub_instances: Vec<InstanceSignalTree>, // Make fields public
+    pub sub_instances: Vec<InstanceSignalTree>,
     #[serde(default)]
-    pub signals: Vec<SignalInfo>, // Make fields public
+    pub signals: Vec<SignalInfo>,
 }
 
-// NEW: Struct to identify a specific source file
 #[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
 pub struct SourceFileIdentifier {
     pub module_name: String,
     pub relative_path: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
 pub struct CoverageInfo {
     pub top_module_name: String,
     pub exported_ports: Vec<ExportedPort>,
     #[serde(default)]
     pub module_info_map: HashMap<String, ModuleInfo>,
     #[serde(default)]
-    pub instance_signal_map: InstanceSignalTree,
+    pub instance_signal_tree: InstanceSignalTree,
+    #[serde(default)]
+    pub available_root_dirs: Vec<String>,
 }
 
 impl CoverageInfo {
-    // 1. Parse SignalInfo.info, correct path, extract line/col. Store *relative* path in SignalInfo.file_path.
-    // 2. Populate module_info_map: For each signal, find its moduleName and relative filePath. Add/update the SourceFileInfo entry within the corresponding ModuleInfo, PRESERVING existing root_dir/content.
-    // 3. Build instance_signal_map tree.
-    // 4. Load content for SourceFileInfo entries where content is None and root_dir is Some.
     pub fn parse(&mut self) {
-        // Initialize instance_signal_map root (or reset if re-parsing)
-        self.instance_signal_map = InstanceSignalTree {
+        self.instance_signal_tree = InstanceSignalTree {
             instance_name: self.top_module_name.clone(),
             module_name: self.top_module_name.clone(),
             sub_instances: Vec::new(),
             signals: Vec::new(),
         };
 
-        // DO NOT clear module_info_map here to preserve existing data like root_dir/content
-        // self.module_info_map.clear(); // Removed
-
-        // Keep track of module-file pairs encountered during this parse
         let mut encountered_module_files = std::collections::HashSet::<(String, String)>::new();
 
-        // 1, 2, 3: Parse signals, populate module_info_map and instance_signal_map
         for port in self.exported_ports.iter_mut() {
-            for signal in port.signals.iter_mut() {
-                let mut corrected_relative_path: Option<String> = None; // Store corrected *relative* path
+            let name_mapping = &port.name_mapping;
 
-                // Parse info: " @[<file_path> <line>:<column>]"
+            let prefix_to_remove = match port.r#type.as_str() {
+                "cond_pred" => "_cp_",
+                "mux_cond" => "_mc_",
+                "register" => "_rs_",
+                _ => "",
+            };
+
+            for signal in port.signals.iter_mut() {
+                let mut corrected_relative_path: Option<String> = None;
+
                 if let Some(start) = signal.info.find("@[") {
                     if let Some(end) = signal.info.find(']') {
                         let core_info = &signal.info[start + 2..end];
@@ -127,7 +98,6 @@ impl CoverageInfo {
                             let mut path_str = path_str_raw.replace(r"\\", "\\").replace('\\', "/");
                             let loc_str = core_info[space_pos + 1..].trim();
 
-                            // Path correction logic (remove incorrect leading '/')
                             let path_obj = Path::new(&path_str);
                             if path_str.starts_with('/') && path_str.len() > 1 && !path_obj.exists()
                             {
@@ -138,10 +108,8 @@ impl CoverageInfo {
                                     path_str = path_str[1..].to_string();
                                 }
                             }
-                            // Store the corrected *relative* path
                             corrected_relative_path = Some(path_str);
 
-                            // Parse line and column
                             if let Some(colon_pos) = loc_str.find(':') {
                                 if let Ok(line) = loc_str[..colon_pos].parse::<u32>() {
                                     signal.line = Some(line);
@@ -153,95 +121,96 @@ impl CoverageInfo {
                         }
                     }
                 }
-                // Assign the corrected *relative* path to signal.file_path
-                signal.file_path = corrected_relative_path.clone(); // Clone for signal
+                signal.file_path = corrected_relative_path.clone();
 
-                // Extract module name, instance path, and update module_info_map / instance_signal_map
-                if let Some(s_start) = signal.original_name.find("__S__") {
-                    let instance_module_part = &signal.original_name[..s_start];
-                    let mut module_name_extracted = String::new();
-                    let mut instance_path_parts: Vec<&str> = Vec::new();
+                let lookup_key = if !prefix_to_remove.is_empty()
+                    && signal.compressed_name.starts_with(prefix_to_remove)
+                {
+                    &signal.compressed_name[prefix_to_remove.len()..]
+                } else {
+                    eprintln!(
+                        "Warning: Compressed name '{}' does not start with expected prefix '{}' for port type '{}'. Using full name for lookup.",
+                        signal.compressed_name, prefix_to_remove, port.r#type
+                    );
+                    signal.compressed_name.as_str()
+                };
 
-                    if let Some(m_start) = instance_module_part.rfind("__M__") {
-                        module_name_extracted = instance_module_part[m_start + 5..].to_string();
-                        let instance_part = &instance_module_part[..m_start];
-                        instance_path_parts = instance_part.split("__I__").collect();
+                let reconstructed_signal_path = match name_mapping.get(lookup_key) {
+                    Some(mapped_name) => mapped_name,
+                    None => {
+                        eprintln!(
+                            "Warning: Lookup key '{}' (derived from compressed name '{}') not found in name mapping for port type '{}'. Skipping processing.",
+                            lookup_key, signal.compressed_name, port.r#type
+                        );
+                        continue;
+                    }
+                };
 
-                        // Update module_info_map using the extracted module name and corrected relative path
-                        if let Some(relative_path) = &corrected_relative_path {
-                            // Get or insert the ModuleInfo for this module name
-                            let module_entry = self
-                                .module_info_map
-                                .entry(module_name_extracted.clone())
-                                .or_insert_with(ModuleInfo::default); // Use default if new ModuleInfo
+                if let Some(s_start) = reconstructed_signal_path.find("__S__") {
+                    let instance_module_part = &reconstructed_signal_path[..s_start];
+                    let module_name_extracted: String;
+                    let instance_path_parts: Vec<&str>;
 
-                            // Get or insert the SourceFileInfo for this specific relative path within the module
-                            // This preserves existing SourceFileInfo if it exists.
-                            let source_file_entry = module_entry
-                                .source_files
-                                .entry(relative_path.clone())
-                                .or_insert_with(|| SourceFileInfo {
-                                    relative_path: relative_path.clone(), // Store relative path
-                                    root_dir: None, // Initialize rootDir as None ONLY IF NEW
-                                    content: None,  // Initialize content as None ONLY IF NEW
-                                });
-                            // Mark this module-file pair as encountered
-                            encountered_module_files
-                                .insert((module_name_extracted.clone(), relative_path.clone()));
-                        } else {
-                            eprintln!(
-                                "Warning: Signal '{}' has module name '{}' but no file path could be parsed from info string '{}'. Cannot associate with source file.",
-                                signal.original_name, module_name_extracted, signal.info
-                            );
-                        }
+                    let m_start = instance_module_part.rfind("__M__")
+                        .unwrap_or_else(|| panic!(
+                            "FATAL: Mapped signal path '{}' (from compressed '{}', lookup key '{}') must contain '__M__' before '__S__' to determine module name.",
+                            reconstructed_signal_path, signal.compressed_name, lookup_key
+                        ));
+
+                    module_name_extracted = instance_module_part[m_start + 5..].to_string();
+                    let instance_part = &instance_module_part[..m_start];
+                    instance_path_parts = instance_part.split("__I__").collect();
+
+                    if let Some(relative_path) = &corrected_relative_path {
+                        let module_entry = self
+                            .module_info_map
+                            .entry(module_name_extracted.clone())
+                            .or_insert_with(ModuleInfo::default);
+
+                        let _source_file_entry = module_entry
+                            .source_files
+                            .entry(relative_path.clone())
+                            .or_insert_with(|| SourceFileInfo {
+                                relative_path: relative_path.clone(),
+                                root_dir: None,
+                                content: None,
+                            });
+                        encountered_module_files
+                            .insert((module_name_extracted.clone(), relative_path.clone()));
                     } else {
-                        // Handle cases without __M__ (e.g., top-level signals)
-                        instance_path_parts = vec![instance_module_part];
-                        module_name_extracted = self.top_module_name.clone(); // Assume top module
-                                                                              // Top-level signals might still have source info
-                        if let Some(relative_path) = &corrected_relative_path {
-                            let module_entry = self
-                                .module_info_map
-                                .entry(module_name_extracted.clone())
-                                .or_insert_with(ModuleInfo::default);
-                            // Preserve existing SourceFileInfo if it exists.
-                            let source_file_entry = module_entry
-                                .source_files
-                                .entry(relative_path.clone())
-                                .or_insert_with(|| SourceFileInfo {
-                                    relative_path: relative_path.clone(),
-                                    root_dir: None,
-                                    content: None,
-                                });
-                            // Mark this module-file pair as encountered
-                            encountered_module_files
-                                .insert((module_name_extracted.clone(), relative_path.clone()));
-                        } else {
-                            eprintln!(
-                                "Warning: Top-level signal '{}' has no file path parsed from info string '{}'.",
-                                signal.original_name, signal.info
-                            );
-                        }
+                        eprintln!(
+                            "Warning: Signal (compressed: '{}', mapped: '{}') has module name '{}' but no file path could be parsed from info string '{}'. Cannot associate with source file.",
+                            signal.compressed_name, reconstructed_signal_path, module_name_extracted, signal.info
+                        );
                     }
 
-                    // Build/Navigate the InstanceSignalTree (logic remains the same)
-                    let mut current_node = &mut self.instance_signal_map;
+                    let mut current_node = &mut self.instance_signal_tree;
                     for (i, &instance_name_part) in instance_path_parts.iter().enumerate().skip(1) {
                         let position = current_node
                             .sub_instances
                             .iter()
                             .position(|sub| sub.instance_name == instance_name_part);
 
+                        let is_last_instance_in_path = i == instance_path_parts.len() - 1;
+
                         if let Some(pos) = position {
                             current_node = &mut current_node.sub_instances[pos];
+
+                            if is_last_instance_in_path {
+                                if current_node.module_name == UNKNOWN_MODULE_PLACEHOLDER {
+                                    current_node.module_name = module_name_extracted.clone();
+                                } else if current_node.module_name != module_name_extracted {
+                                    panic!(
+                                        "FATAL: Module name inconsistency for instance '{}'. Existing: '{}', Signal '{}' suggests: '{}'.",
+                                        instance_name_part, current_node.module_name, reconstructed_signal_path, module_name_extracted
+                                    );
+                                }
+                            }
                         } else {
-                            // Determine module name for new sub-instance (using current signal's module if last part)
-                            let sub_module_name = if i == instance_path_parts.len() - 1 {
+                            let sub_module_name = if is_last_instance_in_path {
                                 module_name_extracted.clone()
                             } else {
-                                // Using "Unknown" for intermediate nodes remains a simplification.
-                                // A full pre-scan could map all instance paths to module names.
-                                String::from("Unknown") // Consider improving this if needed
+                                UNKNOWN_MODULE_PLACEHOLDER.to_string()
                             };
 
                             let new_node = InstanceSignalTree {
@@ -254,53 +223,101 @@ impl CoverageInfo {
                             current_node = current_node.sub_instances.last_mut().unwrap();
                         }
                     }
-                    // Add the signal (with its relative file_path) to the final node
                     current_node.signals.push(signal.clone());
                 } else {
-                    eprintln!(
-                        "Warning: Signal name '{}' does not contain '__S__'. Skipping processing.",
-                        signal.original_name
+                    panic!(
+                        "FATAL: Mapped signal path '{}' (from compressed '{}', lookup key '{}') does not contain '__S__'. Skipping processing.",
+                        reconstructed_signal_path, signal.compressed_name, lookup_key
                     );
                 }
             }
         }
 
-        // Optional: Clean up SourceFileInfo entries that were present before but not encountered in this parse?
-        // This might be desirable if the input JSON structure changes significantly between parses.
-        // For now, we keep all entries. If cleanup is needed:
-        // self.module_info_map.retain(|module_name, module_info| {
-        //     module_info.source_files.retain(|relative_path, _| {
-        //         encountered_module_files.contains(&(module_name.clone(), relative_path.clone()))
-        //     });
-        //     !module_info.source_files.is_empty() // Keep module if it still has files
-        // });
+        // New section: Attempt to determine root_dir and load content for SourceFileInfo
+        // if root_dir is missing or content is invalid.
+        let available_roots = self.available_root_dirs.clone();
+        for (module_name, module_info) in self.module_info_map.iter_mut() {
+            for (relative_path_str, source_file_info) in module_info.source_files.iter_mut() {
+                let needs_processing = source_file_info.root_dir.is_none()
+                    || source_file_info.content.is_none()
+                    || source_file_info
+                        .content
+                        .as_ref()
+                        .map_or(false, |c| c.starts_with("Error"));
 
-        // 4: Load file content ONLY for entries where content is None and root_dir is Some
+                if needs_processing {
+                    let mut loaded_successfully_in_block = false;
+                    for potential_root_dir in &available_roots {
+                        let path_to_try =
+                            PathBuf::from(potential_root_dir).join(&source_file_info.relative_path);
+
+                        if path_to_try.exists() && path_to_try.is_file() {
+                            match fs::read_to_string(&path_to_try) {
+                                Ok(content_data) => {
+                                    source_file_info.root_dir =
+                                        Some(potential_root_dir.to_string());
+                                    source_file_info.content = Some(content_data);
+                                    loaded_successfully_in_block = true;
+                                    break; // Found working root and content
+                                }
+                                Err(e) => {
+                                    // Path exists but read failed. Update info to this attempt's failure.
+                                    // Allow next potential_root_dir to override if it works.
+                                    source_file_info.root_dir =
+                                        Some(potential_root_dir.to_string());
+                                    let error_message = format!(
+                                        "Error reading file (path exists with trial root '{}'): {} (Full Path: {})",
+                                        potential_root_dir, e, path_to_try.display()
+                                    );
+                                    source_file_info.content = Some(error_message.clone());
+                                    eprintln!(
+                                        "Failed content load attempt for Module: '{}', File: '{}'. Error: {}",
+                                        module_name, relative_path_str, error_message
+                                    );
+                                }
+                            }
+                        }
+                    }
+
+                    if !loaded_successfully_in_block && source_file_info.root_dir.is_none() {
+                        // If no root_dir was found (no path from available_roots existed)
+                        // and content isn't already an error (e.g. from a previous state before parse)
+                        if !source_file_info
+                            .content
+                            .as_ref()
+                            .map_or(false, |c| c.starts_with("Error"))
+                        {
+                            source_file_info.content = Some(format!(
+                                "Error: Source file '{}' for module '{}' not found using any available root directory.",
+                                source_file_info.relative_path, module_name
+                            ));
+                        }
+                    }
+                }
+            }
+        }
+
         self.load_all_module_content();
     }
 
-    // MODIFIED: Helper function to load/reload content ONLY for source files where content is None and root_dir is Some
     fn load_all_module_content(&mut self) {
-        // Iterate through each module in the map
         for (module_name, module_info) in self.module_info_map.iter_mut() {
-            // Iterate through each source file associated with this module
             for (relative_path_key, source_file_info) in module_info.source_files.iter_mut() {
-                // --- Start Modification ---
-                // Only attempt to load if root_dir is set AND content is currently None
-                if source_file_info.root_dir.is_some() && source_file_info.content.is_none() {
-                    let root_dir_str = source_file_info.root_dir.as_ref().unwrap(); // Safe unwrap due to check above
-                    let current_relative_path = Path::new(relative_path_key);
-                    let mut path_to_read: Option<PathBuf> = None;
+                if let Some(root_dir_str) = source_file_info.root_dir.as_ref() {
+                    // Attempt to load if content is missing or is an error message
+                    if source_file_info.content.is_none()
+                        || source_file_info
+                            .content
+                            .as_ref()
+                            .map_or(false, |c| c.starts_with("Error"))
+                    {
+                        let current_relative_path = Path::new(&source_file_info.relative_path);
 
-                    // Normalize root_dir slashes
-                    let root_normalized = root_dir_str.replace('\\', "/");
-                    let mut combined_path = PathBuf::from(root_normalized);
-                    combined_path.push(current_relative_path); // Push the relative path onto the root
-                    path_to_read = Some(combined_path);
+                        let root_normalized = root_dir_str.replace('\\', "/");
+                        let mut combined_path = PathBuf::from(root_normalized);
+                        combined_path.push(current_relative_path);
 
-                    // Try reading the file if we determined a path
-                    if let Some(final_path) = path_to_read {
-                        match fs::read_to_string(&final_path) {
+                        match fs::read_to_string(&combined_path) {
                             Ok(content) => {
                                 source_file_info.content = Some(content);
                             }
@@ -308,58 +325,36 @@ impl CoverageInfo {
                                 let error_msg = format!(
                                     "Error reading file: {} (Path: {})",
                                     e,
-                                    final_path.display()
+                                    combined_path.display()
                                 );
                                 eprintln!(
                                     "{} (Module: {}, File: {})",
                                     error_msg, module_name, relative_path_key
                                 );
-                                // Set content to the error message for the frontend
                                 source_file_info.content = Some(error_msg);
                             }
                         }
                     }
-                    // If path_to_read was None (shouldn't happen here due to root_dir check), do nothing
-                } else if source_file_info.root_dir.is_none() && source_file_info.content.is_none()
-                {
-                    // Optional: Log if root_dir is missing and content is also missing (first load attempt likely)
-                    // eprintln!(
-                    //     "Info: Root directory not set for relative path '{}' in module '{}'. Content not loaded.",
-                    //     relative_path_key, module_name
-                    // );
-                    // Do not set an error message here, wait for root_dir to be set.
                 }
-                // If content is already Some(_), do nothing, preserving the existing content.
-                // --- End Modification ---
-            } // End loop through source files
-        } // End loop through modules
+            }
+        }
     }
 
-    // RENAMED & MODIFIED: Method to update root dir for specific source files and reload content once
     pub fn update_source_file_roots_and_reload(
         &mut self,
-        source_file_identifiers: &[SourceFileIdentifier], // Use new identifier struct
+        source_file_identifiers: &[SourceFileIdentifier],
         new_root_dir: &str,
-    ) -> Result<(), String> {
+    ) -> Result<CoverageInfo, String> {
         let mut updated_count = 0;
         let mut not_found_files = Vec::new();
-        let mut needs_reload = false; // Flag to check if any content might need loading
+        let mut needs_reload = false;
 
-        // Iterate through the provided identifiers
         for identifier in source_file_identifiers {
-            // Find the module
             if let Some(module_info) = self.module_info_map.get_mut(&identifier.module_name) {
-                // Find the specific source file within the module
                 if let Some(source_file_info) =
                     module_info.source_files.get_mut(&identifier.relative_path)
                 {
-                    // Update the root_dir for this specific file
                     let old_root_dir = source_file_info.root_dir.clone();
-                    source_file_info.root_dir = Some(new_root_dir.to_string());
-                    updated_count += 1;
-
-                    // If the root dir changed OR if content was previously None (or an error message),
-                    // we might need to reload content.
                     if old_root_dir.as_deref() != Some(new_root_dir)
                         || source_file_info.content.is_none()
                         || source_file_info
@@ -367,14 +362,12 @@ impl CoverageInfo {
                             .as_ref()
                             .map_or(false, |c| c.starts_with("Error reading file:"))
                     {
-                        // Invalidate existing content if root dir changed, forcing a reload attempt
-                        if old_root_dir.as_deref() != Some(new_root_dir) {
-                            source_file_info.content = None;
-                        }
+                        source_file_info.root_dir = Some(new_root_dir.to_string());
+                        source_file_info.content = None;
                         needs_reload = true;
+                        updated_count += 1;
                     }
                 } else {
-                    // Source file not found within the module
                     not_found_files.push(identifier.clone());
                     eprintln!(
                         "Warning: Relative path '{}' not found within module '{}' during batch update.",
@@ -382,7 +375,6 @@ impl CoverageInfo {
                     );
                 }
             } else {
-                // Module not found
                 not_found_files.push(identifier.clone());
                 eprintln!(
                     "Warning: Module name '{}' not found during batch update.",
@@ -391,50 +383,67 @@ impl CoverageInfo {
             }
         }
 
-        // Report errors if some files were not found
         if !not_found_files.is_empty() {
-            // Log the error, but proceed to reload content for files that were updated.
             eprintln!(
-                "Batch update partially failed: Source files not found: {:?}",
-                not_found_files
+                "Batch update: {} files updated. Source files not found: {:?}",
+                updated_count, not_found_files
             );
-            // Optionally return an Err here if partial failure is unacceptable.
-            // return Err(format!("Failed to update: Source files not found: {:?}", not_found_files));
         }
 
-        // If at least one file's root dir was potentially updated in a way that requires reload,
-        // call load_all_module_content. This will attempt to load content for any file
-        // that now has a root_dir and content == None.
         if needs_reload {
             self.load_all_module_content();
-        } else if source_file_identifiers.is_empty() {
-            // No identifiers provided, do nothing, return Ok.
-            return Ok(());
-        } else if updated_count == 0 && !source_file_identifiers.is_empty() {
-            // All provided identifiers resulted in errors or no actual change needed reload
-            if not_found_files.len() == source_file_identifiers.len() {
-                return Err("No valid source file identifiers found for update.".to_string());
-            } else {
-                // Files were found, but no reload was triggered (e.g., setting same root dir again)
-                // Still return Ok, as the update technically completed for found files.
-            }
         }
 
-        Ok(())
+        if updated_count == 0
+            && !source_file_identifiers.is_empty()
+            && not_found_files.len() == source_file_identifiers.len()
+        {
+            return Err("No valid source file identifiers found for update.".to_string());
+        } else if updated_count == 0 && !needs_reload && source_file_identifiers.is_empty() {
+            return Ok(self.clone());
+        } else if updated_count == 0
+            && !needs_reload
+            && !source_file_identifiers.is_empty()
+            && not_found_files.is_empty()
+        {
+            return Ok(self.clone());
+        }
+
+        Ok(self.clone())
     }
 }
 
 #[cfg(test)]
 pub mod test {
-    use crate::types::coverage_info::CoverageInfo;
-
     #[test]
-    pub fn test_process_source_info() {
-        let mut coverage_info: CoverageInfo = serde_json::from_str(include_str!(r"D:\projs\fuzz\chisel_coverage_tool\output_generated\rocket_alu\RocketALU_coverage_info.json")).unwrap();
-        coverage_info.parse();
-        // 保存到一个临时文件
-        let temp_file_path = "temp_coverage_info.json";
-        let content = serde_json::to_string_pretty(&coverage_info).unwrap();
-        std::fs::write(temp_file_path, content).unwrap();
+    pub fn test_parse() {
+        use super::*;
+        let content = std::fs::read_to_string(r"/home/canxin/git/chisel_coverage_tool/output_generated/uart_rx/UART_rx_coverage_info.json").unwrap();
+        let mut info = serde_json::from_str::<CoverageInfo>(&content).unwrap();
+        info.parse();
+
+        let parsed_content = serde_json::to_string_pretty(&info).unwrap();
+        std::fs::write(
+            r"/home/canxin/git/chisel_coverage_tool/output_generated/uart_rx/UART_rx_coverage_info_parsed.json",
+            parsed_content,
+        ).unwrap();
+
+        // 递归检查info的instace_signal_tree中是否所有 "signals 不为空的" instance 的 module 都不是 UNKNOWN_MODULE_PLACEHOLDER
+        fn check_instance(instance: &InstanceSignalTree) -> bool {
+            if instance.module_name == UNKNOWN_MODULE_PLACEHOLDER && !instance.signals.is_empty() {
+                return false;
+            }
+            for sub_instance in &instance.sub_instances {
+                if !check_instance(sub_instance) {
+                    return false;
+                }
+            }
+            true
+        }
+        let all_instances_valid = check_instance(&info.instance_signal_tree);
+        assert!(
+            all_instances_valid,
+            "There are instances with UNKNOWN_MODULE_PLACEHOLDER in their module names."
+        );
     }
 }

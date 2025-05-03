@@ -1,80 +1,281 @@
 {
-  "topModuleName": "ComplexExample",
-  "exportedPorts": [
+  "top_module_name": "ComplexExample",
+  "exported_ports": [
     {
       "type": "mux_cond",
       "signals": [
-      {
-        "name": "_mux_cond_ComplexExample__M__ComplexExample__S___anotherSub_io_in_T",
-        "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\ComplexExample.scala 30:26]"
-      },
-      {
-        "name": "_mux_cond_ComplexExample__M__ComplexExample__S___sub_io_a_T",
-        "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\ComplexExample.scala 18:18]"
+        {
+          "compressed_name": "_mc__s1",
+          "type": "UInt<1>",
+          "info": " @[chisel_coverage_tool/src/modules/ComplexExample.scala 30:26]",
+          "file_path": "chisel_coverage_tool/src/modules/ComplexExample.scala",
+          "line": 30,
+          "column": 26
+        },
+        {
+          "compressed_name": "_mc__s0",
+          "type": "UInt<1>",
+          "info": " @[chisel_coverage_tool/src/modules/ComplexExample.scala 18:18]",
+          "file_path": "chisel_coverage_tool/src/modules/ComplexExample.scala",
+          "line": 18,
+          "column": 18
+        }
+      ],
+      "name_mapping": {
+        "_s0": "ComplexExample__M__ComplexExample__S___sub_io_a_T",
+        "_s1": "ComplexExample__M__ComplexExample__S___anotherSub_io_in_T"
       }
-      ]
     },
     {
       "type": "cond_pred",
       "signals": [
-      {
-        "name": "_cond_pred_ComplexExample__I__anotherSub__M__AnotherSubModule__S___T",
-        "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\AnotherSubModule.scala 17:23]"
-      },
-      {
-        "name": "_cond_pred_ComplexExample__I__sub__M__SubModule__S___T",
-        "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\SubModule.scala 20:18]"
-      },
-      {
-        "name": "_cond_pred_ComplexExample__I__sub__M__SubModule__S___T_1",
-        "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\SubModule.scala 20:18]"
-      },
-      {
-        "name": "_cond_pred_ComplexExample__I__sub__M__SubModule__S___T_2",
-        "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\SubModule.scala 20:18]"
-      },
-      {
-        "name": "_cond_pred_ComplexExample__M__ComplexExample__S___T",
-        "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\ComplexExample.scala 22:22]"
-      },
-      {
-        "name": "_cond_pred_ComplexExample__M__ComplexExample__S___T_1",
-        "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\ComplexExample.scala 33:27]"
-      },
-      {
-        "name": "_cond_pred_ComplexExample__M__ComplexExample__S___T_2",
-        "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\ComplexExample.scala 35:33]"
-      },
-      {
-        "name": "_cond_pred_ComplexExample__M__ComplexExample__S___T_3",
-        "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\ComplexExample.scala 37:33]"
+        {
+          "compressed_name": "_cp__s3",
+          "type": "UInt<1>",
+          "info": " @[chisel_coverage_tool/src/modules/AnotherSubModule.scala 17:23]",
+          "file_path": "chisel_coverage_tool/src/modules/AnotherSubModule.scala",
+          "line": 17,
+          "column": 23
+        },
+        {
+          "compressed_name": "_cp__s0",
+          "type": "UInt<1>",
+          "info": " @[chisel_coverage_tool/src/modules/SubModule.scala 20:18]",
+          "file_path": "chisel_coverage_tool/src/modules/SubModule.scala",
+          "line": 20,
+          "column": 18
+        },
+        {
+          "compressed_name": "_cp__s1",
+          "type": "UInt<1>",
+          "info": " @[chisel_coverage_tool/src/modules/SubModule.scala 20:18]",
+          "file_path": "chisel_coverage_tool/src/modules/SubModule.scala",
+          "line": 20,
+          "column": 18
+        },
+        {
+          "compressed_name": "_cp__s2",
+          "type": "UInt<1>",
+          "info": " @[chisel_coverage_tool/src/modules/SubModule.scala 20:18]",
+          "file_path": "chisel_coverage_tool/src/modules/SubModule.scala",
+          "line": 20,
+          "column": 18
+        },
+        {
+          "compressed_name": "_cp__s4",
+          "type": "UInt<1>",
+          "info": " @[chisel_coverage_tool/src/modules/ComplexExample.scala 22:22]",
+          "file_path": "chisel_coverage_tool/src/modules/ComplexExample.scala",
+          "line": 22,
+          "column": 22
+        },
+        {
+          "compressed_name": "_cp__s5",
+          "type": "UInt<1>",
+          "info": " @[chisel_coverage_tool/src/modules/ComplexExample.scala 33:27]",
+          "file_path": "chisel_coverage_tool/src/modules/ComplexExample.scala",
+          "line": 33,
+          "column": 27
+        },
+        {
+          "compressed_name": "_cp__s6",
+          "type": "UInt<1>",
+          "info": " @[chisel_coverage_tool/src/modules/ComplexExample.scala 35:33]",
+          "file_path": "chisel_coverage_tool/src/modules/ComplexExample.scala",
+          "line": 35,
+          "column": 33
+        },
+        {
+          "compressed_name": "_cp__s7",
+          "type": "UInt<1>",
+          "info": " @[chisel_coverage_tool/src/modules/ComplexExample.scala 37:33]",
+          "file_path": "chisel_coverage_tool/src/modules/ComplexExample.scala",
+          "line": 37,
+          "column": 33
+        }
+      ],
+      "name_mapping": {
+        "_s4": "ComplexExample__M__ComplexExample__S___T",
+        "_s7": "ComplexExample__M__ComplexExample__S___T_3",
+        "_s0": "ComplexExample__I__sub__M__SubModule__S___T",
+        "_s6": "ComplexExample__M__ComplexExample__S___T_2",
+        "_s3": "ComplexExample__I__anotherSub__M__AnotherSubModule__S___T",
+        "_s5": "ComplexExample__M__ComplexExample__S___T_1",
+        "_s1": "ComplexExample__I__sub__M__SubModule__S___T_1",
+        "_s2": "ComplexExample__I__sub__M__SubModule__S___T_2"
       }
-      ]
     },
     {
       "type": "register",
       "signals": [
+        {
+          "compressed_name": "_rs__s1",
+          "type": "UInt",
+          "info": " @[chisel_coverage_tool/src/modules/AnotherSubModule.scala 12:26]",
+          "file_path": "chisel_coverage_tool/src/modules/AnotherSubModule.scala",
+          "line": 12,
+          "column": 26
+        },
+        {
+          "compressed_name": "_rs__s0",
+          "type": "UInt<8>",
+          "info": " @[chisel_coverage_tool/src/modules/SubModule.scala 14:25]",
+          "file_path": "chisel_coverage_tool/src/modules/SubModule.scala",
+          "line": 14,
+          "column": 25
+        }
+      ],
+      "name_mapping": {
+        "_s0": "ComplexExample__I__sub__M__SubModule__S__stateReg",
+        "_s1": "ComplexExample__I__anotherSub__M__AnotherSubModule__S__delayedIn"
+      }
+    }
+  ],
+  "module_info_map": {
+    "AnotherSubModule": {
+      "source_files": {
+        "chisel_coverage_tool/src/modules/AnotherSubModule.scala": {
+          "relative_path": "chisel_coverage_tool/src/modules/AnotherSubModule.scala",
+          "root_dir": "\\\\wsl.localhost\\Ubuntu-24.04\\home\\canxin\\git\\chisel_coverage_tool",
+          "content": "package modules\n\nimport chisel3._\nimport chisel3.util._\n\nclass AnotherSubModule extends Module {\n  val io = IO(new Bundle {\n    val in  = Input(UInt(8.W))\n    val out = Output(UInt(8.W))\n  })\n\n  val delayedIn = RegNext(io.in, 0.U) // 使用 RegNext 延迟输入，并提供初始值\n\n  // 默认赋值\n  io.out := 0.U\n\n  when(io.in > 100.U) {\n    io.out := delayedIn + 1.U\n  } .otherwise {\n    io.out := delayedIn // 在 otherwise 分支中赋值\n  }\n}\n"
+        }
+      }
+    },
+    "ComplexExample": {
+      "source_files": {
+        "chisel_coverage_tool/src/modules/ComplexExample.scala": {
+          "relative_path": "chisel_coverage_tool/src/modules/ComplexExample.scala",
+          "root_dir": "\\\\wsl.localhost\\Ubuntu-24.04\\home\\canxin\\git\\chisel_coverage_tool",
+          "content": "package modules\n\nimport chisel3._\nimport chisel3.util._\n\nclass ComplexExample extends Module {\n  val io = IO(new Bundle {\n    val topInA = Input(UInt(8.W))\n    val topInB = Input(UInt(8.W))\n    val topSel = Input(UInt(2.W))\n    val topOut = Output(UInt(8.W))\n  })\n\n  val sub = Module(new SubModule())\n  val anotherSub = Module(new AnotherSubModule())\n\n  // 使用 Mux 根据 topSel(0) 选择 sub.io.a 的输入\n  sub.io.a := Mux(io.topSel(0), io.topInB, io.topInA)\n\n  // 使用 when 根据 topSel(1) 条件性地修改 sub.io.b 的输入\n  sub.io.b := io.topInB\n  when(io.topSel(1)) {\n    sub.io.b := io.topInA // 当 topSel(1) 为 true 时，使用 topInA\n  }\n\n  // sub.io.sel 保持不变\n  sub.io.sel := io.topSel\n\n  // 使用 Mux 根据 topSel(0) 选择 anotherSub.io.in 的输入\n  anotherSub.io.in := Mux(io.topSel(0), sub.io.out, io.topInA)\n\n  // 使用 when/elsewhen/otherwise 根据 topSel 的不同值选择最终输出\n  when(io.topSel === 0.U) {\n    io.topOut := anotherSub.io.out\n  }.elsewhen(io.topSel === 1.U) {\n    io.topOut := sub.io.out\n  }.elsewhen(io.topSel === 2.U) {\n    io.topOut := io.topInA + io.topInB // 示例：执行一些计算\n  }.otherwise {\n    io.topOut := 0.U // 默认值\n  }\n}\n"
+        }
+      }
+    },
+    "SubModule": {
+      "source_files": {
+        "chisel_coverage_tool/src/modules/SubModule.scala": {
+          "relative_path": "chisel_coverage_tool/src/modules/SubModule.scala",
+          "root_dir": "\\\\wsl.localhost\\Ubuntu-24.04\\home\\canxin\\git\\chisel_coverage_tool",
+          "content": "package modules\n\nimport chisel3._\nimport chisel3.util._\n\nclass SubModule extends Module {\n  val io = IO(new Bundle {\n    val a = Input(UInt(8.W))\n    val b = Input(UInt(8.W))\n    val sel = Input(UInt(2.W))\n    val out = Output(UInt(8.W))\n  })\n\n  val stateReg = RegInit(0.U(8.W))\n\n  // 默认赋值，确保在所有分支中都有定义\n  io.out := stateReg // 默认输出当前状态\n  val nextState = WireDefault(stateReg) // 默认下一状态是当前状态\n\n  switch(io.sel) {\n    is(0.U) {\n      nextState := io.a + io.b\n      io.out := io.a\n    }\n    is(1.U) {\n      nextState := io.a - io.b\n      io.out := io.b\n    }\n    is(2.U) {\n      nextState := io.a & io.b\n      io.out := stateReg + 1.U\n    }\n    // is(3.U) 分支使用默认值\n  }\n\n  stateReg := nextState\n}\n"
+        }
+      }
+    }
+  },
+  "instance_signal_tree": {
+    "instance_name": "ComplexExample",
+    "module_name": "ComplexExample",
+    "sub_instances": [
       {
-        "name": "_reg_signals_ComplexExample__I__anotherSub__M__AnotherSubModule__S__delayedIn",
-        "type": "UInt",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\AnotherSubModule.scala 12:26]"
+        "instance_name": "anotherSub",
+        "module_name": "AnotherSubModule",
+        "sub_instances": [],
+        "signals": [
+          {
+            "compressed_name": "_cp__s3",
+            "type": "UInt<1>",
+            "info": " @[chisel_coverage_tool/src/modules/AnotherSubModule.scala 17:23]",
+            "file_path": "chisel_coverage_tool/src/modules/AnotherSubModule.scala",
+            "line": 17,
+            "column": 23
+          },
+          {
+            "compressed_name": "_rs__s1",
+            "type": "UInt",
+            "info": " @[chisel_coverage_tool/src/modules/AnotherSubModule.scala 12:26]",
+            "file_path": "chisel_coverage_tool/src/modules/AnotherSubModule.scala",
+            "line": 12,
+            "column": 26
+          }
+        ]
       },
       {
-        "name": "_reg_signals_ComplexExample__I__sub__M__SubModule__S__stateReg",
-        "type": "UInt<8>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\SubModule.scala 14:25]"
+        "instance_name": "sub",
+        "module_name": "SubModule",
+        "sub_instances": [],
+        "signals": [
+          {
+            "compressed_name": "_cp__s0",
+            "type": "UInt<1>",
+            "info": " @[chisel_coverage_tool/src/modules/SubModule.scala 20:18]",
+            "file_path": "chisel_coverage_tool/src/modules/SubModule.scala",
+            "line": 20,
+            "column": 18
+          },
+          {
+            "compressed_name": "_cp__s1",
+            "type": "UInt<1>",
+            "info": " @[chisel_coverage_tool/src/modules/SubModule.scala 20:18]",
+            "file_path": "chisel_coverage_tool/src/modules/SubModule.scala",
+            "line": 20,
+            "column": 18
+          },
+          {
+            "compressed_name": "_cp__s2",
+            "type": "UInt<1>",
+            "info": " @[chisel_coverage_tool/src/modules/SubModule.scala 20:18]",
+            "file_path": "chisel_coverage_tool/src/modules/SubModule.scala",
+            "line": 20,
+            "column": 18
+          },
+          {
+            "compressed_name": "_rs__s0",
+            "type": "UInt<8>",
+            "info": " @[chisel_coverage_tool/src/modules/SubModule.scala 14:25]",
+            "file_path": "chisel_coverage_tool/src/modules/SubModule.scala",
+            "line": 14,
+            "column": 25
+          }
+        ]
       }
-      ]
-    }
-  ]
+    ],
+    "signals": [
+      {
+        "compressed_name": "_mc__s1",
+        "type": "UInt<1>",
+        "info": " @[chisel_coverage_tool/src/modules/ComplexExample.scala 30:26]",
+        "file_path": "chisel_coverage_tool/src/modules/ComplexExample.scala",
+        "line": 30,
+        "column": 26
+      },
+      {
+        "compressed_name": "_mc__s0",
+        "type": "UInt<1>",
+        "info": " @[chisel_coverage_tool/src/modules/ComplexExample.scala 18:18]",
+        "file_path": "chisel_coverage_tool/src/modules/ComplexExample.scala",
+        "line": 18,
+        "column": 18
+      },
+      {
+        "compressed_name": "_cp__s4",
+        "type": "UInt<1>",
+        "info": " @[chisel_coverage_tool/src/modules/ComplexExample.scala 22:22]",
+        "file_path": "chisel_coverage_tool/src/modules/ComplexExample.scala",
+        "line": 22,
+        "column": 22
+      },
+      {
+        "compressed_name": "_cp__s5",
+        "type": "UInt<1>",
+        "info": " @[chisel_coverage_tool/src/modules/ComplexExample.scala 33:27]",
+        "file_path": "chisel_coverage_tool/src/modules/ComplexExample.scala",
+        "line": 33,
+        "column": 27
+      },
+      {
+        "compressed_name": "_cp__s6",
+        "type": "UInt<1>",
+        "info": " @[chisel_coverage_tool/src/modules/ComplexExample.scala 35:33]",
+        "file_path": "chisel_coverage_tool/src/modules/ComplexExample.scala",
+        "line": 35,
+        "column": 33
+      },
+      {
+        "compressed_name": "_cp__s7",
+        "type": "UInt<1>",
+        "info": " @[chisel_coverage_tool/src/modules/ComplexExample.scala 37:33]",
+        "file_path": "chisel_coverage_tool/src/modules/ComplexExample.scala",
+        "line": 37,
+        "column": 33
+      }
+    ]
+  }
 }

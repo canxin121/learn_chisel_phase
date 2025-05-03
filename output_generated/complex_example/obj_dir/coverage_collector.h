@@ -91,7 +91,7 @@ struct ConditionCoveragePoint {
                                           : 0.0;
 
     os << "    {\n"; // Note: Escaped backslashes removed for template clarity
-    os << "      \"name\": \"" << name << "\",\n";
+    os << "      \"compressed_name\": \"" << name << "\",\n";
     os << "      \"hit_true\": " << std::boolalpha << hit_true() << ",\n";
     os << "      \"hit_false\": " << std::boolalpha << hit_false() << ",\n";
     os << "      \"count_true\": " << count_true << ",\n";
@@ -292,7 +292,7 @@ struct RegisterCoveragePoint {
 
   void exportJson(std::ostream &os) const {
     os << "    {\n"; // Note: Escaped backslashes removed for template clarity
-    os << "      \"name\": \"" << name << "\",\n";
+    os << "      \"compressed_name\": \"" << name << "\",\n";
     os << "      \"width\": " << width << ",\n";
     os << "      \"bins_hit\": " << getHitBins() << ",\n";
     os << "      \"bins_total\": " << getTotalBins() << ",\n";
@@ -379,59 +379,59 @@ inline void CoverageCollector::initialize(VComplexExample *top) {
 
   // --- Placeholder for dynamically generated emplace_back calls ---
   try {
-    mux_condition_points.emplace_back("_mux_cond_ComplexExample__M__ComplexExample__S___anotherSub_io_in_T", &top->_mux_cond_ComplexExample___05FM___05FComplexExample___05FS___05F_anotherSub_io_in_T);
+    mux_condition_points.emplace_back("_mc__s0", &top->_mc___05Fs0);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_ComplexExample___05FM___05FComplexExample___05FS___05F_anotherSub_io_in_T" << std::endl;
+    std::cerr << "Error adding mux point _mc___05Fs0" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_ComplexExample__M__ComplexExample__S___sub_io_a_T", &top->_mux_cond_ComplexExample___05FM___05FComplexExample___05FS___05F_sub_io_a_T);
+    mux_condition_points.emplace_back("_mc__s1", &top->_mc___05Fs1);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_ComplexExample___05FM___05FComplexExample___05FS___05F_sub_io_a_T" << std::endl;
+    std::cerr << "Error adding mux point _mc___05Fs1" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_ComplexExample__I__anotherSub__M__AnotherSubModule__S___T", &top->_cond_pred_ComplexExample___05FI___05FanotherSub___05FM___05FAnotherSubModule___05FS___05F_T);
+    condition_points.emplace_back("_cp__s0", &top->_cp___05Fs0);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_ComplexExample___05FI___05FanotherSub___05FM___05FAnotherSubModule___05FS___05F_T" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs0" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_ComplexExample__I__sub__M__SubModule__S___T", &top->_cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T);
+    condition_points.emplace_back("_cp__s1", &top->_cp___05Fs1);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs1" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_ComplexExample__I__sub__M__SubModule__S___T_1", &top->_cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T_1);
+    condition_points.emplace_back("_cp__s2", &top->_cp___05Fs2);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T_1" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs2" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_ComplexExample__I__sub__M__SubModule__S___T_2", &top->_cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T_2);
+    condition_points.emplace_back("_cp__s3", &top->_cp___05Fs3);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T_2" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs3" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_ComplexExample__M__ComplexExample__S___T", &top->_cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T);
+    condition_points.emplace_back("_cp__s4", &top->_cp___05Fs4);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs4" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_ComplexExample__M__ComplexExample__S___T_1", &top->_cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T_1);
+    condition_points.emplace_back("_cp__s5", &top->_cp___05Fs5);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T_1" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs5" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_ComplexExample__M__ComplexExample__S___T_2", &top->_cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T_2);
+    condition_points.emplace_back("_cp__s6", &top->_cp___05Fs6);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T_2" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs6" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_ComplexExample__M__ComplexExample__S___T_3", &top->_cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T_3);
+    condition_points.emplace_back("_cp__s7", &top->_cp___05Fs7);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T_3" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs7" << std::endl;
   }
-  // Register signal: _reg_signals_ComplexExample__I__anotherSub__M__AnotherSubModule__S__delayedIn (UInt)
-        register_points.emplace_back("_reg_signals_ComplexExample__I__anotherSub__M__AnotherSubModule__S__delayedIn", 1, reinterpret_cast<const void*>(&top->_reg_signals_ComplexExample___05FI___05FanotherSub___05FM___05FAnotherSubModule___05FS___05FdelayedIn));
-  // Register signal: _reg_signals_ComplexExample__I__sub__M__SubModule__S__stateReg (UInt<8>)
-        register_points.emplace_back("_reg_signals_ComplexExample__I__sub__M__SubModule__S__stateReg", 8, reinterpret_cast<const void*>(&top->_reg_signals_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05FstateReg));
+  // Register signal: _rs__s0 (UInt<8>)
+        register_points.emplace_back("_rs__s0", 8, reinterpret_cast<const void*>(&top->_rs___05Fs0));
+  // Register signal: _rs__s1 (UInt)
+        register_points.emplace_back("_rs__s1", 1, reinterpret_cast<const void*>(&top->_rs___05Fs1));
 
   // --- End of generated emplace_back calls ---
 

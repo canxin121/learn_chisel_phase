@@ -5,9 +5,9 @@
 
 
 VL_ATTR_COLD void VUART_rx___024root__trace_init_sub__TOP__0(VUART_rx___024root* vlSelf, VerilatedVcd* tracep) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_rx___024root__trace_init_sub__TOP__0\n"); );
+    if (false && vlSelf) {}  // Prevent unused
     VUART_rx__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    auto& vlSelfRef = std::ref(*vlSelf).get();
+    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_rx___024root__trace_init_sub__TOP__0\n"); );
     // Init
     const int c = vlSymsp->__Vm_baseCode;
     // Body
@@ -40,9 +40,9 @@ VL_ATTR_COLD void VUART_rx___024root__trace_init_sub__TOP__0(VUART_rx___024root*
 }
 
 VL_ATTR_COLD void VUART_rx___024root__trace_init_top(VUART_rx___024root* vlSelf, VerilatedVcd* tracep) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_rx___024root__trace_init_top\n"); );
+    if (false && vlSelf) {}  // Prevent unused
     VUART_rx__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    auto& vlSelfRef = std::ref(*vlSelf).get();
+    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_rx___024root__trace_init_top\n"); );
     // Body
     VUART_rx___024root__trace_init_sub__TOP__0(vlSelf, tracep);
 }
@@ -53,9 +53,9 @@ void VUART_rx___024root__trace_chg_0(void* voidSelf, VerilatedVcd::Buffer* bufp)
 void VUART_rx___024root__trace_cleanup(void* voidSelf, VerilatedVcd* /*unused*/);
 
 VL_ATTR_COLD void VUART_rx___024root__trace_register(VUART_rx___024root* vlSelf, VerilatedVcd* tracep) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_rx___024root__trace_register\n"); );
+    if (false && vlSelf) {}  // Prevent unused
     VUART_rx__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    auto& vlSelfRef = std::ref(*vlSelf).get();
+    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_rx___024root__trace_register\n"); );
     // Body
     tracep->addConstCb(&VUART_rx___024root__trace_const_0, 0U, vlSelf);
     tracep->addFullCb(&VUART_rx___024root__trace_full_0, 0U, vlSelf);
@@ -82,29 +82,29 @@ VL_ATTR_COLD void VUART_rx___024root__trace_full_0(void* voidSelf, VerilatedVcd:
 }
 
 VL_ATTR_COLD void VUART_rx___024root__trace_full_0_sub_0(VUART_rx___024root* vlSelf, VerilatedVcd::Buffer* bufp) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_rx___024root__trace_full_0_sub_0\n"); );
+    if (false && vlSelf) {}  // Prevent unused
     VUART_rx__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    auto& vlSelfRef = std::ref(*vlSelf).get();
+    VL_DEBUG_IF(VL_DBG_MSGF("+    VUART_rx___024root__trace_full_0_sub_0\n"); );
     // Init
     uint32_t* const oldp VL_ATTR_UNUSED = bufp->oldp(vlSymsp->__Vm_baseCode);
     // Body
-    bufp->fullSData(oldp+1,(vlSelfRef.UART_rx__DOT__clkCnterReg),9);
-    bufp->fullCData(oldp+2,(vlSelfRef.UART_rx__DOT__bitCnterReg),4);
-    bufp->fullBit(oldp+3,(vlSelfRef.UART_rx__DOT__outDataReg_0));
-    bufp->fullBit(oldp+4,(vlSelfRef.UART_rx__DOT__outDataReg_1));
-    bufp->fullBit(oldp+5,(vlSelfRef.UART_rx__DOT__outDataReg_2));
-    bufp->fullBit(oldp+6,(vlSelfRef.UART_rx__DOT__outDataReg_3));
-    bufp->fullBit(oldp+7,(vlSelfRef.UART_rx__DOT__outDataReg_4));
-    bufp->fullBit(oldp+8,(vlSelfRef.UART_rx__DOT__outDataReg_5));
-    bufp->fullBit(oldp+9,(vlSelfRef.UART_rx__DOT__outDataReg_6));
-    bufp->fullBit(oldp+10,(vlSelfRef.UART_rx__DOT__outDataReg_7));
-    bufp->fullBit(oldp+11,(vlSelfRef.UART_rx__DOT__outRxDoneReg));
-    bufp->fullCData(oldp+12,(vlSelfRef.UART_rx__DOT__stateReg),2);
-    bufp->fullBit(oldp+13,(vlSelfRef.UART_rx__DOT__serialDataReg_REG));
-    bufp->fullBit(oldp+14,(vlSelfRef.UART_rx__DOT__serialDataReg));
-    bufp->fullBit(oldp+15,(vlSelfRef.clock));
-    bufp->fullBit(oldp+16,(vlSelfRef.reset));
-    bufp->fullBit(oldp+17,(vlSelfRef.io_i_serial_data));
-    bufp->fullBit(oldp+18,(vlSelfRef.io_o_rx_done));
-    bufp->fullCData(oldp+19,(vlSelfRef.io_o_data),8);
+    bufp->fullSData(oldp+1,(vlSelf->UART_rx__DOT__clkCnterReg),9);
+    bufp->fullCData(oldp+2,(vlSelf->UART_rx__DOT__bitCnterReg),4);
+    bufp->fullBit(oldp+3,(vlSelf->UART_rx__DOT__outDataReg_0));
+    bufp->fullBit(oldp+4,(vlSelf->UART_rx__DOT__outDataReg_1));
+    bufp->fullBit(oldp+5,(vlSelf->UART_rx__DOT__outDataReg_2));
+    bufp->fullBit(oldp+6,(vlSelf->UART_rx__DOT__outDataReg_3));
+    bufp->fullBit(oldp+7,(vlSelf->UART_rx__DOT__outDataReg_4));
+    bufp->fullBit(oldp+8,(vlSelf->UART_rx__DOT__outDataReg_5));
+    bufp->fullBit(oldp+9,(vlSelf->UART_rx__DOT__outDataReg_6));
+    bufp->fullBit(oldp+10,(vlSelf->UART_rx__DOT__outDataReg_7));
+    bufp->fullBit(oldp+11,(vlSelf->UART_rx__DOT__outRxDoneReg));
+    bufp->fullCData(oldp+12,(vlSelf->UART_rx__DOT__stateReg),2);
+    bufp->fullBit(oldp+13,(vlSelf->UART_rx__DOT__serialDataReg_REG));
+    bufp->fullBit(oldp+14,(vlSelf->UART_rx__DOT__serialDataReg));
+    bufp->fullBit(oldp+15,(vlSelf->clock));
+    bufp->fullBit(oldp+16,(vlSelf->reset));
+    bufp->fullBit(oldp+17,(vlSelf->io_i_serial_data));
+    bufp->fullBit(oldp+18,(vlSelf->io_o_rx_done));
+    bufp->fullCData(oldp+19,(vlSelf->io_o_data),8);
 }

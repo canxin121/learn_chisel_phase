@@ -4,18 +4,18 @@ circuit WaveformGenerator :
     input clock : Clock
     input reset : UInt<1>
     output io : { flip waveType : UInt<2>, flip freqCtrl : UInt<16>, flip phaseOffset : UInt<16>, output : SInt<8>} @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 7:14]
-    output _mux_cond : { _s0 : UInt<1>}
-    output _cond_pred : { _s0 : UInt<1>, _s1 : UInt<1>, _s2 : UInt<1>, _s3 : UInt<1>}
-    output _reg_signals : { _s0 : UInt<16>}
+    output _mc : { _s0 : UInt<1>}
+    output _cp : { _s0 : UInt<1>, _s1 : UInt<1>, _s2 : UInt<1>, _s3 : UInt<1>}
+    output _rs : { _s0 : UInt<16>}
 
-    wire _cond_pred_prop_wire__s2 : UInt<1>
-    wire _cond_pred_prop_wire__s3 : UInt<1>
-    wire _cond_pred_prop_wire__s1 : UInt<1>
-    _cond_pred_prop_wire__s2 is invalid
-    _cond_pred_prop_wire__s3 is invalid
-    _cond_pred_prop_wire__s1 is invalid
-    wire _mux_cond_prop_wire__s0 : UInt<1>
-    _mux_cond_prop_wire__s0 is invalid
+    wire _cp_prop_wire__s3 : UInt<1>
+    wire _cp_prop_wire__s2 : UInt<1>
+    wire _cp_prop_wire__s1 : UInt<1>
+    _cp_prop_wire__s3 is invalid
+    _cp_prop_wire__s2 is invalid
+    _cp_prop_wire__s1 is invalid
+    wire _mc_prop_wire__s0 : UInt<1>
+    _mc_prop_wire__s0 is invalid
     reg phaseAcc : UInt<16>, clock with :
       reset => (reset, UInt<16>("h0")) @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 17:25]
     node _phaseAcc_T = add(phaseAcc, io.freqCtrl) @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 18:24]
@@ -801,28 +801,28 @@ circuit WaveformGenerator :
       io.output <= sinTable[_io_output_T] @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 44:17]
     else :
       node _T_1 = eq(UInt<1>("h1"), io.waveType) @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 42:23]
-      _cond_pred_prop_wire__s1 <= _T_1 @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 42:23]
+      _cp_prop_wire__s1 <= _T_1 @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 42:23]
       when _T_1 : @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 42:23]
         node _io_output_T_1 = bits(phase, 15, 8) @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 47:34]
         io.output <= triTable[_io_output_T_1] @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 47:17]
       else :
         node _T_2 = eq(UInt<2>("h2"), io.waveType) @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 42:23]
-        _cond_pred_prop_wire__s2 <= _T_2 @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 42:23]
+        _cp_prop_wire__s2 <= _T_2 @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 42:23]
         when _T_2 : @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 42:23]
           node _io_output_T_2 = bits(phase, 15, 8) @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 50:34]
           io.output <= sawTable[_io_output_T_2] @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 50:17]
         else :
           node _T_3 = eq(UInt<2>("h3"), io.waveType) @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 42:23]
-          _cond_pred_prop_wire__s3 <= _T_3 @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 42:23]
+          _cp_prop_wire__s3 <= _T_3 @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 42:23]
           when _T_3 : @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 42:23]
             node _io_output_T_3 = bits(phase, 15, 15) @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 53:29]
             node _io_output_T_4 = eq(_io_output_T_3, UInt<1>("h1")) @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 53:46]
-            _mux_cond_prop_wire__s0 <= _io_output_T_4 @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 53:46]
+            _mc_prop_wire__s0 <= _io_output_T_4 @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 53:46]
             node _io_output_T_5 = mux(_io_output_T_4, asSInt(UInt<8>("h81")), asSInt(UInt<8>("h7f"))) @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 53:23]
             io.output <= _io_output_T_5 @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 53:17]
-    _mux_cond._s0 <= _mux_cond_prop_wire__s0
-    _cond_pred._s0 <= _T
-    _cond_pred._s1 <= _cond_pred_prop_wire__s1
-    _cond_pred._s2 <= _cond_pred_prop_wire__s2
-    _cond_pred._s3 <= _cond_pred_prop_wire__s3
-    _reg_signals._s0 <= phaseAcc
+    _mc._s0 <= _mc_prop_wire__s0
+    _cp._s0 <= _T
+    _cp._s1 <= _cp_prop_wire__s1
+    _cp._s2 <= _cp_prop_wire__s2
+    _cp._s3 <= _cp_prop_wire__s3
+    _rs._s0 <= phaseAcc

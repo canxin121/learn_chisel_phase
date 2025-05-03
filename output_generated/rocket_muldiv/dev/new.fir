@@ -4,28 +4,28 @@ circuit MulDiv :
     input clock : Clock
     input reset : UInt<1>
     output io : { flip req : { flip ready : UInt<1>, valid : UInt<1>, bits : { fn : UInt<5>, dw : UInt<1>, in1 : UInt<64>, in2 : UInt<64>, tag : UInt<5>}}, flip kill : UInt<1>, resp : { flip ready : UInt<1>, valid : UInt<1>, bits : { data : UInt<64>, full_data : UInt<128>, tag : UInt<5>}}} @[src/main/scala/rocket/Multiplier.scala 45:14]
-    output _mux_cond : { MulDiv__M__MulDiv__S___T_5 : UInt<1>, MulDiv__M__MulDiv__S___T_8 : UInt<1>, MulDiv__M__MulDiv__S___count_T_6 : UInt<1>, MulDiv__M__MulDiv__S___hiOut_T_1 : UInt<1>, MulDiv__M__MulDiv__S___hiOut_T_3 : UInt<1>, MulDiv__M__MulDiv__S___hi_T : UInt<1>, MulDiv__M__MulDiv__S___hi_T_3 : UInt<1>, MulDiv__M__MulDiv__S___loOut_T_3 : UInt<1>, MulDiv__M__MulDiv__S___state_T_1 : UInt<1>, MulDiv__M__MulDiv__S__cmdHi : UInt<1>, MulDiv__M__MulDiv__S__cmdMul : UInt<1>, MulDiv__M__MulDiv__S__eOut : UInt<1>, MulDiv__M__MulDiv__S__neg_out : UInt<1>, MulDiv__M__MulDiv__S__resHi : UInt<1>, MulDiv__M__MulDiv__S__unrolls_less : UInt<1>}
-    output _cond_pred : { MulDiv__M__MulDiv__S___T_10 : UInt<1>, MulDiv__M__MulDiv__S___T_11 : UInt<1>, MulDiv__M__MulDiv__S___T_12 : UInt<1>, MulDiv__M__MulDiv__S___T_13 : UInt<1>, MulDiv__M__MulDiv__S___T_14 : UInt<1>, MulDiv__M__MulDiv__S___T_16 : UInt<1>, MulDiv__M__MulDiv__S___T_17 : UInt<1>, MulDiv__M__MulDiv__S___T_18 : UInt<1>, MulDiv__M__MulDiv__S___T_20 : UInt<1>, MulDiv__M__MulDiv__S___T_22 : UInt<1>, MulDiv__M__MulDiv__S___T_23 : UInt<1>}
-    output _reg_signals : { MulDiv__M__MulDiv__S__count : UInt<7>, MulDiv__M__MulDiv__S__divisor : UInt<65>, MulDiv__M__MulDiv__S__isHi : UInt<1>, MulDiv__M__MulDiv__S__neg_out : UInt<1>, MulDiv__M__MulDiv__S__remainder : UInt<130>, MulDiv__M__MulDiv__S__req : { fn : UInt<5>, dw : UInt<1>, in1 : UInt<64>, in2 : UInt<64>, tag : UInt<5>}, MulDiv__M__MulDiv__S__resHi : UInt<1>, MulDiv__M__MulDiv__S__state : UInt<3>}
+    output _mc : { _s0 : UInt<1>, _s1 : UInt<1>, _s10 : UInt<1>, _s11 : UInt<1>, _s12 : UInt<1>, _s13 : UInt<1>, _s14 : UInt<1>, _s2 : UInt<1>, _s3 : UInt<1>, _s4 : UInt<1>, _s5 : UInt<1>, _s6 : UInt<1>, _s7 : UInt<1>, _s8 : UInt<1>, _s9 : UInt<1>}
+    output _cp : { _s0 : UInt<1>, _s1 : UInt<1>, _s10 : UInt<1>, _s2 : UInt<1>, _s3 : UInt<1>, _s4 : UInt<1>, _s5 : UInt<1>, _s6 : UInt<1>, _s7 : UInt<1>, _s8 : UInt<1>, _s9 : UInt<1>}
+    output _rs : { _s0 : UInt<3>, _s1 : UInt<5>, _s10 : UInt<65>, _s11 : UInt<130>, _s2 : UInt<1>, _s3 : UInt<64>, _s4 : UInt<64>, _s5 : UInt<5>, _s6 : UInt<7>, _s7 : UInt<1>, _s8 : UInt<1>, _s9 : UInt<1>}
 
-    wire _cond_pred_prop_wire_MulDiv__M__MulDiv__S___T_18 : UInt<1>
-    wire _cond_pred_prop_wire_MulDiv__M__MulDiv__S___T_11 : UInt<1>
-    wire _cond_pred_prop_wire_MulDiv__M__MulDiv__S___T_12 : UInt<1>
-    wire _cond_pred_prop_wire_MulDiv__M__MulDiv__S___T_20 : UInt<1>
-    wire _cond_pred_prop_wire_MulDiv__M__MulDiv__S___T_16 : UInt<1>
-    _cond_pred_prop_wire_MulDiv__M__MulDiv__S___T_18 is invalid
-    _cond_pred_prop_wire_MulDiv__M__MulDiv__S___T_11 is invalid
-    _cond_pred_prop_wire_MulDiv__M__MulDiv__S___T_12 is invalid
-    _cond_pred_prop_wire_MulDiv__M__MulDiv__S___T_20 is invalid
-    _cond_pred_prop_wire_MulDiv__M__MulDiv__S___T_16 is invalid
-    wire _mux_cond_prop_wire_MulDiv__M__MulDiv__S__eOut : UInt<1>
-    wire _mux_cond_prop_wire_MulDiv__M__MulDiv__S___state_T_1 : UInt<1>
-    wire _mux_cond_prop_wire_MulDiv__M__MulDiv__S___count_T_6 : UInt<1>
-    wire _mux_cond_prop_wire_MulDiv__M__MulDiv__S__unrolls_less : UInt<1>
-    _mux_cond_prop_wire_MulDiv__M__MulDiv__S__eOut is invalid
-    _mux_cond_prop_wire_MulDiv__M__MulDiv__S___state_T_1 is invalid
-    _mux_cond_prop_wire_MulDiv__M__MulDiv__S___count_T_6 is invalid
-    _mux_cond_prop_wire_MulDiv__M__MulDiv__S__unrolls_less is invalid
+    wire _cp_prop_wire__s5 : UInt<1>
+    wire _cp_prop_wire__s7 : UInt<1>
+    wire _cp_prop_wire__s1 : UInt<1>
+    wire _cp_prop_wire__s2 : UInt<1>
+    wire _cp_prop_wire__s8 : UInt<1>
+    _cp_prop_wire__s5 is invalid
+    _cp_prop_wire__s7 is invalid
+    _cp_prop_wire__s1 is invalid
+    _cp_prop_wire__s2 is invalid
+    _cp_prop_wire__s8 is invalid
+    wire _mc_prop_wire__s5 : UInt<1>
+    wire _mc_prop_wire__s8 : UInt<1>
+    wire _mc_prop_wire__s10 : UInt<1>
+    wire _mc_prop_wire__s6 : UInt<1>
+    _mc_prop_wire__s5 is invalid
+    _mc_prop_wire__s8 is invalid
+    _mc_prop_wire__s10 is invalid
+    _mc_prop_wire__s6 is invalid
     reg state : UInt<3>, clock with :
       reset => (reset, UInt<3>("h0")) @[src/main/scala/rocket/Multiplier.scala 51:22]
     reg req : { fn : UInt<5>, dw : UInt<1>, in1 : UInt<64>, in2 : UInt<64>, tag : UInt<5>}, clock with :
@@ -125,11 +125,11 @@ circuit MulDiv :
     node _T_10 = eq(state, UInt<3>("h1")) @[src/main/scala/rocket/Multiplier.scala 92:39]
     when _T_10 : @[src/main/scala/rocket/Multiplier.scala 92:57]
       node _T_11 = bits(remainder, 63, 63) @[src/main/scala/rocket/Multiplier.scala 93:20]
-      _cond_pred_prop_wire_MulDiv__M__MulDiv__S___T_11 <= _T_11 @[src/main/scala/rocket/Multiplier.scala 93:20]
+      _cp_prop_wire__s1 <= _T_11 @[src/main/scala/rocket/Multiplier.scala 93:20]
       when _T_11 : @[src/main/scala/rocket/Multiplier.scala 93:27]
         remainder <= negated_remainder @[src/main/scala/rocket/Multiplier.scala 94:17]
       node _T_12 = bits(divisor, 63, 63) @[src/main/scala/rocket/Multiplier.scala 96:18]
-      _cond_pred_prop_wire_MulDiv__M__MulDiv__S___T_12 <= _T_12 @[src/main/scala/rocket/Multiplier.scala 96:18]
+      _cp_prop_wire__s2 <= _T_12 @[src/main/scala/rocket/Multiplier.scala 96:18]
       when _T_12 : @[src/main/scala/rocket/Multiplier.scala 96:25]
         divisor <= subtractor @[src/main/scala/rocket/Multiplier.scala 97:15]
       state <= UInt<3>("h3") @[src/main/scala/rocket/Multiplier.scala 99:11]
@@ -174,7 +174,7 @@ circuit MulDiv :
       node _eOut_T_7 = and(mplier, _eOut_T_6) @[src/main/scala/rocket/Multiplier.scala 118:24]
       node _eOut_T_8 = eq(_eOut_T_7, UInt<1>("h0")) @[src/main/scala/rocket/Multiplier.scala 118:37]
       node eOut = and(_eOut_T_5, _eOut_T_8) @[src/main/scala/rocket/Multiplier.scala 118:13]
-      _mux_cond_prop_wire_MulDiv__M__MulDiv__S__eOut <= eOut @[src/main/scala/rocket/Multiplier.scala 118:13]
+      _mc_prop_wire__s5 <= eOut @[src/main/scala/rocket/Multiplier.scala 118:13]
       node _eOutRes_T = mul(count, UInt<1>("h1")) @[src/main/scala/rocket/Multiplier.scala 119:46]
       node _eOutRes_T_1 = sub(UInt<7>("h40"), _eOutRes_T) @[src/main/scala/rocket/Multiplier.scala 119:38]
       node _eOutRes_T_2 = tail(_eOutRes_T_1, 1) @[src/main/scala/rocket/Multiplier.scala 119:38]
@@ -194,14 +194,14 @@ circuit MulDiv :
       count <= _count_T_1 @[src/main/scala/rocket/Multiplier.scala 123:11]
       node _T_15 = eq(count, UInt<6>("h3f")) @[src/main/scala/rocket/Multiplier.scala 124:25]
       node _T_16 = or(eOut, _T_15) @[src/main/scala/rocket/Multiplier.scala 124:16]
-      _cond_pred_prop_wire_MulDiv__M__MulDiv__S___T_16 <= _T_16 @[src/main/scala/rocket/Multiplier.scala 124:16]
+      _cp_prop_wire__s5 <= _T_16 @[src/main/scala/rocket/Multiplier.scala 124:16]
       when _T_16 : @[src/main/scala/rocket/Multiplier.scala 124:55]
         state <= UInt<3>("h6") @[src/main/scala/rocket/Multiplier.scala 125:13]
         resHi <= isHi @[src/main/scala/rocket/Multiplier.scala 126:13]
     node _T_17 = eq(state, UInt<3>("h3")) @[src/main/scala/rocket/Multiplier.scala 129:39]
     when _T_17 : @[src/main/scala/rocket/Multiplier.scala 129:50]
       node unrolls_less = bits(subtractor, 64, 64) @[src/main/scala/rocket/Multiplier.scala 133:28]
-      _mux_cond_prop_wire_MulDiv__M__MulDiv__S__unrolls_less <= unrolls_less @[src/main/scala/rocket/Multiplier.scala 133:28]
+      _mc_prop_wire__s6 <= unrolls_less @[src/main/scala/rocket/Multiplier.scala 133:28]
       node _unrolls_T = bits(remainder, 127, 64) @[src/main/scala/rocket/Multiplier.scala 134:24]
       node _unrolls_T_1 = bits(subtractor, 63, 0) @[src/main/scala/rocket/Multiplier.scala 134:45]
       node _unrolls_T_2 = mux(unrolls_less, _unrolls_T, _unrolls_T_1) @[src/main/scala/rocket/Multiplier.scala 134:14]
@@ -211,7 +211,7 @@ circuit MulDiv :
       node unrolls_0 = cat(unrolls_hi, _unrolls_T_4) @[src/main/scala/rocket/Multiplier.scala 134:10]
       remainder <= unrolls_0 @[src/main/scala/rocket/Multiplier.scala 137:15]
       node _T_18 = eq(count, UInt<7>("h40")) @[src/main/scala/rocket/Multiplier.scala 138:17]
-      _cond_pred_prop_wire_MulDiv__M__MulDiv__S___T_18 <= _T_18 @[src/main/scala/rocket/Multiplier.scala 138:17]
+      _cp_prop_wire__s7 <= _T_18 @[src/main/scala/rocket/Multiplier.scala 138:17]
       when _T_18 : @[src/main/scala/rocket/Multiplier.scala 138:42]
         node _state_T = mux(neg_out, UInt<3>("h5"), UInt<3>("h7")) @[src/main/scala/rocket/Multiplier.scala 139:19]
         state <= _state_T @[src/main/scala/rocket/Multiplier.scala 139:13]
@@ -225,7 +225,7 @@ circuit MulDiv :
       node divby0 = and(_divby0_T, _divby0_T_2) @[src/main/scala/rocket/Multiplier.scala 146:32]
       node _T_19 = eq(isHi, UInt<1>("h0")) @[src/main/scala/rocket/Multiplier.scala 159:21]
       node _T_20 = and(divby0, _T_19) @[src/main/scala/rocket/Multiplier.scala 159:18]
-      _cond_pred_prop_wire_MulDiv__M__MulDiv__S___T_20 <= _T_20 @[src/main/scala/rocket/Multiplier.scala 159:18]
+      _cp_prop_wire__s8 <= _T_20 @[src/main/scala/rocket/Multiplier.scala 159:18]
       when _T_20 : @[src/main/scala/rocket/Multiplier.scala 159:28]
         neg_out <= UInt<1>("h0") @[src/main/scala/rocket/Multiplier.scala 159:38]
     node _T_21 = and(io.resp.ready, io.resp.valid) @[src/main/scala/chisel3/util/Decoupled.scala 52:35]
@@ -235,7 +235,7 @@ circuit MulDiv :
     node _T_23 = and(io.req.ready, io.req.valid) @[src/main/scala/chisel3/util/Decoupled.scala 52:35]
     when _T_23 : @[src/main/scala/rocket/Multiplier.scala 164:22]
       node _state_T_1 = or(lhs_sign, rhs_sign) @[src/main/scala/rocket/Multiplier.scala 165:46]
-      _mux_cond_prop_wire_MulDiv__M__MulDiv__S___state_T_1 <= _state_T_1 @[src/main/scala/rocket/Multiplier.scala 165:46]
+      _mc_prop_wire__s8 <= _state_T_1 @[src/main/scala/rocket/Multiplier.scala 165:46]
       node _state_T_2 = mux(_state_T_1, UInt<3>("h1"), UInt<3>("h3")) @[src/main/scala/rocket/Multiplier.scala 165:36]
       node _state_T_3 = mux(cmdMul, UInt<3>("h2"), _state_T_2) @[src/main/scala/rocket/Multiplier.scala 165:17]
       state <= _state_T_3 @[src/main/scala/rocket/Multiplier.scala 165:11]
@@ -244,7 +244,7 @@ circuit MulDiv :
       node _count_T_4 = eq(io.req.bits.dw, UInt<1>("h0")) @[src/main/scala/rocket/Multiplier.scala 78:60]
       node _count_T_5 = and(UInt<1>("h1"), _count_T_4) @[src/main/scala/rocket/Multiplier.scala 78:50]
       node _count_T_6 = and(cmdMul, _count_T_5) @[src/main/scala/rocket/Multiplier.scala 168:46]
-      _mux_cond_prop_wire_MulDiv__M__MulDiv__S___count_T_6 <= _count_T_6 @[src/main/scala/rocket/Multiplier.scala 168:46]
+      _mc_prop_wire__s10 <= _count_T_6 @[src/main/scala/rocket/Multiplier.scala 168:46]
       node _count_T_7 = mux(_count_T_6, UInt<6>("h20"), UInt<1>("h0")) @[src/main/scala/rocket/Multiplier.scala 168:38]
       count <= _count_T_7 @[src/main/scala/rocket/Multiplier.scala 168:11]
       node _neg_out_T = neq(lhs_sign, rhs_sign) @[src/main/scala/rocket/Multiplier.scala 169:46]
@@ -286,37 +286,41 @@ circuit MulDiv :
     io.resp.valid <= _io_resp_valid_T_2 @[src/main/scala/rocket/Multiplier.scala 182:17]
     node _io_req_ready_T = eq(state, UInt<3>("h0")) @[src/main/scala/rocket/Multiplier.scala 183:25]
     io.req.ready <= _io_req_ready_T @[src/main/scala/rocket/Multiplier.scala 183:16]
-    _mux_cond.MulDiv__M__MulDiv__S___T_5 <= _T_5
-    _mux_cond.MulDiv__M__MulDiv__S___T_8 <= _T_8
-    _mux_cond.MulDiv__M__MulDiv__S___count_T_6 <= _mux_cond_prop_wire_MulDiv__M__MulDiv__S___count_T_6
-    _mux_cond.MulDiv__M__MulDiv__S___hiOut_T_1 <= _hiOut_T_1
-    _mux_cond.MulDiv__M__MulDiv__S___hiOut_T_3 <= _hiOut_T_3
-    _mux_cond.MulDiv__M__MulDiv__S___hi_T <= _hi_T
-    _mux_cond.MulDiv__M__MulDiv__S___hi_T_3 <= _hi_T_3
-    _mux_cond.MulDiv__M__MulDiv__S___loOut_T_3 <= _loOut_T_3
-    _mux_cond.MulDiv__M__MulDiv__S___state_T_1 <= _mux_cond_prop_wire_MulDiv__M__MulDiv__S___state_T_1
-    _mux_cond.MulDiv__M__MulDiv__S__cmdHi <= cmdHi
-    _mux_cond.MulDiv__M__MulDiv__S__cmdMul <= cmdMul
-    _mux_cond.MulDiv__M__MulDiv__S__eOut <= _mux_cond_prop_wire_MulDiv__M__MulDiv__S__eOut
-    _mux_cond.MulDiv__M__MulDiv__S__neg_out <= neg_out
-    _mux_cond.MulDiv__M__MulDiv__S__resHi <= resHi
-    _mux_cond.MulDiv__M__MulDiv__S__unrolls_less <= _mux_cond_prop_wire_MulDiv__M__MulDiv__S__unrolls_less
-    _cond_pred.MulDiv__M__MulDiv__S___T_10 <= _T_10
-    _cond_pred.MulDiv__M__MulDiv__S___T_11 <= _cond_pred_prop_wire_MulDiv__M__MulDiv__S___T_11
-    _cond_pred.MulDiv__M__MulDiv__S___T_12 <= _cond_pred_prop_wire_MulDiv__M__MulDiv__S___T_12
-    _cond_pred.MulDiv__M__MulDiv__S___T_13 <= _T_13
-    _cond_pred.MulDiv__M__MulDiv__S___T_14 <= _T_14
-    _cond_pred.MulDiv__M__MulDiv__S___T_16 <= _cond_pred_prop_wire_MulDiv__M__MulDiv__S___T_16
-    _cond_pred.MulDiv__M__MulDiv__S___T_17 <= _T_17
-    _cond_pred.MulDiv__M__MulDiv__S___T_18 <= _cond_pred_prop_wire_MulDiv__M__MulDiv__S___T_18
-    _cond_pred.MulDiv__M__MulDiv__S___T_20 <= _cond_pred_prop_wire_MulDiv__M__MulDiv__S___T_20
-    _cond_pred.MulDiv__M__MulDiv__S___T_22 <= _T_22
-    _cond_pred.MulDiv__M__MulDiv__S___T_23 <= _T_23
-    _reg_signals.MulDiv__M__MulDiv__S__count <= count
-    _reg_signals.MulDiv__M__MulDiv__S__divisor <= divisor
-    _reg_signals.MulDiv__M__MulDiv__S__isHi <= isHi
-    _reg_signals.MulDiv__M__MulDiv__S__neg_out <= neg_out
-    _reg_signals.MulDiv__M__MulDiv__S__remainder <= remainder
-    _reg_signals.MulDiv__M__MulDiv__S__req <= req
-    _reg_signals.MulDiv__M__MulDiv__S__resHi <= resHi
-    _reg_signals.MulDiv__M__MulDiv__S__state <= state
+    _mc._s0 <= _T_5
+    _mc._s1 <= _hi_T
+    _mc._s2 <= _T_8
+    _mc._s3 <= _hi_T_3
+    _mc._s4 <= resHi
+    _mc._s5 <= _mc_prop_wire__s5
+    _mc._s6 <= _mc_prop_wire__s6
+    _mc._s7 <= neg_out
+    _mc._s8 <= _mc_prop_wire__s8
+    _mc._s9 <= cmdMul
+    _mc._s10 <= _mc_prop_wire__s10
+    _mc._s11 <= cmdHi
+    _mc._s12 <= _loOut_T_3
+    _mc._s13 <= _hiOut_T_3
+    _mc._s14 <= _hiOut_T_1
+    _cp._s0 <= _T_10
+    _cp._s1 <= _cp_prop_wire__s1
+    _cp._s2 <= _cp_prop_wire__s2
+    _cp._s3 <= _T_13
+    _cp._s4 <= _T_14
+    _cp._s5 <= _cp_prop_wire__s5
+    _cp._s6 <= _T_17
+    _cp._s7 <= _cp_prop_wire__s7
+    _cp._s8 <= _cp_prop_wire__s8
+    _cp._s9 <= _T_22
+    _cp._s10 <= _T_23
+    _rs._s0 <= state
+    _rs._s1 <= req.fn
+    _rs._s2 <= req.dw
+    _rs._s3 <= req.in1
+    _rs._s4 <= req.in2
+    _rs._s5 <= req.tag
+    _rs._s6 <= count
+    _rs._s7 <= neg_out
+    _rs._s8 <= isHi
+    _rs._s9 <= resHi
+    _rs._s10 <= divisor
+    _rs._s11 <= remainder

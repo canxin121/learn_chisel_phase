@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref } from "vue";
 import { useCoverageStore } from "./stores/coverageStore";
 
 // 导入组件
@@ -24,14 +23,14 @@ const coverageStore = useCoverageStore();
           <!-- 文件上传组件 -->
           <FileUpload />
 
-          <!-- 模块根目录编辑器 -->
-          <ModuleRootDirEditor v-if="coverageStore.coverageInfo" />
-
-          <!-- 摘要组件 -->
-          <CoverageSummary v-if="coverageStore.coverageReport"/>
-
-          <!-- 详情和源代码查看器 -->
+          <!-- 仅当两个文件都加载时显示以下内容 -->
           <template v-if="coverageStore.coverageReport && coverageStore.coverageInfo">
+            <!-- 模块根目录编辑器 -->
+            <ModuleRootDirEditor />
+
+            <!-- 摘要组件 -->
+            <CoverageSummary />
+
             <!-- 详情组件 -->
             <CoverageDetails />
 
@@ -42,7 +41,7 @@ const coverageStore = useCoverageStore();
           <!-- 未加载报告或信息时的消息 -->
           <a-card v-else>
             <p style="text-align: center; color: #888;">
-              Please upload both a coverage report file and a coverage info file to view the analysis.
+              Please upload both a coverage report file (*_coverage_report.json) and a coverage info file (*_coverage_info.json) to view the analysis.
             </p>
           </a-card>
         </a-space>

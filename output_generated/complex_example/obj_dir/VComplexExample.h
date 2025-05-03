@@ -22,10 +22,6 @@ class alignas(VL_CACHE_LINE_BYTES) VComplexExample VL_NOT_FINAL : public Verilat
 
   public:
 
-    // CONSTEXPR CAPABILITIES
-    // Verilated with --trace?
-    static constexpr bool traceCapable = true;
-
     // PORTS
     // The application code writes and reads these signals to
     // propagate new values into/out from the Verilated model.
@@ -35,18 +31,18 @@ class alignas(VL_CACHE_LINE_BYTES) VComplexExample VL_NOT_FINAL : public Verilat
     VL_IN8(&io_topInB,7,0);
     VL_IN8(&io_topSel,1,0);
     VL_OUT8(&io_topOut,7,0);
-    VL_OUT8(&_mux_cond_ComplexExample___05FM___05FComplexExample___05FS___05F_anotherSub_io_in_T,0,0);
-    VL_OUT8(&_mux_cond_ComplexExample___05FM___05FComplexExample___05FS___05F_sub_io_a_T,0,0);
-    VL_OUT8(&_cond_pred_ComplexExample___05FI___05FanotherSub___05FM___05FAnotherSubModule___05FS___05F_T,0,0);
-    VL_OUT8(&_cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T,0,0);
-    VL_OUT8(&_cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T_1,0,0);
-    VL_OUT8(&_cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T_2,0,0);
-    VL_OUT8(&_cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T,0,0);
-    VL_OUT8(&_cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T_1,0,0);
-    VL_OUT8(&_cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T_2,0,0);
-    VL_OUT8(&_cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T_3,0,0);
-    VL_OUT8(&_reg_signals_ComplexExample___05FI___05FanotherSub___05FM___05FAnotherSubModule___05FS___05FdelayedIn,7,0);
-    VL_OUT8(&_reg_signals_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05FstateReg,7,0);
+    VL_OUT8(&_mc___05Fs0,0,0);
+    VL_OUT8(&_mc___05Fs1,0,0);
+    VL_OUT8(&_cp___05Fs0,0,0);
+    VL_OUT8(&_cp___05Fs1,0,0);
+    VL_OUT8(&_cp___05Fs2,0,0);
+    VL_OUT8(&_cp___05Fs3,0,0);
+    VL_OUT8(&_cp___05Fs4,0,0);
+    VL_OUT8(&_cp___05Fs5,0,0);
+    VL_OUT8(&_cp___05Fs6,0,0);
+    VL_OUT8(&_cp___05Fs7,0,0);
+    VL_OUT8(&_rs___05Fs0,7,0);
+    VL_OUT8(&_rs___05Fs1,7,0);
 
     // CELLS
     // Public to allow access to /* verilator public */ items.
@@ -84,7 +80,7 @@ class alignas(VL_CACHE_LINE_BYTES) VComplexExample VL_NOT_FINAL : public Verilat
     /// Returns time at next time slot. Aborts if !eventsPending()
     uint64_t nextTimeSlot();
     /// Trace signals in the model; called by application code
-    void trace(VerilatedTraceBaseC* tfp, int levels, int options = 0) { contextp()->trace(tfp, levels, options); }
+    void trace(VerilatedVcdC* tfp, int levels, int options = 0);
     /// Retrieve name of this model instance (as passed to constructor).
     const char* name() const;
 
@@ -99,9 +95,6 @@ class alignas(VL_CACHE_LINE_BYTES) VComplexExample VL_NOT_FINAL : public Verilat
     /// Re-allocate necessary resources. Called after cloning.
     void atClone() const;
     std::unique_ptr<VerilatedTraceConfig> traceConfig() const override final;
-  private:
-    // Internal functions - trace registration
-    void traceBaseModel(VerilatedTraceBaseC* tfp, int levels, int options);
 };
 
 #endif  // guard

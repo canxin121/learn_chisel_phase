@@ -91,7 +91,7 @@ struct ConditionCoveragePoint {
                                           : 0.0;
 
     os << "    {\n"; // Note: Escaped backslashes removed for template clarity
-    os << "      \"name\": \"" << name << "\",\n";
+    os << "      \"compressed_name\": \"" << name << "\",\n";
     os << "      \"hit_true\": " << std::boolalpha << hit_true() << ",\n";
     os << "      \"hit_false\": " << std::boolalpha << hit_false() << ",\n";
     os << "      \"count_true\": " << count_true << ",\n";
@@ -292,7 +292,7 @@ struct RegisterCoveragePoint {
 
   void exportJson(std::ostream &os) const {
     os << "    {\n"; // Note: Escaped backslashes removed for template clarity
-    os << "      \"name\": \"" << name << "\",\n";
+    os << "      \"compressed_name\": \"" << name << "\",\n";
     os << "      \"width\": " << width << ",\n";
     os << "      \"bins_hit\": " << getHitBins() << ",\n";
     os << "      \"bins_total\": " << getTotalBins() << ",\n";
@@ -379,151 +379,159 @@ inline void CoverageCollector::initialize(VMulDiv *top) {
 
   // --- Placeholder for dynamically generated emplace_back calls ---
   try {
-    mux_condition_points.emplace_back("_mux_cond_MulDiv__M__MulDiv__S___T_5", &top->_mux_cond_MulDiv___05FM___05FMulDiv___05FS___05F_T_5);
+    mux_condition_points.emplace_back("_mc__s0", &top->_mc___05Fs0);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_MulDiv___05FM___05FMulDiv___05FS___05F_T_5" << std::endl;
+    std::cerr << "Error adding mux point _mc___05Fs0" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_MulDiv__M__MulDiv__S___T_8", &top->_mux_cond_MulDiv___05FM___05FMulDiv___05FS___05F_T_8);
+    mux_condition_points.emplace_back("_mc__s1", &top->_mc___05Fs1);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_MulDiv___05FM___05FMulDiv___05FS___05F_T_8" << std::endl;
+    std::cerr << "Error adding mux point _mc___05Fs1" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_MulDiv__M__MulDiv__S___count_T_6", &top->_mux_cond_MulDiv___05FM___05FMulDiv___05FS___05F_count_T_6);
+    mux_condition_points.emplace_back("_mc__s10", &top->_mc___05Fs10);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_MulDiv___05FM___05FMulDiv___05FS___05F_count_T_6" << std::endl;
+    std::cerr << "Error adding mux point _mc___05Fs10" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_MulDiv__M__MulDiv__S___hiOut_T_1", &top->_mux_cond_MulDiv___05FM___05FMulDiv___05FS___05F_hiOut_T_1);
+    mux_condition_points.emplace_back("_mc__s11", &top->_mc___05Fs11);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_MulDiv___05FM___05FMulDiv___05FS___05F_hiOut_T_1" << std::endl;
+    std::cerr << "Error adding mux point _mc___05Fs11" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_MulDiv__M__MulDiv__S___hiOut_T_3", &top->_mux_cond_MulDiv___05FM___05FMulDiv___05FS___05F_hiOut_T_3);
+    mux_condition_points.emplace_back("_mc__s12", &top->_mc___05Fs12);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_MulDiv___05FM___05FMulDiv___05FS___05F_hiOut_T_3" << std::endl;
+    std::cerr << "Error adding mux point _mc___05Fs12" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_MulDiv__M__MulDiv__S___hi_T", &top->_mux_cond_MulDiv___05FM___05FMulDiv___05FS___05F_hi_T);
+    mux_condition_points.emplace_back("_mc__s13", &top->_mc___05Fs13);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_MulDiv___05FM___05FMulDiv___05FS___05F_hi_T" << std::endl;
+    std::cerr << "Error adding mux point _mc___05Fs13" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_MulDiv__M__MulDiv__S___hi_T_3", &top->_mux_cond_MulDiv___05FM___05FMulDiv___05FS___05F_hi_T_3);
+    mux_condition_points.emplace_back("_mc__s14", &top->_mc___05Fs14);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_MulDiv___05FM___05FMulDiv___05FS___05F_hi_T_3" << std::endl;
+    std::cerr << "Error adding mux point _mc___05Fs14" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_MulDiv__M__MulDiv__S___loOut_T_3", &top->_mux_cond_MulDiv___05FM___05FMulDiv___05FS___05F_loOut_T_3);
+    mux_condition_points.emplace_back("_mc__s2", &top->_mc___05Fs2);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_MulDiv___05FM___05FMulDiv___05FS___05F_loOut_T_3" << std::endl;
+    std::cerr << "Error adding mux point _mc___05Fs2" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_MulDiv__M__MulDiv__S___state_T_1", &top->_mux_cond_MulDiv___05FM___05FMulDiv___05FS___05F_state_T_1);
+    mux_condition_points.emplace_back("_mc__s3", &top->_mc___05Fs3);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_MulDiv___05FM___05FMulDiv___05FS___05F_state_T_1" << std::endl;
+    std::cerr << "Error adding mux point _mc___05Fs3" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_MulDiv__M__MulDiv__S__cmdHi", &top->_mux_cond_MulDiv___05FM___05FMulDiv___05FS___05FcmdHi);
+    mux_condition_points.emplace_back("_mc__s4", &top->_mc___05Fs4);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_MulDiv___05FM___05FMulDiv___05FS___05FcmdHi" << std::endl;
+    std::cerr << "Error adding mux point _mc___05Fs4" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_MulDiv__M__MulDiv__S__cmdMul", &top->_mux_cond_MulDiv___05FM___05FMulDiv___05FS___05FcmdMul);
+    mux_condition_points.emplace_back("_mc__s5", &top->_mc___05Fs5);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_MulDiv___05FM___05FMulDiv___05FS___05FcmdMul" << std::endl;
+    std::cerr << "Error adding mux point _mc___05Fs5" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_MulDiv__M__MulDiv__S__eOut", &top->_mux_cond_MulDiv___05FM___05FMulDiv___05FS___05FeOut);
+    mux_condition_points.emplace_back("_mc__s6", &top->_mc___05Fs6);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_MulDiv___05FM___05FMulDiv___05FS___05FeOut" << std::endl;
+    std::cerr << "Error adding mux point _mc___05Fs6" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_MulDiv__M__MulDiv__S__neg_out", &top->_mux_cond_MulDiv___05FM___05FMulDiv___05FS___05Fneg_out);
+    mux_condition_points.emplace_back("_mc__s7", &top->_mc___05Fs7);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_MulDiv___05FM___05FMulDiv___05FS___05Fneg_out" << std::endl;
+    std::cerr << "Error adding mux point _mc___05Fs7" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_MulDiv__M__MulDiv__S__resHi", &top->_mux_cond_MulDiv___05FM___05FMulDiv___05FS___05FresHi);
+    mux_condition_points.emplace_back("_mc__s8", &top->_mc___05Fs8);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_MulDiv___05FM___05FMulDiv___05FS___05FresHi" << std::endl;
+    std::cerr << "Error adding mux point _mc___05Fs8" << std::endl;
   }
   try {
-    mux_condition_points.emplace_back("_mux_cond_MulDiv__M__MulDiv__S__unrolls_less", &top->_mux_cond_MulDiv___05FM___05FMulDiv___05FS___05Funrolls_less);
+    mux_condition_points.emplace_back("_mc__s9", &top->_mc___05Fs9);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_MulDiv___05FM___05FMulDiv___05FS___05Funrolls_less" << std::endl;
+    std::cerr << "Error adding mux point _mc___05Fs9" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_MulDiv__M__MulDiv__S___T_10", &top->_cond_pred_MulDiv___05FM___05FMulDiv___05FS___05F_T_10);
+    condition_points.emplace_back("_cp__s0", &top->_cp___05Fs0);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_MulDiv___05FM___05FMulDiv___05FS___05F_T_10" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs0" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_MulDiv__M__MulDiv__S___T_11", &top->_cond_pred_MulDiv___05FM___05FMulDiv___05FS___05F_T_11);
+    condition_points.emplace_back("_cp__s1", &top->_cp___05Fs1);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_MulDiv___05FM___05FMulDiv___05FS___05F_T_11" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs1" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_MulDiv__M__MulDiv__S___T_12", &top->_cond_pred_MulDiv___05FM___05FMulDiv___05FS___05F_T_12);
+    condition_points.emplace_back("_cp__s10", &top->_cp___05Fs10);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_MulDiv___05FM___05FMulDiv___05FS___05F_T_12" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs10" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_MulDiv__M__MulDiv__S___T_13", &top->_cond_pred_MulDiv___05FM___05FMulDiv___05FS___05F_T_13);
+    condition_points.emplace_back("_cp__s2", &top->_cp___05Fs2);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_MulDiv___05FM___05FMulDiv___05FS___05F_T_13" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs2" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_MulDiv__M__MulDiv__S___T_14", &top->_cond_pred_MulDiv___05FM___05FMulDiv___05FS___05F_T_14);
+    condition_points.emplace_back("_cp__s3", &top->_cp___05Fs3);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_MulDiv___05FM___05FMulDiv___05FS___05F_T_14" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs3" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_MulDiv__M__MulDiv__S___T_16", &top->_cond_pred_MulDiv___05FM___05FMulDiv___05FS___05F_T_16);
+    condition_points.emplace_back("_cp__s4", &top->_cp___05Fs4);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_MulDiv___05FM___05FMulDiv___05FS___05F_T_16" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs4" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_MulDiv__M__MulDiv__S___T_17", &top->_cond_pred_MulDiv___05FM___05FMulDiv___05FS___05F_T_17);
+    condition_points.emplace_back("_cp__s5", &top->_cp___05Fs5);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_MulDiv___05FM___05FMulDiv___05FS___05F_T_17" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs5" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_MulDiv__M__MulDiv__S___T_18", &top->_cond_pred_MulDiv___05FM___05FMulDiv___05FS___05F_T_18);
+    condition_points.emplace_back("_cp__s6", &top->_cp___05Fs6);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_MulDiv___05FM___05FMulDiv___05FS___05F_T_18" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs6" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_MulDiv__M__MulDiv__S___T_20", &top->_cond_pred_MulDiv___05FM___05FMulDiv___05FS___05F_T_20);
+    condition_points.emplace_back("_cp__s7", &top->_cp___05Fs7);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_MulDiv___05FM___05FMulDiv___05FS___05F_T_20" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs7" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_MulDiv__M__MulDiv__S___T_22", &top->_cond_pred_MulDiv___05FM___05FMulDiv___05FS___05F_T_22);
+    condition_points.emplace_back("_cp__s8", &top->_cp___05Fs8);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_MulDiv___05FM___05FMulDiv___05FS___05F_T_22" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs8" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_MulDiv__M__MulDiv__S___T_23", &top->_cond_pred_MulDiv___05FM___05FMulDiv___05FS___05F_T_23);
+    condition_points.emplace_back("_cp__s9", &top->_cp___05Fs9);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_MulDiv___05FM___05FMulDiv___05FS___05F_T_23" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs9" << std::endl;
   }
-  // Register signal: _reg_signals_MulDiv__M__MulDiv__S__count (UInt<7>)
-        register_points.emplace_back("_reg_signals_MulDiv__M__MulDiv__S__count", 7, reinterpret_cast<const void*>(&top->_reg_signals_MulDiv___05FM___05FMulDiv___05FS___05Fcount));
-  // Register signal: _reg_signals_MulDiv__M__MulDiv__S__divisor (UInt<65>)
-        register_points.emplace_back("_reg_signals_MulDiv__M__MulDiv__S__divisor", 65, reinterpret_cast<const void*>(&top->_reg_signals_MulDiv___05FM___05FMulDiv___05FS___05Fdivisor));
-  // Register signal: _reg_signals_MulDiv__M__MulDiv__S__isHi (UInt<1>)
-        register_points.emplace_back("_reg_signals_MulDiv__M__MulDiv__S__isHi", 1, reinterpret_cast<const void*>(&top->_reg_signals_MulDiv___05FM___05FMulDiv___05FS___05FisHi));
-  // Register signal: _reg_signals_MulDiv__M__MulDiv__S__neg_out (UInt<1>)
-        register_points.emplace_back("_reg_signals_MulDiv__M__MulDiv__S__neg_out", 1, reinterpret_cast<const void*>(&top->_reg_signals_MulDiv___05FM___05FMulDiv___05FS___05Fneg_out));
-  // Register signal: _reg_signals_MulDiv__M__MulDiv__S__remainder (UInt<130>)
-        register_points.emplace_back("_reg_signals_MulDiv__M__MulDiv__S__remainder", 130, reinterpret_cast<const void*>(&top->_reg_signals_MulDiv___05FM___05FMulDiv___05FS___05Fremainder));
-  // Register signal: _reg_signals_MulDiv__M__MulDiv__S__req ({ fn : UInt<5>, dw : UInt<1>, in1 : UInt<64>, in2 : UInt<64>, tag : UInt<5>})
-        // Warning: Skipping BundleType '_reg_signals_MulDiv__M__MulDiv__S__req' encountered during register point generation. Register coverage applies to ground or vector-of-ground types.
-  // Register signal: _reg_signals_MulDiv__M__MulDiv__S__resHi (UInt<1>)
-        register_points.emplace_back("_reg_signals_MulDiv__M__MulDiv__S__resHi", 1, reinterpret_cast<const void*>(&top->_reg_signals_MulDiv___05FM___05FMulDiv___05FS___05FresHi));
-  // Register signal: _reg_signals_MulDiv__M__MulDiv__S__state (UInt<3>)
-        register_points.emplace_back("_reg_signals_MulDiv__M__MulDiv__S__state", 3, reinterpret_cast<const void*>(&top->_reg_signals_MulDiv___05FM___05FMulDiv___05FS___05Fstate));
+  // Register signal: _rs__s0 (UInt<3>)
+        register_points.emplace_back("_rs__s0", 3, reinterpret_cast<const void*>(&top->_rs___05Fs0));
+  // Register signal: _rs__s1 (UInt<5>)
+        register_points.emplace_back("_rs__s1", 5, reinterpret_cast<const void*>(&top->_rs___05Fs1));
+  // Register signal: _rs__s10 (UInt<65>)
+        register_points.emplace_back("_rs__s10", 65, reinterpret_cast<const void*>(&top->_rs___05Fs10));
+  // Register signal: _rs__s11 (UInt<130>)
+        register_points.emplace_back("_rs__s11", 130, reinterpret_cast<const void*>(&top->_rs___05Fs11));
+  // Register signal: _rs__s2 (UInt<1>)
+        register_points.emplace_back("_rs__s2", 1, reinterpret_cast<const void*>(&top->_rs___05Fs2));
+  // Register signal: _rs__s3 (UInt<64>)
+        register_points.emplace_back("_rs__s3", 64, reinterpret_cast<const void*>(&top->_rs___05Fs3));
+  // Register signal: _rs__s4 (UInt<64>)
+        register_points.emplace_back("_rs__s4", 64, reinterpret_cast<const void*>(&top->_rs___05Fs4));
+  // Register signal: _rs__s5 (UInt<5>)
+        register_points.emplace_back("_rs__s5", 5, reinterpret_cast<const void*>(&top->_rs___05Fs5));
+  // Register signal: _rs__s6 (UInt<7>)
+        register_points.emplace_back("_rs__s6", 7, reinterpret_cast<const void*>(&top->_rs___05Fs6));
+  // Register signal: _rs__s7 (UInt<1>)
+        register_points.emplace_back("_rs__s7", 1, reinterpret_cast<const void*>(&top->_rs___05Fs7));
+  // Register signal: _rs__s8 (UInt<1>)
+        register_points.emplace_back("_rs__s8", 1, reinterpret_cast<const void*>(&top->_rs___05Fs8));
+  // Register signal: _rs__s9 (UInt<1>)
+        register_points.emplace_back("_rs__s9", 1, reinterpret_cast<const void*>(&top->_rs___05Fs9));
 
   // --- End of generated emplace_back calls ---
 
@@ -533,7 +541,7 @@ inline void CoverageCollector::initialize(VMulDiv *top) {
             << " (target: " << condition_points.size() << ")" << std::endl;
   std::cout << "  - Mux Conditions Registered:         " << 15
             << " (target: " << mux_condition_points.size() << ")" << std::endl;
-  std::cout << "  - Register Coverage Points Registered: " << 7
+  std::cout << "  - Register Coverage Points Registered: " << 12
             << " (target: " << register_points.size() << ")" << std::endl;
   std::cout << "----------------------------------------" << std::endl;
 }

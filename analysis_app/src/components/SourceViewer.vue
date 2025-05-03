@@ -1,18 +1,17 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue';
 import { Card as ACard, Row as ARow, Col as ACol, DirectoryTree as ADirectoryTree, Spin as ASpin, Alert as AAlert, Button as AButton, Empty as AEmpty, Tag as ATag } from 'ant-design-vue';
-import { CodeOutlined, LoadingOutlined, PlusSquareOutlined, MinusSquareOutlined, FileOutlined } from "@ant-design/icons-vue";
+import { CodeOutlined, LoadingOutlined, PlusSquareOutlined, MinusSquareOutlined, } from "@ant-design/icons-vue";
 import { useCoverageStore } from "../stores/coverageStore";
 import type { InstanceSignalTree, SignalInfo, SourceFileInfo } from '../types/CoverageInfo';
-import type { ConditionCoveragePoint, RegisterCoveragePoint } from '../types/CoverageReport';
-import { formatCoverage, getNodeStyle, getConditionTagColor, formatCount, formatPercent, parseSignalName } from '../utils/coverageUtils';
+import type { ConditionCoveragePoint, RegisterCoveragePoint, RegisterBitCoverage } from '../types/CoverageReport';
+import { formatCoverage, getNodeStyle, getConditionTagColor, formatCount, formatPercent, parseCompressedName } from '../utils/coverageUtils';
 import hljs from 'highlight.js';
 import scala from 'highlight.js/lib/languages/scala';
 import 'highlight.js/styles/vs.css';
 // 导入 Tree 类型
 import type { EventDataNode } from 'ant-design-vue/es/tree';
 import type { Key } from 'ant-design-vue/es/table/interface';
-
 
 // 注册语言
 hljs.registerLanguage('scala', scala);
@@ -40,8 +39,10 @@ interface InstanceTreeNode {
 interface LineCoverageInfo {
   signalInfo: SignalInfo; // 原始信号信息
   coverageData?: ConditionCoveragePoint | RegisterCoveragePoint; // 覆盖率数据
-  parsedName: ReturnType<typeof parseSignalName>; // 解析后的信号名称
+  signalType: 'predicate' | 'mux' | 'register' | 'unknown'; // 信号类型
+  displaySignalName: string; // 用于显示的信号名称 (从 compressed_name 派生)
   instancePath: string[]; // 信号所属实例路径
+  uncoveredBitDetails?: RegisterBitCoverage[]; // 未覆盖位详情
 }
 
 // --- Store 和 Refs ---
@@ -50,6 +51,7 @@ const sourceCodeContainerRef = ref<HTMLElement | null>(null); // 源代码容器
 const instanceTreeRef = ref<{ treeRef: { scrollTo: (options: { key: Key, align?: 'top' | 'bottom' | 'auto', offset?: number }) => void } } | null>(null); // 实例树引用
 const highlightedLineNumber = ref<number | null>(null); // 高亮行号
 let highlightTimeoutId: number | null = null; // 高亮 Timeout ID
+const expandedRegisterLines = ref<Set<string>>(new Set()); // 状态：展开的寄存器行
 
 // --- State ---
 const selectedNodeKey = ref<string | null>(null); // 选定节点键
@@ -66,18 +68,18 @@ const expandedNodeKeys = ref<Key[]>([]); // 展开节点键
 
 // 转换 InstanceSignalTree
 const instanceTreeData = computed((): InstanceTreeNode[] => {
-  const rootInstance = coverageStore.coverageInfo?.instanceSignalMap;
+  const rootInstance = coverageStore.coverageInfo?.instance_signal_tree;
   if (!rootInstance) return [];
 
   // 转换节点
   const transformNode = (node: InstanceSignalTree, path: string[]): InstanceTreeNode => {
-    const currentPath = [...path, node.instanceName];
+    const currentPath = [...path, node.instance_name];
     const instanceKey = currentPath.join(INSTANCE_SEPARATOR);
-    const moduleName = node.moduleName;
+    const moduleName = node.module_name;
 
     const instanceNode: InstanceTreeNode = {
       key: instanceKey,
-      title: `${node.instanceName} (${moduleName})`,
+      title: `${node.instance_name} (${moduleName})`,
       moduleName: moduleName,
       children: [], // 子节点
       isLeaf: false, // 是否叶子节点
@@ -86,22 +88,22 @@ const instanceTreeData = computed((): InstanceTreeNode[] => {
     };
 
     // 添加子实例节点
-    node.subInstances.forEach(sub => {
+    node.sub_instances.forEach(sub => {
       instanceNode.children!.push(transformNode(sub, currentPath));
     });
 
     // 添加源文件节点
-    const moduleInfo = coverageStore.coverageInfo?.moduleInfoMap?.[moduleName];
-    if (moduleInfo?.sourceFiles) {
-      const sourceFilesArray = Object.values(moduleInfo.sourceFiles);
-      sourceFilesArray.sort((a, b) => a.relativePath.localeCompare(b.relativePath)); // 排序
+    const moduleInfo = coverageStore.coverageInfo?.module_info_map?.[moduleName];
+    if (moduleInfo?.source_files) {
+      const sourceFilesArray = Object.values(moduleInfo.source_files);
+      sourceFilesArray.sort((a, b) => a.relative_path.localeCompare(b.relative_path)); // 排序
 
       sourceFilesArray.forEach(fileInfo => {
-        const fileKey = `${instanceKey}${FILE_SEPARATOR}${fileInfo.relativePath}`;
+        const fileKey = `${instanceKey}${FILE_SEPARATOR}${fileInfo.relative_path}`;
         instanceNode.children!.push({
           key: fileKey,
-          title: fileInfo.relativePath, // 标题
-          relativePath: fileInfo.relativePath,
+          title: fileInfo.relative_path, // 标题
+          relativePath: fileInfo.relative_path,
           moduleName: moduleName, // 模块名
           isLeaf: true,
           nodeType: 'file',
@@ -136,7 +138,6 @@ const highlightedSourceCode = computed(() => {
 });
 
 // 计算带覆盖率的行
-// 过滤 coverageInfos 并计算行覆盖率
 const linesWithCoverage = computed(() => {
   if (!highlightedSourceCode.value) return [];
   const lines = highlightedSourceCode.value.split('\n');
@@ -147,7 +148,7 @@ const linesWithCoverage = computed(() => {
     // 过滤 coverageInfos:
     const coverageInfos = (coverageDataByLine.value[lineNumber] || []).filter(info =>
       info.instancePath.join('__I__') === currentInstancePathString && // 属于当前选定实例
-      info.signalInfo.filePath === displayedSourceRelativePath.value // 属于当前显示文件
+      info.signalInfo.file_path === displayedSourceRelativePath.value // 属于当前显示文件
     );
 
     // 计算行覆盖率
@@ -184,6 +185,24 @@ const selectedInstancePathArray = computed(() => {
   return instanceKey ? instanceKey.split(INSTANCE_SEPARATOR) : [];
 });
 
+// --- Helper function to extract signal name ---
+function extractSignalName(fullName: string): string {
+  const signalMarker = "__S__";
+  const internalSeparatorRegex = /__s__/g;
+  const lastSignalMarkerIndex = fullName.lastIndexOf(signalMarker);
+
+  if (lastSignalMarkerIndex !== -1) {
+    // Extract the part after the last __S__
+    const signalPart = fullName.substring(lastSignalMarkerIndex + signalMarker.length);
+    // Replace internal separators
+    return signalPart.replace(internalSeparatorRegex, '.');
+  } else {
+    // If __S__ is not found, assume the full name is the signal name (or handle error)
+    // Replace separators just in case
+    console.warn(`[SourceViewer/extractSignalName] Signal marker "__S__" not found in "${fullName}". Replacing separators in the full name.`);
+    return fullName.replace(internalSeparatorRegex, '.');
+  }
+}
 
 // --- Methods ---
 
@@ -228,6 +247,22 @@ const toggleLineExpansion = (lineNumber: number) => {
   expandedLines.value = new Set(expandedLines.value); // 响应性
 };
 
+// 切换寄存器行展开
+const toggleRegisterLineExpansion = (lineNumber: number, compressedName: string) => {
+  const key = `${lineNumber}-${compressedName}`;
+  if (expandedRegisterLines.value.has(key)) {
+    expandedRegisterLines.value.delete(key);
+  } else {
+    expandedRegisterLines.value.add(key);
+  }
+  expandedRegisterLines.value = new Set(expandedRegisterLines.value); // 响应性
+};
+
+// 检查寄存器行是否展开
+const isRegisterLineExpanded = (lineNumber: number, compressedName: string): boolean => {
+  return expandedRegisterLines.value.has(`${lineNumber}-${compressedName}`);
+};
+
 // 为选定实例预计算覆盖率数据
 const updateCoverageDataForSelectedInstance = () => {
   const data: Record<number, LineCoverageInfo[]> = {};
@@ -236,7 +271,7 @@ const updateCoverageDataForSelectedInstance = () => {
   console.log(`[updateCoverageData] Start: Pre-calculating for selected instance path: ${currentInstancePathArray.join('.') || '(none)'}`);
 
   // 1. 检查先决条件
-  if (currentInstancePathArray.length === 0 || !coverageStore.coverageReport || !coverageStore.coverageInfo?.instanceSignalMap) {
+  if (currentInstancePathArray.length === 0 || !coverageStore.coverageReport || !coverageStore.coverageInfo?.instance_signal_tree) {
     coverageDataByLine.value = {};
     expandedLines.value.clear();
     console.log('[updateCoverageData] Exiting early - missing required data (instance path, report, or root instance map).');
@@ -244,11 +279,11 @@ const updateCoverageDataForSelectedInstance = () => {
   }
 
   // 2. 查找原始实例节点
-  let selectedRawNode: InstanceSignalTree | null = coverageStore.coverageInfo.instanceSignalMap;
+  let selectedRawNode: InstanceSignalTree | null = coverageStore.coverageInfo.instance_signal_tree;
   // 遍历路径
   for (let i = 1; i < currentInstancePathArray.length; i++) {
     const part = currentInstancePathArray[i];
-    const foundChild: InstanceSignalTree | undefined = selectedRawNode?.subInstances.find(sub => sub.instanceName === part);
+    const foundChild: InstanceSignalTree | undefined = selectedRawNode?.sub_instances.find(sub => sub.instance_name === part);
     if (foundChild) {
       selectedRawNode = foundChild;
     } else {
@@ -268,29 +303,51 @@ const updateCoverageDataForSelectedInstance = () => {
   const report = coverageStore.coverageReport;
   selectedRawNode.signals.forEach(signalInfo => {
     // 检查信号行号
-    if (signalInfo.line !== null && signalInfo.line !== undefined && signalInfo.line > 0 && signalInfo.filePath) {
+    if (signalInfo.line !== null && signalInfo.line !== undefined && signalInfo.line > 0 && signalInfo.file_path) {
       const lineNumber = signalInfo.line;
-      const parsed = parseSignalName(signalInfo.originName);
+      const parsedCompressed = parseCompressedName(signalInfo.compressed_name);
       let coverageData: ConditionCoveragePoint | RegisterCoveragePoint | undefined = undefined;
+      let uncoveredBitDetails: RegisterBitCoverage[] | undefined = undefined;
 
       // 查找覆盖率数据
-      switch (parsed.type) {
+      switch (parsedCompressed.type) {
         case 'predicate':
-          coverageData = report.conditional_predicates?.find(p => p.compressed_name === signalInfo.compressedName);
+          coverageData = report.conditional_predicates?.find(p => p.compressed_name === signalInfo.compressed_name);
           break;
         case 'mux':
-          coverageData = report.mux_conditions?.find(m => m.compressed_name === signalInfo.compressedName);
+          coverageData = report.mux_conditions?.find(m => m.compressed_name === signalInfo.compressed_name);
           break;
         case 'register':
-          coverageData = report.register_coverage?.find(r => r.compressed_name === signalInfo.compressedName);
+          coverageData = report.register_coverage?.find(r => r.compressed_name === signalInfo.compressed_name);
+          if (coverageData) {
+            uncoveredBitDetails = (coverageData as RegisterCoveragePoint).bit_details.filter(bit => !bit.covered);
+          }
           break;
       }
+
+      // --- 针对当前信号查找对应 port 的 name_mapping ---
+      const compressedBaseName = parsedCompressed.baseName;
+      const port = coverageStore.coverageInfo?.exported_ports.find(p =>
+        p.signals.some(s => s.compressed_name === signalInfo.compressed_name)
+      );
+      let displaySignalName = compressedBaseName;
+      if (port?.name_mapping && port.name_mapping[compressedBaseName]) {
+        displaySignalName = extractSignalName(port.name_mapping[compressedBaseName]);
+      } else if (compressedBaseName.startsWith('_s')) {
+        console.warn(`[SourceViewer] No mapping for ${compressedBaseName}, using compressed name.`);
+      } else {
+        console.warn(`[SourceViewer] Non-compressed name ${compressedBaseName}, extracting directly.`);
+        displaySignalName = extractSignalName(compressedBaseName);
+      }
+      // --- 结束查找显示名称 ---
 
       const lineInfo: LineCoverageInfo = {
         signalInfo,
         coverageData,
-        parsedName: parsed,
+        signalType: parsedCompressed.type,
+        displaySignalName: displaySignalName, // 使用提取并格式化后的信号名称
         instancePath: currentInstancePathArray, // 实例路径
+        uncoveredBitDetails: uncoveredBitDetails, // 未覆盖位详情
       };
 
       if (!data[lineNumber]) {
@@ -303,6 +360,7 @@ const updateCoverageDataForSelectedInstance = () => {
   // 4. 更新状态
   console.log('[updateCoverageData] End: Pre-calculated data object for selected instance (all files):', JSON.parse(JSON.stringify(data)));
   coverageDataByLine.value = data;
+  expandedRegisterLines.value.clear(); // 清除展开的寄存器行
 };
 
 
@@ -321,18 +379,18 @@ const loadSourceFileContent = (sourceFileInfo: SourceFileInfo | undefined, modul
     return;
   }
 
-  displayedSourceRelativePath.value = sourceFileInfo.relativePath; // 更新路径
+  displayedSourceRelativePath.value = sourceFileInfo.relative_path; // 更新路径
 
-  console.log(`Loading content for: ${sourceFileInfo.relativePath} in module ${moduleName}`);
+  console.log(`Loading content for: ${sourceFileInfo.relative_path} in module ${moduleName}`);
 
   // 检查文件内容
   if (sourceFileInfo.content === null || sourceFileInfo.content === undefined) {
-    sourceError.value = `Source content for file "${sourceFileInfo.relativePath}" in module "${moduleName}" is not available or could not be loaded. Check root directory settings.`;
+    sourceError.value = `Source content for file "${sourceFileInfo.relative_path}" in module "${moduleName}" is not available or could not be loaded. Check root directory settings.`;
     console.warn(sourceError.value);
   } else if (sourceFileInfo.content.startsWith("Error reading file:")) {
     // 内容是错误消息
     sourceError.value = sourceFileInfo.content;
-    console.error(`Error reading file "${sourceFileInfo.relativePath}" for module "${moduleName}": ${sourceFileInfo.content}`);
+    console.error(`Error reading file "${sourceFileInfo.relative_path}" for module "${moduleName}": ${sourceFileInfo.content}`);
   } else {
     // 加载内容成功
     displayedSourceContent.value = sourceFileInfo.content;
@@ -418,7 +476,7 @@ const handleInstanceSelect = (keys: Key[], { node }: { node: any /* AntTreeNode 
 }
 
 // 处理树节点展开
-const handleExpand = (keys: Key[], info: { node: EventDataNode; expanded: boolean; nativeEvent: MouseEvent }) => {
+const handleExpand = (keys: Key[], { node: _node, expanded: _expanded, nativeEvent: _nativeEvent }: { node: EventDataNode; expanded: boolean; nativeEvent: MouseEvent }) => {
   expandedNodeKeys.value = keys; // 使用 Key[]
 };
 
@@ -469,8 +527,8 @@ watch(() => coverageStore.navigationTarget, (target) => {
 
 
     // 4. 加载文件内容
-    const moduleInfo = coverageStore.coverageInfo?.moduleInfoMap?.[target.moduleName];
-    const fileInfo = moduleInfo?.sourceFiles?.[target.sourceLocation.filePath];
+    const moduleInfo = coverageStore.coverageInfo?.module_info_map?.[target.moduleName];
+    const fileInfo = moduleInfo?.source_files?.[target.sourceLocation.filePath];
 
     if (fileInfo) {
       updateCoverageDataForSelectedInstance(); // 更新覆盖数据
@@ -500,7 +558,7 @@ watch(() => coverageStore.navigationTarget, (target) => {
 
 <template>
   <a-card class="source-viewer-card" title="Instance Source Viewer">
-    <template v-if="coverageStore.coverageInfo?.instanceSignalMap">
+    <template v-if="coverageStore.coverageInfo?.instance_signal_tree">
       <a-row :gutter="16" class="source-viewer-layout">
         <!-- 实例树列 -->
         <a-col :span="8" class="tree-column">
@@ -514,8 +572,6 @@ watch(() => coverageStore.navigationTarget, (target) => {
               <!-- 自定义标题插槽 -->
               <template #title="{ data: nodeData }">
                 <span class="tree-node-title-wrapper">
-                  <!-- 节点图标 -->
-                  <!-- <component :is="nodeData.nodeType === 'file' ? FileOutlined : FolderOutlined" class="node-icon" :class="{ 'file-icon': nodeData.nodeType === 'file' }" /> -->
                   <span class="node-title-text">{{ nodeData.title }}</span>
                 </span>
               </template>
@@ -553,46 +609,45 @@ watch(() => coverageStore.navigationTarget, (target) => {
 
                 <!-- 源代码 -->
                 <pre v-else-if="displayedSourceContent" class="source-code-viewer hljs vs">
-          <!-- 绑定高亮类 -->
-          <div v-for="line in linesWithCoverage" :key="line.lineNumber" class="line-container"
-            :class="{ [HIGHLIGHT_CLASS]: line.isHighlighted }">
-            <div class="line-content-wrapper">
-              <!-- 行覆盖率百分比 -->
-              <span v-if="line.lineCoveragePercent !== undefined" class="line-coverage-percent"
-                :style="getNodeStyle(line.lineCoveragePercent)">
-                {{ formatCoverage(line.lineCoveragePercent) }}
-              </span>
-              <!-- 覆盖率占位符 -->
-              <span v-else class="coverage-percent-placeholder"></span>
-              <!-- 切换按钮 -->
-              <span class="line-toggle">
-                <a-button v-if="line.coverageInfos.length > 0" type="text" size="small"
-                  @click="toggleLineExpansion(line.lineNumber)"
-                  :title="line.isExpanded ? 'Collapse coverage details' : 'Expand coverage details'">
-                  <template #icon>
+                  <div v-for="line in linesWithCoverage" :key="line.lineNumber" class="line-container"
+                    :class="{ [HIGHLIGHT_CLASS]: line.isHighlighted }">
+                    <div class="line-content-wrapper">
+                      <!-- 行覆盖率百分比 -->
+                      <span v-if="line.lineCoveragePercent !== undefined" class="line-coverage-percent"
+                        :style="getNodeStyle(line.lineCoveragePercent)">
+                        {{ formatCoverage(line.lineCoveragePercent) }}
+                      </span>
+                      <!-- 覆盖率占位符 -->
+                      <span v-else class="coverage-percent-placeholder"></span>
+                      <!-- 切换按钮 -->
+                      <span class="line-toggle">
+                        <a-button v-if="line.coverageInfos.length > 0" type="text" size="small"
+                          @click="toggleLineExpansion(line.lineNumber)"
+                          :title="line.isExpanded ? 'Collapse coverage details' : 'Expand coverage details'">
+                          <template #icon>
                             <component :is="line.isExpanded ? MinusSquareOutlined : PlusSquareOutlined" />
                           </template>
-                </a-button>
-                <!-- 切换按钮占位符 -->
-                <span v-else class="toggle-placeholder"></span>
-              </span>
-              <!-- 行号 -->
-              <span class="line-number">{{ line.lineNumber }}</span>
-              <!-- 行内容 -->
-              <code class="line-content" v-html="line.content"></code>
-            </div>
-            <!-- 覆盖详情 -->
-            <div v-if="line.isExpanded && line.coverageInfos.length > 0" class="coverage-details-line">
-              <div v-for="(info, index) in line.coverageInfos"
-                :key="`${line.lineNumber}-${index}-${info.signalInfo.name}`" class="coverage-item">
-                <!-- 信号名称 -->
-                <span class="signal-path" :title="info.signalInfo.name">
-                  {{ info.parsedName.signal }}
-                </span>
-                <!-- 覆盖数据 -->
-                <template v-if="info.coverageData">
-                           <!-- 条件/寄存器详情 -->
-                           <span v-if="info.parsedName.type === 'predicate' || info.parsedName.type === 'mux'"
+                        </a-button>
+                        <!-- 切换按钮占位符 -->
+                        <span v-else class="toggle-placeholder"></span>
+                      </span>
+                      <!-- 行号 -->
+                      <span class="line-number">{{ line.lineNumber }}</span>
+                      <!-- 行内容 -->
+                      <code class="line-content" v-html="line.content"></code>
+                    </div>
+                    <!-- 覆盖详情 -->
+                    <div v-if="line.isExpanded && line.coverageInfos.length > 0" class="coverage-details-line">
+                      <div v-for="(info, index) in line.coverageInfos"
+                        :key="`${line.lineNumber}-${index}-${info.signalInfo.compressed_name}`" class="coverage-item">
+                        <!-- 信号名称 -->
+                        <span class="signal-path" :title="info.signalInfo.compressed_name">
+                          {{ info.displaySignalName }}
+                        </span>
+                        <!-- 覆盖数据 -->
+                        <template v-if="info.coverageData">
+                          <!-- 条件/Mux 详情 -->
+                          <span v-if="info.signalType === 'predicate' || info.signalType === 'mux'"
                                 class="coverage-tags condition-details">
                             <a-tag :color="getConditionTagColor((info.coverageData as ConditionCoveragePoint).hit_true)">True</a-tag>
                             <span class="detail-count">({{ formatCount((info.coverageData as ConditionCoveragePoint).count_true) }}, {{ formatPercent((info.coverageData as ConditionCoveragePoint).true_percentage) }})</span>
@@ -600,20 +655,51 @@ watch(() => coverageStore.navigationTarget, (target) => {
                             <span class="detail-count">({{ formatCount((info.coverageData as ConditionCoveragePoint).count_false) }}, {{ formatPercent((info.coverageData as ConditionCoveragePoint).false_percentage) }})</span>
                             <span class="coverage-percent" :style="getNodeStyle(info.coverageData.coverage_percent)">({{ formatCoverage(info.coverageData.coverage_percent) }})</span>
                           </span>
-                          <span v-else-if="info.parsedName.type === 'register'"
-                                class="coverage-tags register-details">
-                            (W: {{ (info.coverageData as RegisterCoveragePoint).width }}, Hit: {{ (info.coverageData as RegisterCoveragePoint).bins_hit }}/{{ (info.coverageData as RegisterCoveragePoint).bins_total }})
-                            <span class="coverage-percent" :style="getNodeStyle(info.coverageData.coverage_percent)">({{ formatCoverage(info.coverageData.coverage_percent) }})</span>
+                          <!-- 寄存器详情 -->
+                          <span v-else-if="info.signalType === 'register'"
+                                class="coverage-tags register-details-wrapper">
+                             <!-- Expand/Collapse Button for Bits -->
+                             <a-button v-if="info.uncoveredBitDetails && info.uncoveredBitDetails.length > 0"
+                                       type="text" size="small" class="bit-expand-button"
+                                       @click.stop="toggleRegisterLineExpansion(line.lineNumber, info.signalInfo.compressed_name)"
+                                       :title="isRegisterLineExpanded(line.lineNumber, info.signalInfo.compressed_name) ? 'Collapse uncovered bits' : 'Expand uncovered bits'">
+                               <template #icon>
+                                 <component :is="isRegisterLineExpanded(line.lineNumber, info.signalInfo.compressed_name) ? MinusSquareOutlined : PlusSquareOutlined" />
+                               </template>
+                             </a-button>
+                             <span v-else class="bit-expand-placeholder-inline"></span>
+                             <!-- Register Summary -->
+                             <span class="register-summary">
+                                (W: {{ (info.coverageData as RegisterCoveragePoint).width }}, Hit: {{ (info.coverageData as RegisterCoveragePoint).bins_hit }}/{{ (info.coverageData as RegisterCoveragePoint).bins_total }})
+                             </span>
+                             <span class="coverage-percent" :style="getNodeStyle(info.coverageData.coverage_percent)">
+                               ({{ formatCoverage(info.coverageData.coverage_percent) }})
+                             </span>
                           </span>
                         </template>
-                <!-- 无覆盖数据 -->
-                <span v-else class="coverage-tags no-data">
-                  (No coverage data in report)
-                </span>
-              </div>
-            </div>
-          </div>
-        </pre>
+                        <!-- 无覆盖数据 -->
+                        <span v-else class="coverage-tags no-data">
+                          (No coverage data in report)
+                        </span>
+
+                        <!-- Expanded Uncovered Register Bit Details -->
+                        <div v-if="info.signalType === 'register' && isRegisterLineExpanded(line.lineNumber, info.signalInfo.compressed_name)"
+                             class="uncovered-bit-details-inline">
+                           <div v-for="bit in info.uncoveredBitDetails" :key="bit.bit"
+                                class="uncovered-bit-item-inline">
+                              <span class="bit-number">Bit {{ bit.bit }}:</span>
+                              <span class="bit-status">{{ bit.status }}</span>
+                              <span v-if="bit.missing" class="bit-missing">(Missing: {{ bit.missing }})</span>
+                              <span class="bit-counts">
+                                (0: {{ formatCount(bit.count_zero) }} [{{ formatPercent(bit.zero_percentage) }}] /
+                                 1: {{ formatCount(bit.count_one) }} [{{ formatPercent(bit.one_percentage) }}])
+                              </span>
+                           </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </pre>
 
                 <!-- 无内容 -->
                 <div v-else-if="!isSourceLoading" class="empty-content">
@@ -926,34 +1012,26 @@ watch(() => coverageStore.navigationTarget, (target) => {
   border-bottom: 1px dashed #eee;
   /* 分隔线 */
   display: flex;
-  align-items: baseline;
-  /* 对齐 */
-  flex-wrap: wrap;
-  /* 换行 */
+  flex-direction: column;
+  align-items: flex-start;
   gap: 8px;
-  /* 间距 */
 }
 
 .coverage-item:last-child {
   margin-bottom: 0;
   padding-bottom: 0;
   border-bottom: none;
-  /* 最后一项无分隔线 */
 }
 
 /* --- 信号路径 --- */
 .signal-path {
   font-weight: bold;
   color: #333;
-  margin-right: 10px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 45%;
-  /* 最大宽度 */
+  margin-bottom: 4px;
+  white-space: normal;
+  overflow-wrap: break-word;
   display: inline-block;
   line-height: 1.4;
-  /* 行高 */
 }
 
 /* --- 覆盖标签和计数 --- */
@@ -961,7 +1039,6 @@ watch(() => coverageStore.navigationTarget, (target) => {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  /* 间距 */
   white-space: nowrap;
 }
 
@@ -983,13 +1060,86 @@ watch(() => coverageStore.navigationTarget, (target) => {
   margin-left: 4px;
 }
 
-.register-details {
-  color: #555;
+.register-details-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
 }
 
-.no-data {
-  color: #aaa;
+.bit-expand-button {
+  padding: 0 4px;
+  height: auto;
+  line-height: 1;
+  color: #555;
+  margin-right: 4px;
+}
+
+.bit-expand-button:hover {
+  color: #1890ff;
+  background-color: transparent !important;
+}
+
+.bit-expand-placeholder-inline {
+  display: inline-block;
+  width: 20px;
+  height: 18px;
+  margin-right: 4px;
+}
+
+.register-summary {
+  color: #555;
+  white-space: nowrap;
+}
+
+/* --- Inline Uncovered Bit Details --- */
+.uncovered-bit-details-inline {
+  width: 100%;
+  margin-top: 4px;
+  padding: 6px 8px;
+  background-color: #f0f0f0;
+  border: 1px solid #e0e0e0;
+  border-radius: 3px;
+  font-size: 0.85em;
+}
+
+.uncovered-bit-item-inline {
+  margin-bottom: 2px;
+  padding-bottom: 2px;
+  border-bottom: 1px dashed #ccc;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.uncovered-bit-item-inline:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.uncovered-bit-details-inline .bit-number {
+  font-weight: bold;
+  color: #333;
+  flex-shrink: 0;
+}
+
+.uncovered-bit-details-inline .bit-status {
+  color: #777;
+  flex-shrink: 0;
+}
+
+.uncovered-bit-details-inline .bit-missing {
+  color: #cc0000;
   font-style: italic;
+  flex-shrink: 0;
+}
+
+.uncovered-bit-details-inline .bit-counts {
+  color: #444;
+  font-size: 0.9em;
+  white-space: nowrap;
 }
 
 /* --- 空状态 --- */
@@ -1005,26 +1155,21 @@ watch(() => coverageStore.navigationTarget, (target) => {
   text-align: center;
   color: #888;
   flex-grow: 1;
-  /* 占据空间 */
 }
 
 /* --- 树节点样式 --- */
 /* Ant Tree 处理标题溢出 */
 :deep(.ant-tree .ant-tree-node-content-wrapper) {
   padding: 1px 5px;
-  /* 内边距 */
   line-height: 1.8;
-  /* 行高 */
 }
 
 :deep(.ant-tree .ant-tree-node-content-wrapper:hover) {
   background-color: #e6f7ff;
-  /* 悬停背景色 */
 }
 
 :deep(.ant-tree .ant-tree-node-selected .ant-tree-node-content-wrapper) {
   background-color: #bae7ff;
-  /* 选中背景色 */
 }
 
 /* 树节点标题包装器 */
@@ -1032,23 +1177,18 @@ watch(() => coverageStore.navigationTarget, (target) => {
   display: flex;
   align-items: center;
   gap: 4px;
-  /* 间距 */
   overflow: hidden;
-  /* 防止溢出 */
 }
 
 /* 节点图标 */
 .node-icon {
   flex-shrink: 0;
-  /* 防止收缩 */
   color: #555;
-  /* 颜色 */
 }
 
 /* 文件图标 */
 .file-icon {
   color: #1890ff;
-  /* 蓝色 */
 }
 
 /* 节点标题文本 */
@@ -1061,13 +1201,10 @@ watch(() => coverageStore.navigationTarget, (target) => {
 /* 高亮行的样式 */
 .line-highlighted>.line-content-wrapper {
   background-color: #fffbe6;
-  /* 背景 */
-  transition: background-color 0.5s ease-out; /* 过渡 */
+  transition: background-color 0.5s ease-out;
 }
 
 /* 高亮行边框 */
 .line-highlighted {
-  /* border-left: 3px solid #faad14; */
-  /* 左边框 */
 }
 </style>

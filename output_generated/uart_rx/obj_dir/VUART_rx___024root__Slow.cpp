@@ -17,7 +17,7 @@ VUART_rx___024root::VUART_rx___024root(VUART_rx__Syms* symsp, const char* v__nam
 }
 
 void VUART_rx___024root::__Vconfigure(bool first) {
-    (void)first;  // Prevent unused variable warning
+    if (false && first) {}  // Prevent unused
 }
 
 VUART_rx___024root::~VUART_rx___024root() {

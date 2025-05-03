@@ -91,7 +91,7 @@ struct ConditionCoveragePoint {
                                           : 0.0;
 
     os << "    {\n"; // Note: Escaped backslashes removed for template clarity
-    os << "      \"name\": \"" << name << "\",\n";
+    os << "      \"compressed_name\": \"" << name << "\",\n";
     os << "      \"hit_true\": " << std::boolalpha << hit_true() << ",\n";
     os << "      \"hit_false\": " << std::boolalpha << hit_false() << ",\n";
     os << "      \"count_true\": " << count_true << ",\n";

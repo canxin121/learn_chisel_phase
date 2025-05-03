@@ -22,10 +22,6 @@ class alignas(VL_CACHE_LINE_BYTES) VUART_rx VL_NOT_FINAL : public VerilatedModel
 
   public:
 
-    // CONSTEXPR CAPABILITIES
-    // Verilated with --trace?
-    static constexpr bool traceCapable = true;
-
     // PORTS
     // The application code writes and reads these signals to
     // propagate new values into/out from the Verilated model.
@@ -34,31 +30,31 @@ class alignas(VL_CACHE_LINE_BYTES) VUART_rx VL_NOT_FINAL : public VerilatedModel
     VL_IN8(&io_i_serial_data,0,0);
     VL_OUT8(&io_o_rx_done,0,0);
     VL_OUT8(&io_o_data,7,0);
-    VL_OUT8(&_cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T,0,0);
-    VL_OUT8(&_cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_1,0,0);
-    VL_OUT8(&_cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_10,0,0);
-    VL_OUT8(&_cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_11,0,0);
-    VL_OUT8(&_cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_2,0,0);
-    VL_OUT8(&_cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_3,0,0);
-    VL_OUT8(&_cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_4,0,0);
-    VL_OUT8(&_cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_5,0,0);
-    VL_OUT8(&_cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_6,0,0);
-    VL_OUT8(&_cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_8,0,0);
-    VL_OUT8(&_cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_9,0,0);
-    VL_OUT8(&_reg_signals_UART_rx___05FI___05Flocal___05FI___05FbitCnterReg,3,0);
-    VL_OUT8(&_reg_signals_UART_rx___05FI___05Flocal___05FI___05FoutDataReg_0,0,0);
-    VL_OUT8(&_reg_signals_UART_rx___05FI___05Flocal___05FI___05FoutDataReg_1,0,0);
-    VL_OUT8(&_reg_signals_UART_rx___05FI___05Flocal___05FI___05FoutDataReg_2,0,0);
-    VL_OUT8(&_reg_signals_UART_rx___05FI___05Flocal___05FI___05FoutDataReg_3,0,0);
-    VL_OUT8(&_reg_signals_UART_rx___05FI___05Flocal___05FI___05FoutDataReg_4,0,0);
-    VL_OUT8(&_reg_signals_UART_rx___05FI___05Flocal___05FI___05FoutDataReg_5,0,0);
-    VL_OUT8(&_reg_signals_UART_rx___05FI___05Flocal___05FI___05FoutDataReg_6,0,0);
-    VL_OUT8(&_reg_signals_UART_rx___05FI___05Flocal___05FI___05FoutDataReg_7,0,0);
-    VL_OUT8(&_reg_signals_UART_rx___05FI___05Flocal___05FI___05FoutRxDoneReg,0,0);
-    VL_OUT8(&_reg_signals_UART_rx___05FI___05Flocal___05FI___05FserialDataReg,0,0);
-    VL_OUT8(&_reg_signals_UART_rx___05FI___05Flocal___05FI___05FserialDataReg_REG,0,0);
-    VL_OUT8(&_reg_signals_UART_rx___05FI___05Flocal___05FI___05FstateReg,1,0);
-    VL_OUT16(&_reg_signals_UART_rx___05FI___05Flocal___05FI___05FclkCnterReg,8,0);
+    VL_OUT8(&_cp___05Fs0,0,0);
+    VL_OUT8(&_cp___05Fs1,0,0);
+    VL_OUT8(&_cp___05Fs10,0,0);
+    VL_OUT8(&_cp___05Fs2,0,0);
+    VL_OUT8(&_cp___05Fs3,0,0);
+    VL_OUT8(&_cp___05Fs4,0,0);
+    VL_OUT8(&_cp___05Fs5,0,0);
+    VL_OUT8(&_cp___05Fs6,0,0);
+    VL_OUT8(&_cp___05Fs7,0,0);
+    VL_OUT8(&_cp___05Fs8,0,0);
+    VL_OUT8(&_cp___05Fs9,0,0);
+    VL_OUT8(&_rs___05Fs1,3,0);
+    VL_OUT8(&_rs___05Fs10,0,0);
+    VL_OUT8(&_rs___05Fs11,1,0);
+    VL_OUT8(&_rs___05Fs12,0,0);
+    VL_OUT8(&_rs___05Fs13,0,0);
+    VL_OUT8(&_rs___05Fs2,0,0);
+    VL_OUT8(&_rs___05Fs3,0,0);
+    VL_OUT8(&_rs___05Fs4,0,0);
+    VL_OUT8(&_rs___05Fs5,0,0);
+    VL_OUT8(&_rs___05Fs6,0,0);
+    VL_OUT8(&_rs___05Fs7,0,0);
+    VL_OUT8(&_rs___05Fs8,0,0);
+    VL_OUT8(&_rs___05Fs9,0,0);
+    VL_OUT16(&_rs___05Fs0,8,0);
 
     // CELLS
     // Public to allow access to /* verilator public */ items.
@@ -96,7 +92,7 @@ class alignas(VL_CACHE_LINE_BYTES) VUART_rx VL_NOT_FINAL : public VerilatedModel
     /// Returns time at next time slot. Aborts if !eventsPending()
     uint64_t nextTimeSlot();
     /// Trace signals in the model; called by application code
-    void trace(VerilatedTraceBaseC* tfp, int levels, int options = 0) { contextp()->trace(tfp, levels, options); }
+    void trace(VerilatedVcdC* tfp, int levels, int options = 0);
     /// Retrieve name of this model instance (as passed to constructor).
     const char* name() const;
 
@@ -111,9 +107,6 @@ class alignas(VL_CACHE_LINE_BYTES) VUART_rx VL_NOT_FINAL : public VerilatedModel
     /// Re-allocate necessary resources. Called after cloning.
     void atClone() const;
     std::unique_ptr<VerilatedTraceConfig> traceConfig() const override final;
-  private:
-    // Internal functions - trace registration
-    void traceBaseModel(VerilatedTraceBaseC* tfp, int levels, int options);
 };
 
 #endif  // guard

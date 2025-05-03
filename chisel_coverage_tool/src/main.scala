@@ -37,27 +37,26 @@ object Main {
       (
         () => new WaveformGenerator,
         "waveform_generator"
+      ),
+      (
+        () => new UART_rx(),
+        "uart_rx"
+      ),
+      (
+        () => new UART_tx(),
+        "uart_tx"
+      ),
+      (() => new RegModule(), "reg_module"),
+      (() => new ComplexExample(), "complex_example"),
+      (() => new ALU(), "rocket_alu"),
+      (() => new MulDiv(MulDivParams(), width = 64), "rocket_muldiv"),
+      (
+        () => {
+          val ldut = LazyModule(new ExampleRocketSystem)
+          ldut.module 
+        },
+        "example_rocket_system"
       )
-      // (
-      //   () => new UART_rx(),
-      //   "uart_rx"
-      // ),
-      // (
-      //   () => new UART_tx(),
-      //   "uart_tx"
-      // ),
-      // (() => new RegModule(), "reg_module"),
-      // (() => new ComplexExample(), "complex_example"),
-      // (() => new ALU(), "rocket_alu"),
-      // (() => new MulDiv(MulDivParams(), width = 64), "rocket_muldiv"),
-      //   (
-      //     () => {
-      //       val ldut = LazyModule(new ExampleRocketSystem)
-      //       // val dut = chisel3.Module(ldut.module) // <-- 移除这一行
-      //       ldut.module // <-- 直接返回 ldut.module
-      //     },
-      //     "rocket_tile"
-      //   )
     )
 
     modulesToProcess.foreach { case (moduleGenerator, outputSubDir) =>

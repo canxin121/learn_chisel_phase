@@ -91,7 +91,7 @@ struct ConditionCoveragePoint {
                                           : 0.0;
 
     os << "    {\n"; // Note: Escaped backslashes removed for template clarity
-    os << "      \"name\": \"" << name << "\",\n";
+    os << "      \"compressed_name\": \"" << name << "\",\n";
     os << "      \"hit_true\": " << std::boolalpha << hit_true() << ",\n";
     os << "      \"hit_false\": " << std::boolalpha << hit_false() << ",\n";
     os << "      \"count_true\": " << count_true << ",\n";
@@ -292,7 +292,7 @@ struct RegisterCoveragePoint {
 
   void exportJson(std::ostream &os) const {
     os << "    {\n"; // Note: Escaped backslashes removed for template clarity
-    os << "      \"name\": \"" << name << "\",\n";
+    os << "      \"compressed_name\": \"" << name << "\",\n";
     os << "      \"width\": " << width << ",\n";
     os << "      \"bins_hit\": " << getHitBins() << ",\n";
     os << "      \"bins_total\": " << getTotalBins() << ",\n";
@@ -379,81 +379,88 @@ inline void CoverageCollector::initialize(VUART_rx *top) {
 
   // --- Placeholder for dynamically generated emplace_back calls ---
   try {
-    condition_points.emplace_back("_cond_pred_UART_rx__M__UART_rx__S___T", &top->_cond_pred_UART_rx___05FM___05FUART_rx___05FS___05F_T);
+    condition_points.emplace_back("_cp__s0", &top->_cp___05Fs0);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_UART_rx___05FM___05FUART_rx___05FS___05F_T" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs0" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_UART_rx__M__UART_rx__S___T_1", &top->_cond_pred_UART_rx___05FM___05FUART_rx___05FS___05F_T_1);
+    condition_points.emplace_back("_cp__s1", &top->_cp___05Fs1);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_UART_rx___05FM___05FUART_rx___05FS___05F_T_1" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs1" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_UART_rx__M__UART_rx__S___T_10", &top->_cond_pred_UART_rx___05FM___05FUART_rx___05FS___05F_T_10);
+    condition_points.emplace_back("_cp__s10", &top->_cp___05Fs10);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_UART_rx___05FM___05FUART_rx___05FS___05F_T_10" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs10" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_UART_rx__M__UART_rx__S___T_11", &top->_cond_pred_UART_rx___05FM___05FUART_rx___05FS___05F_T_11);
+    condition_points.emplace_back("_cp__s2", &top->_cp___05Fs2);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_UART_rx___05FM___05FUART_rx___05FS___05F_T_11" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs2" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_UART_rx__M__UART_rx__S___T_2", &top->_cond_pred_UART_rx___05FM___05FUART_rx___05FS___05F_T_2);
+    condition_points.emplace_back("_cp__s3", &top->_cp___05Fs3);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_UART_rx___05FM___05FUART_rx___05FS___05F_T_2" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs3" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_UART_rx__M__UART_rx__S___T_3", &top->_cond_pred_UART_rx___05FM___05FUART_rx___05FS___05F_T_3);
+    condition_points.emplace_back("_cp__s4", &top->_cp___05Fs4);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_UART_rx___05FM___05FUART_rx___05FS___05F_T_3" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs4" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_UART_rx__M__UART_rx__S___T_4", &top->_cond_pred_UART_rx___05FM___05FUART_rx___05FS___05F_T_4);
+    condition_points.emplace_back("_cp__s5", &top->_cp___05Fs5);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_UART_rx___05FM___05FUART_rx___05FS___05F_T_4" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs5" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_UART_rx__M__UART_rx__S___T_5", &top->_cond_pred_UART_rx___05FM___05FUART_rx___05FS___05F_T_5);
+    condition_points.emplace_back("_cp__s6", &top->_cp___05Fs6);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_UART_rx___05FM___05FUART_rx___05FS___05F_T_5" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs6" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_UART_rx__M__UART_rx__S___T_6", &top->_cond_pred_UART_rx___05FM___05FUART_rx___05FS___05F_T_6);
+    condition_points.emplace_back("_cp__s7", &top->_cp___05Fs7);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_UART_rx___05FM___05FUART_rx___05FS___05F_T_6" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs7" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_UART_rx__M__UART_rx__S___T_8", &top->_cond_pred_UART_rx___05FM___05FUART_rx___05FS___05F_T_8);
+    condition_points.emplace_back("_cp__s8", &top->_cp___05Fs8);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_UART_rx___05FM___05FUART_rx___05FS___05F_T_8" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs8" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_UART_rx__M__UART_rx__S___T_9", &top->_cond_pred_UART_rx___05FM___05FUART_rx___05FS___05F_T_9);
+    condition_points.emplace_back("_cp__s9", &top->_cp___05Fs9);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_UART_rx___05FM___05FUART_rx___05FS___05F_T_9" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs9" << std::endl;
   }
-  // Register signal: _reg_signals_UART_rx__M__UART_rx__S__bitCnterReg (UInt<4>)
-        register_points.emplace_back("_reg_signals_UART_rx__M__UART_rx__S__bitCnterReg", 4, reinterpret_cast<const void*>(&top->_reg_signals_UART_rx___05FM___05FUART_rx___05FS___05FbitCnterReg));
-  // Register signal: _reg_signals_UART_rx__M__UART_rx__S__clkCnterReg (UInt<9>)
-        register_points.emplace_back("_reg_signals_UART_rx__M__UART_rx__S__clkCnterReg", 9, reinterpret_cast<const void*>(&top->_reg_signals_UART_rx___05FM___05FUART_rx___05FS___05FclkCnterReg));
-  // Register signal: _reg_signals_UART_rx__M__UART_rx__S__outDataReg (UInt<1>[8])
-        register_points.emplace_back("_reg_signals_UART_rx__M__UART_rx__S__outDataReg_0", 1, reinterpret_cast<const void*>(&top->_reg_signals_UART_rx___05FM___05FUART_rx___05FS___05FoutDataReg_0));
-        register_points.emplace_back("_reg_signals_UART_rx__M__UART_rx__S__outDataReg_1", 1, reinterpret_cast<const void*>(&top->_reg_signals_UART_rx___05FM___05FUART_rx___05FS___05FoutDataReg_1));
-        register_points.emplace_back("_reg_signals_UART_rx__M__UART_rx__S__outDataReg_2", 1, reinterpret_cast<const void*>(&top->_reg_signals_UART_rx___05FM___05FUART_rx___05FS___05FoutDataReg_2));
-        register_points.emplace_back("_reg_signals_UART_rx__M__UART_rx__S__outDataReg_3", 1, reinterpret_cast<const void*>(&top->_reg_signals_UART_rx___05FM___05FUART_rx___05FS___05FoutDataReg_3));
-        register_points.emplace_back("_reg_signals_UART_rx__M__UART_rx__S__outDataReg_4", 1, reinterpret_cast<const void*>(&top->_reg_signals_UART_rx___05FM___05FUART_rx___05FS___05FoutDataReg_4));
-        register_points.emplace_back("_reg_signals_UART_rx__M__UART_rx__S__outDataReg_5", 1, reinterpret_cast<const void*>(&top->_reg_signals_UART_rx___05FM___05FUART_rx___05FS___05FoutDataReg_5));
-        register_points.emplace_back("_reg_signals_UART_rx__M__UART_rx__S__outDataReg_6", 1, reinterpret_cast<const void*>(&top->_reg_signals_UART_rx___05FM___05FUART_rx___05FS___05FoutDataReg_6));
-        register_points.emplace_back("_reg_signals_UART_rx__M__UART_rx__S__outDataReg_7", 1, reinterpret_cast<const void*>(&top->_reg_signals_UART_rx___05FM___05FUART_rx___05FS___05FoutDataReg_7));
-  // Register signal: _reg_signals_UART_rx__M__UART_rx__S__outRxDoneReg (UInt<1>)
-        register_points.emplace_back("_reg_signals_UART_rx__M__UART_rx__S__outRxDoneReg", 1, reinterpret_cast<const void*>(&top->_reg_signals_UART_rx___05FM___05FUART_rx___05FS___05FoutRxDoneReg));
-  // Register signal: _reg_signals_UART_rx__M__UART_rx__S__serialDataReg (UInt<1>)
-        register_points.emplace_back("_reg_signals_UART_rx__M__UART_rx__S__serialDataReg", 1, reinterpret_cast<const void*>(&top->_reg_signals_UART_rx___05FM___05FUART_rx___05FS___05FserialDataReg));
-  // Register signal: _reg_signals_UART_rx__M__UART_rx__S__serialDataReg_REG (UInt<1>)
-        register_points.emplace_back("_reg_signals_UART_rx__M__UART_rx__S__serialDataReg_REG", 1, reinterpret_cast<const void*>(&top->_reg_signals_UART_rx___05FM___05FUART_rx___05FS___05FserialDataReg_REG));
-  // Register signal: _reg_signals_UART_rx__M__UART_rx__S__stateReg (UInt<2>)
-        register_points.emplace_back("_reg_signals_UART_rx__M__UART_rx__S__stateReg", 2, reinterpret_cast<const void*>(&top->_reg_signals_UART_rx___05FM___05FUART_rx___05FS___05FstateReg));
+  // Register signal: _rs__s0 (UInt<9>)
+        register_points.emplace_back("_rs__s0", 9, reinterpret_cast<const void*>(&top->_rs___05Fs0));
+  // Register signal: _rs__s1 (UInt<4>)
+        register_points.emplace_back("_rs__s1", 4, reinterpret_cast<const void*>(&top->_rs___05Fs1));
+  // Register signal: _rs__s10 (UInt<1>)
+        register_points.emplace_back("_rs__s10", 1, reinterpret_cast<const void*>(&top->_rs___05Fs10));
+  // Register signal: _rs__s11 (UInt<2>)
+        register_points.emplace_back("_rs__s11", 2, reinterpret_cast<const void*>(&top->_rs___05Fs11));
+  // Register signal: _rs__s12 (UInt<1>)
+        register_points.emplace_back("_rs__s12", 1, reinterpret_cast<const void*>(&top->_rs___05Fs12));
+  // Register signal: _rs__s13 (UInt<1>)
+        register_points.emplace_back("_rs__s13", 1, reinterpret_cast<const void*>(&top->_rs___05Fs13));
+  // Register signal: _rs__s2 (UInt<1>)
+        register_points.emplace_back("_rs__s2", 1, reinterpret_cast<const void*>(&top->_rs___05Fs2));
+  // Register signal: _rs__s3 (UInt<1>)
+        register_points.emplace_back("_rs__s3", 1, reinterpret_cast<const void*>(&top->_rs___05Fs3));
+  // Register signal: _rs__s4 (UInt<1>)
+        register_points.emplace_back("_rs__s4", 1, reinterpret_cast<const void*>(&top->_rs___05Fs4));
+  // Register signal: _rs__s5 (UInt<1>)
+        register_points.emplace_back("_rs__s5", 1, reinterpret_cast<const void*>(&top->_rs___05Fs5));
+  // Register signal: _rs__s6 (UInt<1>)
+        register_points.emplace_back("_rs__s6", 1, reinterpret_cast<const void*>(&top->_rs___05Fs6));
+  // Register signal: _rs__s7 (UInt<1>)
+        register_points.emplace_back("_rs__s7", 1, reinterpret_cast<const void*>(&top->_rs___05Fs7));
+  // Register signal: _rs__s8 (UInt<1>)
+        register_points.emplace_back("_rs__s8", 1, reinterpret_cast<const void*>(&top->_rs___05Fs8));
+  // Register signal: _rs__s9 (UInt<1>)
+        register_points.emplace_back("_rs__s9", 1, reinterpret_cast<const void*>(&top->_rs___05Fs9));
 
   // --- End of generated emplace_back calls ---
 

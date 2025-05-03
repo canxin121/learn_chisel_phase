@@ -17,7 +17,7 @@ VComplexExample___024root::VComplexExample___024root(VComplexExample__Syms* syms
 }
 
 void VComplexExample___024root::__Vconfigure(bool first) {
-    (void)first;  // Prevent unused variable warning
+    if (false && first) {}  // Prevent unused
 }
 
 VComplexExample___024root::~VComplexExample___024root() {

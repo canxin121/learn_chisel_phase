@@ -81,17 +81,17 @@ VL_ATTR_COLD void VWaveformGenerator___024root___stl_sequent__TOP__0(VWaveformGe
     VWaveformGenerator__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     VL_DEBUG_IF(VL_DBG_MSGF("+    VWaveformGenerator___024root___stl_sequent__TOP__0\n"); );
     // Init
-    SData/*15:0*/ WaveformGenerator__DOT___GEN_2;
-    WaveformGenerator__DOT___GEN_2 = 0;
+    SData/*15:0*/ WaveformGenerator__DOT___phase_T;
+    WaveformGenerator__DOT___phase_T = 0;
     // Body
     vlSelf->_cond_pred___05Fs0 = (0U == (IData)(vlSelf->io_waveType));
     vlSelf->_cond_pred___05Fs1 = (1U == (IData)(vlSelf->io_waveType));
     vlSelf->_cond_pred___05Fs2 = (2U == (IData)(vlSelf->io_waveType));
     vlSelf->_cond_pred___05Fs3 = (3U == (IData)(vlSelf->io_waveType));
     vlSelf->_reg_signals___05Fs0 = vlSelf->WaveformGenerator__DOT__phaseAcc;
-    WaveformGenerator__DOT___GEN_2 = (0xffffU & ((IData)(vlSelf->WaveformGenerator__DOT__phaseAcc) 
-                                                 + (IData)(vlSelf->io_phaseOffset)));
-    vlSelf->_mux_cond___05Fs0 = (1U & ((IData)(WaveformGenerator__DOT___GEN_2) 
+    WaveformGenerator__DOT___phase_T = (0xffffU & ((IData)(vlSelf->WaveformGenerator__DOT__phaseAcc) 
+                                                   + (IData)(vlSelf->io_phaseOffset)));
+    vlSelf->_mux_cond___05Fs0 = (1U & ((IData)(WaveformGenerator__DOT___phase_T) 
                                        >> 0xfU));
     vlSelf->io_output = (0xffU & (((((IData)(vlSelf->_mux_cond___05Fs0)
                                       ? 0x81U : 0x7fU) 
@@ -101,7 +101,7 @@ VL_ATTR_COLD void VWaveformGenerator___024root___stl_sequent__TOP__0(VWaveformGe
                                                         (0x1fU 
                                                          & VL_SHIFTL_III(11,11,32, 
                                                                          (0xffU 
-                                                                          & ((IData)(WaveformGenerator__DOT___GEN_2) 
+                                                                          & ((IData)(WaveformGenerator__DOT___phase_T) 
                                                                              >> 8U)), 3U)))
                                                         ? 0U
                                                         : 
@@ -111,7 +111,7 @@ VL_ATTR_COLD void VWaveformGenerator___024root___stl_sequent__TOP__0(VWaveformGe
                                                           (0x7ffU 
                                                            & VL_SHIFTL_III(11,11,32, 
                                                                            (0xffU 
-                                                                            & ((IData)(WaveformGenerator__DOT___GEN_2) 
+                                                                            & ((IData)(WaveformGenerator__DOT___phase_T) 
                                                                                >> 8U)), 3U))) 
                                                          >> 5U)] 
                                                         << 
@@ -120,20 +120,20 @@ VL_ATTR_COLD void VWaveformGenerator___024root___stl_sequent__TOP__0(VWaveformGe
                                                          (0x1fU 
                                                           & VL_SHIFTL_III(11,11,32, 
                                                                           (0xffU 
-                                                                           & ((IData)(WaveformGenerator__DOT___GEN_2) 
+                                                                           & ((IData)(WaveformGenerator__DOT___phase_T) 
                                                                               >> 8U)), 3U))))) 
                                                       | (VWaveformGenerator__ConstPool__CONST_h06e6967c_0[
                                                          (0x3fU 
                                                           & (VL_SHIFTL_III(11,11,32, 
                                                                            (0xffU 
-                                                                            & ((IData)(WaveformGenerator__DOT___GEN_2) 
+                                                                            & ((IData)(WaveformGenerator__DOT___phase_T) 
                                                                                >> 8U)), 3U) 
                                                              >> 5U))] 
                                                          >> 
                                                          (0x1fU 
                                                           & VL_SHIFTL_III(11,11,32, 
                                                                           (0xffU 
-                                                                           & ((IData)(WaveformGenerator__DOT___GEN_2) 
+                                                                           & ((IData)(WaveformGenerator__DOT___phase_T) 
                                                                               >> 8U)), 3U)))) 
                                                      << 0x10U)) 
                                                  | ((0xff00U 
@@ -142,7 +142,7 @@ VL_ATTR_COLD void VWaveformGenerator___024root___stl_sequent__TOP__0(VWaveformGe
                                                            (0x1fU 
                                                             & VL_SHIFTL_III(11,11,32, 
                                                                             (0xffU 
-                                                                             & ((IData)(WaveformGenerator__DOT___GEN_2) 
+                                                                             & ((IData)(WaveformGenerator__DOT___phase_T) 
                                                                                 >> 8U)), 3U)))
                                                            ? 0U
                                                            : 
@@ -152,7 +152,7 @@ VL_ATTR_COLD void VWaveformGenerator___024root___stl_sequent__TOP__0(VWaveformGe
                                                              (0x7ffU 
                                                               & VL_SHIFTL_III(11,11,32, 
                                                                               (0xffU 
-                                                                               & ((IData)(WaveformGenerator__DOT___GEN_2) 
+                                                                               & ((IData)(WaveformGenerator__DOT___phase_T) 
                                                                                 >> 8U)), 3U))) 
                                                             >> 5U)] 
                                                            << 
@@ -161,20 +161,20 @@ VL_ATTR_COLD void VWaveformGenerator___024root___stl_sequent__TOP__0(VWaveformGe
                                                             (0x1fU 
                                                              & VL_SHIFTL_III(11,11,32, 
                                                                              (0xffU 
-                                                                              & ((IData)(WaveformGenerator__DOT___GEN_2) 
+                                                                              & ((IData)(WaveformGenerator__DOT___phase_T) 
                                                                                 >> 8U)), 3U))))) 
                                                          | (VWaveformGenerator__ConstPool__CONST_h87adaed3_0[
                                                             (0x3fU 
                                                              & (VL_SHIFTL_III(11,11,32, 
                                                                               (0xffU 
-                                                                               & ((IData)(WaveformGenerator__DOT___GEN_2) 
+                                                                               & ((IData)(WaveformGenerator__DOT___phase_T) 
                                                                                 >> 8U)), 3U) 
                                                                 >> 5U))] 
                                                             >> 
                                                             (0x1fU 
                                                              & VL_SHIFTL_III(11,11,32, 
                                                                              (0xffU 
-                                                                              & ((IData)(WaveformGenerator__DOT___GEN_2) 
+                                                                              & ((IData)(WaveformGenerator__DOT___phase_T) 
                                                                                 >> 8U)), 3U)))) 
                                                         << 8U)) 
                                                     | (0xffU 
@@ -183,7 +183,7 @@ VL_ATTR_COLD void VWaveformGenerator___024root___stl_sequent__TOP__0(VWaveformGe
                                                             (0x1fU 
                                                              & VL_SHIFTL_III(11,11,32, 
                                                                              (0xffU 
-                                                                              & ((IData)(WaveformGenerator__DOT___GEN_2) 
+                                                                              & ((IData)(WaveformGenerator__DOT___phase_T) 
                                                                                 >> 8U)), 3U)))
                                                             ? 0U
                                                             : 
@@ -193,7 +193,7 @@ VL_ATTR_COLD void VWaveformGenerator___024root___stl_sequent__TOP__0(VWaveformGe
                                                               (0x7ffU 
                                                                & VL_SHIFTL_III(11,11,32, 
                                                                                (0xffU 
-                                                                                & ((IData)(WaveformGenerator__DOT___GEN_2) 
+                                                                                & ((IData)(WaveformGenerator__DOT___phase_T) 
                                                                                 >> 8U)), 3U))) 
                                                              >> 5U)] 
                                                             << 
@@ -202,20 +202,20 @@ VL_ATTR_COLD void VWaveformGenerator___024root___stl_sequent__TOP__0(VWaveformGe
                                                              (0x1fU 
                                                               & VL_SHIFTL_III(11,11,32, 
                                                                               (0xffU 
-                                                                               & ((IData)(WaveformGenerator__DOT___GEN_2) 
+                                                                               & ((IData)(WaveformGenerator__DOT___phase_T) 
                                                                                 >> 8U)), 3U))))) 
                                                           | (VWaveformGenerator__ConstPool__CONST_hddbd57b3_0[
                                                              (0x3fU 
                                                               & (VL_SHIFTL_III(11,11,32, 
                                                                                (0xffU 
-                                                                                & ((IData)(WaveformGenerator__DOT___GEN_2) 
+                                                                                & ((IData)(WaveformGenerator__DOT___phase_T) 
                                                                                 >> 8U)), 3U) 
                                                                  >> 5U))] 
                                                              >> 
                                                              (0x1fU 
                                                               & VL_SHIFTL_III(11,11,32, 
                                                                               (0xffU 
-                                                                               & ((IData)(WaveformGenerator__DOT___GEN_2) 
+                                                                               & ((IData)(WaveformGenerator__DOT___phase_T) 
                                                                                 >> 8U)), 3U)))))))) 
                                   >> (0x1fU & VL_SHIFTL_III(5,5,32, (IData)(vlSelf->io_waveType), 3U))));
 }

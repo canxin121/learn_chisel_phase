@@ -10,4 +10,5 @@ target
 .clangd
 out
 /*.json
-PowerShell 7.5.0
+PowerShell*
+temp

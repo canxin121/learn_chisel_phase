@@ -1,12 +1,15 @@
 <script setup lang="ts">
 // 导入组件和图标
+import { ref } from 'vue';
 import { Tag as ATag, Tabs as ATabs, TabPane as ATabPane, Button as AButton, Tooltip as ATooltip } from 'ant-design-vue';
-import { LinkOutlined } from '@ant-design/icons-vue';
+import { LinkOutlined, PlusSquareOutlined, MinusSquareOutlined } from '@ant-design/icons-vue'; // 导入图标
 import { formatCoverage, getNodeStyle, getConditionTagColor, getBitTagColor, formatCount, formatPercent } from '../utils/coverageUtils';
 import { useCoverageStore } from "../stores/coverageStore";
 import type { TreeNode } from '../types/TreeNode'; // TreeNode 类型
+import type { RegisterBitCoverage } from '../types/CoverageReport'; // 导入类型
 
 const coverageStore = useCoverageStore();
+const expandedRegisterNodes = ref<Set<string>>(new Set()); // 跟踪展开的寄存器节点
 
 // 跳转到源代码
 const jumpToSource = (nodeData: TreeNode) => {
@@ -21,6 +24,29 @@ const jumpToSource = (nodeData: TreeNode) => {
   } else {
     console.warn("Cannot navigate: Missing required data (sourceLocation, instancePath, or originatingModule) for node:", nodeData);
   }
+};
+
+// 切换寄存器节点展开
+const toggleRegisterNodeExpansion = (key: string) => {
+  if (expandedRegisterNodes.value.has(key)) {
+    expandedRegisterNodes.value.delete(key);
+  } else {
+    expandedRegisterNodes.value.add(key);
+  }
+  expandedRegisterNodes.value = new Set(expandedRegisterNodes.value); // 触发响应性
+};
+
+// 检查寄存器节点是否展开
+const isRegisterNodeExpanded = (key: string): boolean => {
+  return expandedRegisterNodes.value.has(key);
+};
+
+// 获取未覆盖的位
+const getUncoveredBits = (nodeData: TreeNode): RegisterBitCoverage[] => {
+  if (nodeData.isSignal && nodeData.data?.type === 'register' && nodeData.data.bit_details) {
+    return nodeData.data.bit_details.filter((bit: RegisterBitCoverage) => !bit.covered);
+  }
+  return [];
 };
 </script>
 
@@ -131,56 +157,88 @@ const jumpToSource = (nodeData: TreeNode) => {
       <!-- 寄存器位 -->
       <a-tab-pane key="registers" tab="Register Bits">
         <div class="tree-container">
-          <a-directory-tree v-if="coverageStore.registerTreeData.length > 0" :tree-data="coverageStore.registerTreeData"
-            :default-expand-all="false" selectable :fieldNames="{ title: 'label', key: 'key', children: 'children' }">
+          <a-directory-tree :showLine="true" v-if="coverageStore.registerTreeData.length > 0"
+            :tree-data="coverageStore.registerTreeData" :default-expand-all="false" selectable
+            :fieldNames="{ title: 'label', key: 'key', children: 'children' }">
             <template #title="{ data: nodeData }">
-              <span class="tree-node-title">
-                <!-- 节点标签 -->
-                <span :style="getNodeStyle(nodeData.coverage)" class="node-text">{{ nodeData.label }}</span>
+              <div class="register-node-wrapper"> <!-- Wrapper for layout -->
+                <span class="tree-node-title">
+                  <!-- Expand/Collapse Button -->
+                  <a-button
+                    v-if="nodeData.isSignal && nodeData.data?.type === 'register' && getUncoveredBits(nodeData).length > 0"
+                    type="text" size="small" class="bit-expand-button-tree"
+                    @click.stop="toggleRegisterNodeExpansion(nodeData.key)"
+                    :title="isRegisterNodeExpanded(nodeData.key) ? 'Collapse uncovered bits' : 'Expand uncovered bits'">
+                    <template #icon>
+                      <component
+                        :is="isRegisterNodeExpanded(nodeData.key) ? MinusSquareOutlined : PlusSquareOutlined" />
+                    </template>
+                  </a-button>
+                  <span v-else-if="nodeData.isSignal && nodeData.data?.type === 'register'"
+                    class="bit-expand-placeholder-tree"></span> <!-- Placeholder -->
 
-                <!-- 覆盖率值 -->
-                <span v-if="nodeData.coverage !== undefined" class="coverage-value"
-                  :style="getNodeStyle(nodeData.coverage)">
-                  ({{ formatCoverage(nodeData.coverage) }})
-                </span>
+                  <!-- 节点标签 -->
+                  <span :style="getNodeStyle(nodeData.coverage)" class="node-text">{{ nodeData.label }}</span>
 
-                <!-- 寄存器摘要 -->
-                <span v-if="nodeData.isSignal && nodeData.data?.type === 'register' && nodeData.data"
-                  class="node-details register-summary-details">
-                  (W: {{ nodeData.data.width }}, Hit: {{ nodeData.data.bins_hit }}/{{
-                    nodeData.data.bins_total }})
-                </span>
+                  <!-- 覆盖率值 -->
+                  <span v-if="nodeData.coverage !== undefined" class="coverage-value"
+                    :style="getNodeStyle(nodeData.coverage)">
+                    ({{ formatCoverage(nodeData.coverage) }})
+                  </span>
 
-                <!-- 寄存器位详情 -->
-                <span v-if="nodeData.isSignal && nodeData.data?.type === 'register_bit' && nodeData.data"
-                  class="node-details bit-details">
-                  <a-tag :color="getBitTagColor(nodeData.data.hit_zero)">0</a-tag>
-                  <span class="detail-count">({{ formatCount(nodeData.data.count_zero) }}, {{
-                    formatPercent(nodeData.data.zero_percentage) }})</span>
-                  <a-tag :color="getBitTagColor(nodeData.data.hit_one)">1</a-tag>
-                  <span class="detail-count">({{ formatCount(nodeData.data.count_one) }}, {{
-                    formatPercent(nodeData.data.one_percentage) }})</span>
-                  <span v-if="nodeData.data.missing" class="missing-indicator"> ({{ nodeData.data.missing }})
+                  <!-- 寄存器摘要 -->
+                  <span v-if="nodeData.isSignal && nodeData.data?.type === 'register' && nodeData.data"
+                    class="node-details register-summary-details">
+                    (W: {{ nodeData.data.width }}, Hit: {{ nodeData.data.bins_hit }}/{{
+                      nodeData.data.bins_total }})
+                  </span>
+
+                  <!-- 寄存器位详情 -->
+                  <span v-if="nodeData.isSignal && nodeData.data?.type === 'register_bit' && nodeData.data"
+                    class="node-details bit-details">
+                    <a-tag :color="getBitTagColor(nodeData.data.hit_zero)">0</a-tag>
+                    <span class="detail-count">({{ formatCount(nodeData.data.count_zero) }}, {{
+                      formatPercent(nodeData.data.zero_percentage) }})</span>
+                    <a-tag :color="getBitTagColor(nodeData.data.hit_one)">1</a-tag>
+                    <span class="detail-count">({{ formatCount(nodeData.data.count_one) }}, {{
+                      formatPercent(nodeData.data.one_percentage) }})</span>
+                    <span v-if="nodeData.data.missing" class="missing-indicator"> ({{ nodeData.data.missing }})
+                    </span>
+                  </span>
+
+                  <!-- 原始模块指示器 -->
+                  <span v-if="nodeData.isSignal && nodeData.originatingModule && nodeData.originatingModule !== '?'"
+                    class="originating-module-indicator" :title="`Originating Module: ${nodeData.originatingModule}`">
+                    M:{{ nodeData.originatingModule }}
+                  </span>
+
+                  <!-- 跳转源代码图标 -->
+                  <span v-if="nodeData.isSignal && nodeData.sourceLocation" class="source-link-icon-wrapper">
+                    <a-tooltip title="Jump to Source">
+                      <a-button type="text" size="small" @click.stop="jumpToSource(nodeData)"
+                        class="source-link-button">
+                        <template #icon>
+                          <LinkOutlined />
+                        </template>
+                      </a-button>
+                    </a-tooltip>
                   </span>
                 </span>
-
-                <!-- 原始模块指示器 -->
-                <span v-if="nodeData.isSignal && nodeData.originatingModule && nodeData.originatingModule !== '?'"
-                  class="originating-module-indicator" :title="`Originating Module: ${nodeData.originatingModule}`">
-                  M:{{ nodeData.originatingModule }}
-                </span>
-
-                <!-- 跳转源代码图标 -->
-                <span v-if="nodeData.isSignal && nodeData.sourceLocation" class="source-link-icon-wrapper">
-                  <a-tooltip title="Jump to Source">
-                    <a-button type="text" size="small" @click.stop="jumpToSource(nodeData)" class="source-link-button">
-                      <template #icon>
-                        <LinkOutlined />
-                      </template>
-                    </a-button>
-                  </a-tooltip>
-                </span>
-              </span>
+                <!-- Expanded Uncovered Bit Details -->
+                <div
+                  v-if="nodeData.isSignal && nodeData.data?.type === 'register' && isRegisterNodeExpanded(nodeData.key)"
+                  class="uncovered-bit-details-tree">
+                  <div v-for="bit in getUncoveredBits(nodeData)" :key="bit.bit" class="uncovered-bit-item-tree">
+                    <span class="bit-number">Bit {{ bit.bit }}:</span>
+                    <span class="bit-status">{{ bit.status }}</span>
+                    <span v-if="bit.missing" class="bit-missing">(Missing: {{ bit.missing }})</span>
+                    <span class="bit-counts">
+                      (0: {{ formatCount(bit.count_zero) }} [{{ formatPercent(bit.zero_percentage) }}] /
+                      1: {{ formatCount(bit.count_one) }} [{{ formatPercent(bit.one_percentage) }}])
+                    </span>
+                  </div>
+                </div>
+              </div>
             </template>
           </a-directory-tree>
           <p v-else class="empty-tree-msg">No Register coverage points found.</p>
@@ -368,5 +426,126 @@ const jumpToSource = (nodeData: TreeNode) => {
 /* 确保最后一个元素是跳转图标时，它被推到右边 */
 .tree-node-title>*:last-child.source-link-icon-wrapper {
   margin-left: auto;
+}
+
+/* --- 新增样式 --- */
+.register-node-wrapper {
+  display: flex;
+  flex-direction: column;
+  /* Allow details below title */
+  width: 100%;
+}
+
+.bit-expand-button-tree {
+  padding: 0 4px;
+  height: auto;
+  line-height: 1;
+  color: #555;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.bit-expand-button-tree:hover {
+  color: #1890ff;
+  background-color: transparent !important;
+}
+
+.bit-expand-placeholder-tree {
+  display: inline-block;
+  width: 20px;
+  /* Match button width approx */
+  height: 18px;
+  /* Match button height approx */
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.uncovered-bit-details-tree {
+  width: calc(100% - 20px);
+  /* Adjust width considering tree indentation */
+  margin-left: 20px;
+  /* Indent details */
+  margin-top: 4px;
+  padding: 6px 8px;
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
+  border-left: 3px solid #faad14;
+  /* Use a different color for tree details */
+  border-radius: 3px;
+  font-size: 0.85em;
+}
+
+.uncovered-bit-item-tree {
+  margin-bottom: 2px;
+  padding-bottom: 2px;
+  border-bottom: 1px dashed #ccc;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.uncovered-bit-item-tree:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.uncovered-bit-details-tree .bit-number {
+  font-weight: bold;
+  color: #333;
+  flex-shrink: 0;
+}
+
+.uncovered-bit-details-tree .bit-status {
+  color: #777;
+  flex-shrink: 0;
+}
+
+.uncovered-bit-details-tree .bit-missing {
+  color: #cc0000;
+  font-style: italic;
+  flex-shrink: 0;
+}
+
+.uncovered-bit-details-tree .bit-counts {
+  color: #444;
+  font-size: 0.9em;
+  white-space: nowrap;
+}
+
+:deep(.ant-tree-node-content-wrapper) {
+  padding: 0;
+  /* Remove padding to allow wrapper to control layout */
+  border-radius: 3px;
+  line-height: normal;
+  /* Reset line-height */
+  display: flex;
+  align-items: stretch;
+  /* Stretch wrapper vertically */
+  width: 100%;
+  overflow: visible;
+  /* Allow details to overflow */
+  position: relative;
+  /* For potential absolute positioning if needed */
+}
+
+:deep(.ant-tree-treenode) {
+  /* Ensure tree nodes allow vertical space for expanded content */
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+/* Hide the default icon element rendered by Ant Tree */
+:deep(.ant-tree-iconEle) {
+  display: none !important;
+  /* Add !important */
+}
+
+:deep(.ant-tree-node-selected) {
+  /* 没有背景颜色 */
+  background-color: transparent;
+  /* Add background color */
+
 }
 </style>

@@ -15,37 +15,35 @@ VUART_rx::VUART_rx(VerilatedContext* _vcontextp__, const char* _vcname__)
     , io_i_serial_data{vlSymsp->TOP.io_i_serial_data}
     , io_o_rx_done{vlSymsp->TOP.io_o_rx_done}
     , io_o_data{vlSymsp->TOP.io_o_data}
-    , _cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T{vlSymsp->TOP._cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T}
-    , _cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_1{vlSymsp->TOP._cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_1}
-    , _cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_10{vlSymsp->TOP._cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_10}
-    , _cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_11{vlSymsp->TOP._cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_11}
-    , _cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_2{vlSymsp->TOP._cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_2}
-    , _cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_3{vlSymsp->TOP._cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_3}
-    , _cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_4{vlSymsp->TOP._cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_4}
-    , _cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_5{vlSymsp->TOP._cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_5}
-    , _cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_6{vlSymsp->TOP._cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_6}
-    , _cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_8{vlSymsp->TOP._cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_8}
-    , _cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_9{vlSymsp->TOP._cond_pred_UART_rx___05FI___05Flocal___05FI___05F_T_9}
-    , _reg_signals_UART_rx___05FI___05Flocal___05FI___05FbitCnterReg{vlSymsp->TOP._reg_signals_UART_rx___05FI___05Flocal___05FI___05FbitCnterReg}
-    , _reg_signals_UART_rx___05FI___05Flocal___05FI___05FoutDataReg_0{vlSymsp->TOP._reg_signals_UART_rx___05FI___05Flocal___05FI___05FoutDataReg_0}
-    , _reg_signals_UART_rx___05FI___05Flocal___05FI___05FoutDataReg_1{vlSymsp->TOP._reg_signals_UART_rx___05FI___05Flocal___05FI___05FoutDataReg_1}
-    , _reg_signals_UART_rx___05FI___05Flocal___05FI___05FoutDataReg_2{vlSymsp->TOP._reg_signals_UART_rx___05FI___05Flocal___05FI___05FoutDataReg_2}
-    , _reg_signals_UART_rx___05FI___05Flocal___05FI___05FoutDataReg_3{vlSymsp->TOP._reg_signals_UART_rx___05FI___05Flocal___05FI___05FoutDataReg_3}
-    , _reg_signals_UART_rx___05FI___05Flocal___05FI___05FoutDataReg_4{vlSymsp->TOP._reg_signals_UART_rx___05FI___05Flocal___05FI___05FoutDataReg_4}
-    , _reg_signals_UART_rx___05FI___05Flocal___05FI___05FoutDataReg_5{vlSymsp->TOP._reg_signals_UART_rx___05FI___05Flocal___05FI___05FoutDataReg_5}
-    , _reg_signals_UART_rx___05FI___05Flocal___05FI___05FoutDataReg_6{vlSymsp->TOP._reg_signals_UART_rx___05FI___05Flocal___05FI___05FoutDataReg_6}
-    , _reg_signals_UART_rx___05FI___05Flocal___05FI___05FoutDataReg_7{vlSymsp->TOP._reg_signals_UART_rx___05FI___05Flocal___05FI___05FoutDataReg_7}
-    , _reg_signals_UART_rx___05FI___05Flocal___05FI___05FoutRxDoneReg{vlSymsp->TOP._reg_signals_UART_rx___05FI___05Flocal___05FI___05FoutRxDoneReg}
-    , _reg_signals_UART_rx___05FI___05Flocal___05FI___05FserialDataReg{vlSymsp->TOP._reg_signals_UART_rx___05FI___05Flocal___05FI___05FserialDataReg}
-    , _reg_signals_UART_rx___05FI___05Flocal___05FI___05FserialDataReg_REG{vlSymsp->TOP._reg_signals_UART_rx___05FI___05Flocal___05FI___05FserialDataReg_REG}
-    , _reg_signals_UART_rx___05FI___05Flocal___05FI___05FstateReg{vlSymsp->TOP._reg_signals_UART_rx___05FI___05Flocal___05FI___05FstateReg}
-    , _reg_signals_UART_rx___05FI___05Flocal___05FI___05FclkCnterReg{vlSymsp->TOP._reg_signals_UART_rx___05FI___05Flocal___05FI___05FclkCnterReg}
+    , _cp___05Fs0{vlSymsp->TOP._cp___05Fs0}
+    , _cp___05Fs1{vlSymsp->TOP._cp___05Fs1}
+    , _cp___05Fs10{vlSymsp->TOP._cp___05Fs10}
+    , _cp___05Fs2{vlSymsp->TOP._cp___05Fs2}
+    , _cp___05Fs3{vlSymsp->TOP._cp___05Fs3}
+    , _cp___05Fs4{vlSymsp->TOP._cp___05Fs4}
+    , _cp___05Fs5{vlSymsp->TOP._cp___05Fs5}
+    , _cp___05Fs6{vlSymsp->TOP._cp___05Fs6}
+    , _cp___05Fs7{vlSymsp->TOP._cp___05Fs7}
+    , _cp___05Fs8{vlSymsp->TOP._cp___05Fs8}
+    , _cp___05Fs9{vlSymsp->TOP._cp___05Fs9}
+    , _rs___05Fs1{vlSymsp->TOP._rs___05Fs1}
+    , _rs___05Fs10{vlSymsp->TOP._rs___05Fs10}
+    , _rs___05Fs11{vlSymsp->TOP._rs___05Fs11}
+    , _rs___05Fs12{vlSymsp->TOP._rs___05Fs12}
+    , _rs___05Fs13{vlSymsp->TOP._rs___05Fs13}
+    , _rs___05Fs2{vlSymsp->TOP._rs___05Fs2}
+    , _rs___05Fs3{vlSymsp->TOP._rs___05Fs3}
+    , _rs___05Fs4{vlSymsp->TOP._rs___05Fs4}
+    , _rs___05Fs5{vlSymsp->TOP._rs___05Fs5}
+    , _rs___05Fs6{vlSymsp->TOP._rs___05Fs6}
+    , _rs___05Fs7{vlSymsp->TOP._rs___05Fs7}
+    , _rs___05Fs8{vlSymsp->TOP._rs___05Fs8}
+    , _rs___05Fs9{vlSymsp->TOP._rs___05Fs9}
+    , _rs___05Fs0{vlSymsp->TOP._rs___05Fs0}
     , rootp{&(vlSymsp->TOP)}
 {
     // Register model with the context
     contextp()->addModel(this);
-    contextp()->traceBaseModelCbAdd(
-        [this](VerilatedTraceBaseC* tfp, int levels, int options) { traceBaseModel(tfp, levels, options); });
 }
 
 VUART_rx::VUART_rx(const char* _vcname__)
@@ -97,7 +95,7 @@ void VUART_rx::eval_step() {
 bool VUART_rx::eventsPending() { return false; }
 
 uint64_t VUART_rx::nextTimeSlot() {
-    VL_FATAL_MT(__FILE__, __LINE__, "", "No delays in the design");
+    VL_FATAL_MT(__FILE__, __LINE__, "", "%Error: No delays in the design");
     return 0;
 }
 
@@ -155,14 +153,12 @@ VL_ATTR_COLD static void trace_init(void* voidSelf, VerilatedVcd* tracep, uint32
 
 VL_ATTR_COLD void VUART_rx___024root__trace_register(VUART_rx___024root* vlSelf, VerilatedVcd* tracep);
 
-VL_ATTR_COLD void VUART_rx::traceBaseModel(VerilatedTraceBaseC* tfp, int levels, int options) {
-    (void)levels; (void)options;
-    VerilatedVcdC* const stfp = dynamic_cast<VerilatedVcdC*>(tfp);
-    if (VL_UNLIKELY(!stfp)) {
-        vl_fatal(__FILE__, __LINE__, __FILE__,"'VUART_rx::trace()' called on non-VerilatedVcdC object;"
-            " use --trace-fst with VerilatedFst object, and --trace-vcd with VerilatedVcd object");
+VL_ATTR_COLD void VUART_rx::trace(VerilatedVcdC* tfp, int levels, int options) {
+    if (tfp->isOpen()) {
+        vl_fatal(__FILE__, __LINE__, __FILE__,"'VUART_rx::trace()' shall not be called after 'VerilatedVcdC::open()'.");
     }
-    stfp->spTrace()->addModel(this);
-    stfp->spTrace()->addInitCb(&trace_init, &(vlSymsp->TOP));
-    VUART_rx___024root__trace_register(&(vlSymsp->TOP), stfp->spTrace());
+    if (false && levels && options) {}  // Prevent unused
+    tfp->spTrace()->addModel(this);
+    tfp->spTrace()->addInitCb(&trace_init, &(vlSymsp->TOP));
+    VUART_rx___024root__trace_register(&(vlSymsp->TOP), tfp->spTrace());
 }

@@ -4,25 +4,25 @@ circuit UART_tx :
     input clock : Clock
     input reset : UInt<1>
     output io : { flip i_tx_trig : UInt<1>, flip i_data : UInt<8>, o_tx_busy : UInt<1>, o_tx_done : UInt<1>, o_serial_data : UInt<1>} @[chisel_coverage_tool/src/modules/Uart.scala 105:14]
-    output _cond_pred : { UART_tx__M__UART_tx__S___T : UInt<1>, UART_tx__M__UART_tx__S___T_1 : UInt<1>, UART_tx__M__UART_tx__S___T_2 : UInt<1>, UART_tx__M__UART_tx__S___T_3 : UInt<1>, UART_tx__M__UART_tx__S___T_4 : UInt<1>, UART_tx__M__UART_tx__S___T_5 : UInt<1>, UART_tx__M__UART_tx__S___T_6 : UInt<1>, UART_tx__M__UART_tx__S___T_7 : UInt<1>, UART_tx__M__UART_tx__S___T_8 : UInt<1>}
-    output _reg_signals : { UART_tx__M__UART_tx__S__bitCnterReg : UInt<4>, UART_tx__M__UART_tx__S__clkCnterReg : UInt<8>, UART_tx__M__UART_tx__S__inDataReg : UInt<8>, UART_tx__M__UART_tx__S__outDataReg : UInt<1>, UART_tx__M__UART_tx__S__outTxBusyReg : UInt<1>, UART_tx__M__UART_tx__S__outTxDoneReg : UInt<1>, UART_tx__M__UART_tx__S__stateReg : UInt<2>}
+    output _cp : { _s0 : UInt<1>, _s1 : UInt<1>, _s2 : UInt<1>, _s3 : UInt<1>, _s4 : UInt<1>, _s5 : UInt<1>, _s6 : UInt<1>, _s7 : UInt<1>, _s8 : UInt<1>}
+    output _rs : { _s0 : UInt<8>, _s1 : UInt<4>, _s2 : UInt<8>, _s3 : UInt<1>, _s4 : UInt<1>, _s5 : UInt<1>, _s6 : UInt<2>}
 
-    wire _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_6 : UInt<1>
-    wire _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_7 : UInt<1>
-    wire _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_8 : UInt<1>
-    wire _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_2 : UInt<1>
-    wire _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_3 : UInt<1>
-    wire _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_4 : UInt<1>
-    wire _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_5 : UInt<1>
-    wire _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_1 : UInt<1>
-    _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_6 is invalid
-    _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_7 is invalid
-    _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_8 is invalid
-    _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_2 is invalid
-    _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_3 is invalid
-    _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_4 is invalid
-    _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_5 is invalid
-    _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_1 is invalid
+    wire _cp_prop_wire__s6 : UInt<1>
+    wire _cp_prop_wire__s7 : UInt<1>
+    wire _cp_prop_wire__s4 : UInt<1>
+    wire _cp_prop_wire__s5 : UInt<1>
+    wire _cp_prop_wire__s8 : UInt<1>
+    wire _cp_prop_wire__s2 : UInt<1>
+    wire _cp_prop_wire__s3 : UInt<1>
+    wire _cp_prop_wire__s1 : UInt<1>
+    _cp_prop_wire__s6 is invalid
+    _cp_prop_wire__s7 is invalid
+    _cp_prop_wire__s4 is invalid
+    _cp_prop_wire__s5 is invalid
+    _cp_prop_wire__s8 is invalid
+    _cp_prop_wire__s2 is invalid
+    _cp_prop_wire__s3 is invalid
+    _cp_prop_wire__s1 is invalid
     reg clkCnterReg : UInt<8>, clock with :
       reset => (reset, UInt<8>("h0")) @[chisel_coverage_tool/src/modules/Uart.scala 120:28]
     reg bitCnterReg : UInt<4>, clock with :
@@ -48,7 +48,7 @@ circuit UART_tx :
       clkCnterReg <= UInt<8>("h0") @[chisel_coverage_tool/src/modules/Uart.scala 138:19]
       bitCnterReg <= UInt<4>("h0") @[chisel_coverage_tool/src/modules/Uart.scala 139:19]
       node _T_1 = eq(io.i_tx_trig, UInt<1>("h1")) @[chisel_coverage_tool/src/modules/Uart.scala 141:25]
-      _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_1 <= _T_1 @[chisel_coverage_tool/src/modules/Uart.scala 141:25]
+      _cp_prop_wire__s1 <= _T_1 @[chisel_coverage_tool/src/modules/Uart.scala 141:25]
       when _T_1 : @[chisel_coverage_tool/src/modules/Uart.scala 141:37]
         outDataReg <= UInt<1>("h0") @[chisel_coverage_tool/src/modules/Uart.scala 142:20]
         inDataReg <= io.i_data @[chisel_coverage_tool/src/modules/Uart.scala 144:19]
@@ -57,10 +57,10 @@ circuit UART_tx :
         stateReg <= UInt<2>("h0") @[chisel_coverage_tool/src/modules/Uart.scala 147:18]
     else :
       node _T_2 = eq(UInt<2>("h1"), stateReg) @[chisel_coverage_tool/src/modules/Uart.scala 134:20]
-      _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_2 <= _T_2 @[chisel_coverage_tool/src/modules/Uart.scala 134:20]
+      _cp_prop_wire__s2 <= _T_2 @[chisel_coverage_tool/src/modules/Uart.scala 134:20]
       when _T_2 : @[chisel_coverage_tool/src/modules/Uart.scala 134:20]
         node _T_3 = lt(clkCnterReg, UInt<7>("h56")) @[chisel_coverage_tool/src/modules/Uart.scala 151:24]
-        _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_3 <= _T_3 @[chisel_coverage_tool/src/modules/Uart.scala 151:24]
+        _cp_prop_wire__s3 <= _T_3 @[chisel_coverage_tool/src/modules/Uart.scala 151:24]
         when _T_3 : @[chisel_coverage_tool/src/modules/Uart.scala 151:40]
           node _clkCnterReg_T = add(clkCnterReg, UInt<1>("h1")) @[chisel_coverage_tool/src/modules/Uart.scala 152:36]
           node _clkCnterReg_T_1 = tail(_clkCnterReg_T, 1) @[chisel_coverage_tool/src/modules/Uart.scala 152:36]
@@ -77,10 +77,10 @@ circuit UART_tx :
           stateReg <= UInt<2>("h2") @[chisel_coverage_tool/src/modules/Uart.scala 159:18]
       else :
         node _T_4 = eq(UInt<2>("h2"), stateReg) @[chisel_coverage_tool/src/modules/Uart.scala 134:20]
-        _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_4 <= _T_4 @[chisel_coverage_tool/src/modules/Uart.scala 134:20]
+        _cp_prop_wire__s4 <= _T_4 @[chisel_coverage_tool/src/modules/Uart.scala 134:20]
         when _T_4 : @[chisel_coverage_tool/src/modules/Uart.scala 134:20]
           node _T_5 = lt(clkCnterReg, UInt<7>("h56")) @[chisel_coverage_tool/src/modules/Uart.scala 163:24]
-          _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_5 <= _T_5 @[chisel_coverage_tool/src/modules/Uart.scala 163:24]
+          _cp_prop_wire__s5 <= _T_5 @[chisel_coverage_tool/src/modules/Uart.scala 163:24]
           when _T_5 : @[chisel_coverage_tool/src/modules/Uart.scala 163:40]
             node _clkCnterReg_T_2 = add(clkCnterReg, UInt<1>("h1")) @[chisel_coverage_tool/src/modules/Uart.scala 164:36]
             node _clkCnterReg_T_3 = tail(_clkCnterReg_T_2, 1) @[chisel_coverage_tool/src/modules/Uart.scala 164:36]
@@ -89,7 +89,7 @@ circuit UART_tx :
           else :
             clkCnterReg <= UInt<8>("h0") @[chisel_coverage_tool/src/modules/Uart.scala 167:21]
             node _T_6 = lt(bitCnterReg, UInt<4>("h8")) @[chisel_coverage_tool/src/modules/Uart.scala 168:26]
-            _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_6 <= _T_6 @[chisel_coverage_tool/src/modules/Uart.scala 168:26]
+            _cp_prop_wire__s6 <= _T_6 @[chisel_coverage_tool/src/modules/Uart.scala 168:26]
             when _T_6 : @[chisel_coverage_tool/src/modules/Uart.scala 168:43]
               node _outDataReg_T_2 = dshr(inDataReg, bitCnterReg) @[chisel_coverage_tool/src/modules/Uart.scala 170:34]
               node _outDataReg_T_3 = bits(_outDataReg_T_2, 0, 0) @[chisel_coverage_tool/src/modules/Uart.scala 170:34]
@@ -104,10 +104,10 @@ circuit UART_tx :
               stateReg <= UInt<2>("h3") @[chisel_coverage_tool/src/modules/Uart.scala 177:20]
         else :
           node _T_7 = eq(UInt<2>("h3"), stateReg) @[chisel_coverage_tool/src/modules/Uart.scala 134:20]
-          _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_7 <= _T_7 @[chisel_coverage_tool/src/modules/Uart.scala 134:20]
+          _cp_prop_wire__s7 <= _T_7 @[chisel_coverage_tool/src/modules/Uart.scala 134:20]
           when _T_7 : @[chisel_coverage_tool/src/modules/Uart.scala 134:20]
             node _T_8 = lt(clkCnterReg, UInt<7>("h56")) @[chisel_coverage_tool/src/modules/Uart.scala 182:24]
-            _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_8 <= _T_8 @[chisel_coverage_tool/src/modules/Uart.scala 182:24]
+            _cp_prop_wire__s8 <= _T_8 @[chisel_coverage_tool/src/modules/Uart.scala 182:24]
             when _T_8 : @[chisel_coverage_tool/src/modules/Uart.scala 182:40]
               node _clkCnterReg_T_4 = add(clkCnterReg, UInt<1>("h1")) @[chisel_coverage_tool/src/modules/Uart.scala 183:36]
               node _clkCnterReg_T_5 = tail(_clkCnterReg_T_4, 1) @[chisel_coverage_tool/src/modules/Uart.scala 183:36]
@@ -117,19 +117,19 @@ circuit UART_tx :
               clkCnterReg <= UInt<8>("h0") @[chisel_coverage_tool/src/modules/Uart.scala 186:21]
               outTxDoneReg <= UInt<1>("h1") @[chisel_coverage_tool/src/modules/Uart.scala 187:22]
               stateReg <= UInt<2>("h0") @[chisel_coverage_tool/src/modules/Uart.scala 188:18]
-    _cond_pred.UART_tx__M__UART_tx__S___T <= _T
-    _cond_pred.UART_tx__M__UART_tx__S___T_1 <= _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_1
-    _cond_pred.UART_tx__M__UART_tx__S___T_2 <= _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_2
-    _cond_pred.UART_tx__M__UART_tx__S___T_3 <= _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_3
-    _cond_pred.UART_tx__M__UART_tx__S___T_4 <= _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_4
-    _cond_pred.UART_tx__M__UART_tx__S___T_5 <= _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_5
-    _cond_pred.UART_tx__M__UART_tx__S___T_6 <= _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_6
-    _cond_pred.UART_tx__M__UART_tx__S___T_7 <= _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_7
-    _cond_pred.UART_tx__M__UART_tx__S___T_8 <= _cond_pred_prop_wire_UART_tx__M__UART_tx__S___T_8
-    _reg_signals.UART_tx__M__UART_tx__S__bitCnterReg <= bitCnterReg
-    _reg_signals.UART_tx__M__UART_tx__S__clkCnterReg <= clkCnterReg
-    _reg_signals.UART_tx__M__UART_tx__S__inDataReg <= inDataReg
-    _reg_signals.UART_tx__M__UART_tx__S__outDataReg <= outDataReg
-    _reg_signals.UART_tx__M__UART_tx__S__outTxBusyReg <= outTxBusyReg
-    _reg_signals.UART_tx__M__UART_tx__S__outTxDoneReg <= outTxDoneReg
-    _reg_signals.UART_tx__M__UART_tx__S__stateReg <= stateReg
+    _cp._s0 <= _T
+    _cp._s1 <= _cp_prop_wire__s1
+    _cp._s2 <= _cp_prop_wire__s2
+    _cp._s3 <= _cp_prop_wire__s3
+    _cp._s4 <= _cp_prop_wire__s4
+    _cp._s5 <= _cp_prop_wire__s5
+    _cp._s6 <= _cp_prop_wire__s6
+    _cp._s7 <= _cp_prop_wire__s7
+    _cp._s8 <= _cp_prop_wire__s8
+    _rs._s0 <= clkCnterReg
+    _rs._s1 <= bitCnterReg
+    _rs._s2 <= inDataReg
+    _rs._s3 <= outDataReg
+    _rs._s4 <= outTxBusyReg
+    _rs._s5 <= outTxDoneReg
+    _rs._s6 <= stateReg

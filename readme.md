@@ -69,16 +69,27 @@ object ExampleMain extends App {
   // 每个元素是一个元组: (模块生成器函数, 输出子目录名)
   val modulesToProcess: Seq[(() => RawModule, String)] = Seq(
     (
-      () => new WaveformGenerator, // 第一个模块
-      "waveform_generator"         // 对应的输出子目录
+      () => new WaveformGenerator,
+      "waveform_generator"
     ),
     (
-      () => new UART_rx(), // 第二个模块
+      () => new UART_rx(),
       "uart_rx"
     ),
     (
-      () => new UART_tx(), // 第三个模块
+      () => new UART_tx(),
       "uart_tx"
+    ),
+    (() => new RegModule(), "reg_module"),
+    (() => new ComplexExample(), "complex_example"),
+    (() => new ALU(), "rocket_alu"),
+    (() => new MulDiv(MulDivParams(), width = 64), "rocket_muldiv"),
+    (
+      () => {
+        val ldut = LazyModule(new ExampleRocketSystem)
+        ldut.module
+      },
+      "example_rocket_system"
     )
     // 可以继续添加更多模块...
   )
@@ -115,5 +126,4 @@ object ExampleMain extends App {
 4.  启动开发服务器: `pnpm run tauri dev`
 5.  应用程序启动后，上传你的`coverage_info.json` 和 `coverage_report.json` 文件即可查看。
 
-![app_shot1.png](assets/app_shot1.png)
-![app_shot2.png](assets/app_shot2.png)
+![app_shot.png](assets/app-shot.png)

@@ -1,95 +1,115 @@
 {
-  "topModuleName": "UART_tx",
-  "exportedPorts": [
+  "top_module_name": "UART_tx",
+  "exported_ports": [
     {
       "type": "cond_pred",
       "signals": [
       {
-        "name": "_cond_pred_UART_tx__M__UART_tx__S___T",
+        "compressed_name": "_cp__s0",
         "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 134:20]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 134:20]"
       },
       {
-        "name": "_cond_pred_UART_tx__M__UART_tx__S___T_1",
+        "compressed_name": "_cp__s1",
         "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 141:37]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 141:37]"
       },
       {
-        "name": "_cond_pred_UART_tx__M__UART_tx__S___T_2",
+        "compressed_name": "_cp__s2",
         "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 134:20]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 134:20]"
       },
       {
-        "name": "_cond_pred_UART_tx__M__UART_tx__S___T_3",
+        "compressed_name": "_cp__s3",
         "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 151:40]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 151:40]"
       },
       {
-        "name": "_cond_pred_UART_tx__M__UART_tx__S___T_4",
+        "compressed_name": "_cp__s4",
         "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 134:20]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 134:20]"
       },
       {
-        "name": "_cond_pred_UART_tx__M__UART_tx__S___T_5",
+        "compressed_name": "_cp__s5",
         "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 163:40]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 163:40]"
       },
       {
-        "name": "_cond_pred_UART_tx__M__UART_tx__S___T_6",
+        "compressed_name": "_cp__s6",
         "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 168:43]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 168:43]"
       },
       {
-        "name": "_cond_pred_UART_tx__M__UART_tx__S___T_7",
+        "compressed_name": "_cp__s7",
         "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 134:20]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 134:20]"
       },
       {
-        "name": "_cond_pred_UART_tx__M__UART_tx__S___T_8",
+        "compressed_name": "_cp__s8",
         "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 182:40]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 182:40]"
       }
-      ]
+      ],
+      "name_mapping": {
+      "_s3": "UART_tx__M__UART_tx__S___T_3",
+      "_s0": "UART_tx__M__UART_tx__S___T",
+      "_s8": "UART_tx__M__UART_tx__S___T_8",
+      "_s2": "UART_tx__M__UART_tx__S___T_2",
+      "_s6": "UART_tx__M__UART_tx__S___T_6",
+      "_s5": "UART_tx__M__UART_tx__S___T_5",
+      "_s4": "UART_tx__M__UART_tx__S___T_4",
+      "_s1": "UART_tx__M__UART_tx__S___T_1",
+      "_s7": "UART_tx__M__UART_tx__S___T_7"
+      }
     },
     {
       "type": "register",
       "signals": [
       {
-        "name": "_reg_signals_UART_tx__M__UART_tx__S__bitCnterReg",
+        "compressed_name": "_rs__s1",
         "type": "UInt<4>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 121:28]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 121:28]"
       },
       {
-        "name": "_reg_signals_UART_tx__M__UART_tx__S__clkCnterReg",
+        "compressed_name": "_rs__s0",
         "type": "UInt<8>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 120:28]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 120:28]"
       },
       {
-        "name": "_reg_signals_UART_tx__M__UART_tx__S__inDataReg",
+        "compressed_name": "_rs__s2",
         "type": "UInt<8>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 123:26]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 123:26]"
       },
       {
-        "name": "_reg_signals_UART_tx__M__UART_tx__S__outDataReg",
+        "compressed_name": "_rs__s3",
         "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 124:27]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 124:27]"
       },
       {
-        "name": "_reg_signals_UART_tx__M__UART_tx__S__outTxBusyReg",
+        "compressed_name": "_rs__s4",
         "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 125:29]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 125:29]"
       },
       {
-        "name": "_reg_signals_UART_tx__M__UART_tx__S__outTxDoneReg",
+        "compressed_name": "_rs__s5",
         "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 126:29]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 126:29]"
       },
       {
-        "name": "_reg_signals_UART_tx__M__UART_tx__S__stateReg",
+        "compressed_name": "_rs__s6",
         "type": "UInt<2>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\Uart.scala 127:25]"
+        "info": " @[chisel_coverage_tool/src/modules/Uart.scala 127:25]"
       }
-      ]
+      ],
+      "name_mapping": {
+      "_s3": "UART_tx__M__UART_tx__S__outDataReg",
+      "_s0": "UART_tx__M__UART_tx__S__clkCnterReg",
+      "_s1": "UART_tx__M__UART_tx__S__bitCnterReg",
+      "_s2": "UART_tx__M__UART_tx__S__inDataReg",
+      "_s6": "UART_tx__M__UART_tx__S__stateReg",
+      "_s5": "UART_tx__M__UART_tx__S__outTxDoneReg",
+      "_s4": "UART_tx__M__UART_tx__S__outTxBusyReg"
+      }
     }
   ]
 }

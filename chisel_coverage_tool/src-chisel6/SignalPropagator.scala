@@ -28,7 +28,7 @@ case class ExportedSignalInfo(
 /** 描述添加到顶层模块的整个导出端口的信息
   *
   * @param portName
-  *   添加到顶层模块的新端口的名称 (例如 "_cond_pred", "_mux_cond", "_reg_signals")。
+  *   添加到顶层模块的新端口的名称 (例如 "_cp", "_mc", "_rs")。
   * @param exportedSignals
   *   一个序列，包含该端口 Bundle 内所有字段（信号）的详细信息 (`ExportedSignalInfo`)。
   */
@@ -47,11 +47,11 @@ case class TopLevelExportInfo(
   *   信号类型的描述性名称 (例如 "predicate", "condition", "register signal")。
   *   主要用于生成错误消息和文档。
   * @param outputPortName
-  *   添加到模块接口的新输出端口的名称 (例如 "_cond_pred", "_mux_cond", "_reg_signals")。
+  *   添加到模块接口的新输出端口的名称 (例如 "_cp", "_mc", "_rs")。
   *   此端口将承载所有需要传播的信号。
   * @param intermediateWirePrefix
   *   为本地定义的、非顶层信号（例如在 `when` 块内定义的 `DefNode`）创建的中间线的前缀。 (例如
-  *   "_cond_pred_prop_wire_", "_mux_cond_prop_wire_")。
+  *   "_cp_prop_wire_", "_mc_prop_wire_")。
   *   这确保了即使信号定义在条件块内部，也能被连接到输出端口。
   * @param localSignalExtractor
   *   一个函数，它接收一个 `Circuit` 对象，并返回一个 `Map[String, Seq[(Expression, Info)]]`。 这个
@@ -737,8 +737,8 @@ object ConditionallyPredPropagator {
 
   private val config = PropagatorConfig(
     signalName = "predicate",
-    outputPortName = "_cond_pred",
-    intermediateWirePrefix = "_cond_pred_prop_wire_",
+    outputPortName = "_cp",
+    intermediateWirePrefix = "_cp_prop_wire_",
     localSignalExtractor = Extractor.extract,
     defaultTypeForUnknown = Some(BoolType)
   )
@@ -861,8 +861,8 @@ object MuxCondPropagator {
 
   private val config = PropagatorConfig(
     signalName = "condition",
-    outputPortName = "_mux_cond",
-    intermediateWirePrefix = "_mux_cond_prop_wire_",
+    outputPortName = "_mc",
+    intermediateWirePrefix = "_mc_prop_wire_",
     localSignalExtractor = Extractor.extract,
     defaultTypeForUnknown = Some(BoolType)
   )
@@ -927,7 +927,7 @@ object RegisterSignalPropagator {
 
   private val config = PropagatorConfig(
     signalName = "register signal",
-    outputPortName = "_reg_signals",
+    outputPortName = "_rs",
     intermediateWirePrefix = "_reg_prop_wire_",
     localSignalExtractor = RegisterExtractor.extract,
     defaultTypeForUnknown = None

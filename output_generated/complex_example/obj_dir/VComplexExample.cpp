@@ -16,24 +16,22 @@ VComplexExample::VComplexExample(VerilatedContext* _vcontextp__, const char* _vc
     , io_topInB{vlSymsp->TOP.io_topInB}
     , io_topSel{vlSymsp->TOP.io_topSel}
     , io_topOut{vlSymsp->TOP.io_topOut}
-    , _mux_cond_ComplexExample___05FM___05FComplexExample___05FS___05F_anotherSub_io_in_T{vlSymsp->TOP._mux_cond_ComplexExample___05FM___05FComplexExample___05FS___05F_anotherSub_io_in_T}
-    , _mux_cond_ComplexExample___05FM___05FComplexExample___05FS___05F_sub_io_a_T{vlSymsp->TOP._mux_cond_ComplexExample___05FM___05FComplexExample___05FS___05F_sub_io_a_T}
-    , _cond_pred_ComplexExample___05FI___05FanotherSub___05FM___05FAnotherSubModule___05FS___05F_T{vlSymsp->TOP._cond_pred_ComplexExample___05FI___05FanotherSub___05FM___05FAnotherSubModule___05FS___05F_T}
-    , _cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T{vlSymsp->TOP._cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T}
-    , _cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T_1{vlSymsp->TOP._cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T_1}
-    , _cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T_2{vlSymsp->TOP._cond_pred_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05F_T_2}
-    , _cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T{vlSymsp->TOP._cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T}
-    , _cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T_1{vlSymsp->TOP._cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T_1}
-    , _cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T_2{vlSymsp->TOP._cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T_2}
-    , _cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T_3{vlSymsp->TOP._cond_pred_ComplexExample___05FM___05FComplexExample___05FS___05F_T_3}
-    , _reg_signals_ComplexExample___05FI___05FanotherSub___05FM___05FAnotherSubModule___05FS___05FdelayedIn{vlSymsp->TOP._reg_signals_ComplexExample___05FI___05FanotherSub___05FM___05FAnotherSubModule___05FS___05FdelayedIn}
-    , _reg_signals_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05FstateReg{vlSymsp->TOP._reg_signals_ComplexExample___05FI___05Fsub___05FM___05FSubModule___05FS___05FstateReg}
+    , _mc___05Fs0{vlSymsp->TOP._mc___05Fs0}
+    , _mc___05Fs1{vlSymsp->TOP._mc___05Fs1}
+    , _cp___05Fs0{vlSymsp->TOP._cp___05Fs0}
+    , _cp___05Fs1{vlSymsp->TOP._cp___05Fs1}
+    , _cp___05Fs2{vlSymsp->TOP._cp___05Fs2}
+    , _cp___05Fs3{vlSymsp->TOP._cp___05Fs3}
+    , _cp___05Fs4{vlSymsp->TOP._cp___05Fs4}
+    , _cp___05Fs5{vlSymsp->TOP._cp___05Fs5}
+    , _cp___05Fs6{vlSymsp->TOP._cp___05Fs6}
+    , _cp___05Fs7{vlSymsp->TOP._cp___05Fs7}
+    , _rs___05Fs0{vlSymsp->TOP._rs___05Fs0}
+    , _rs___05Fs1{vlSymsp->TOP._rs___05Fs1}
     , rootp{&(vlSymsp->TOP)}
 {
     // Register model with the context
     contextp()->addModel(this);
-    contextp()->traceBaseModelCbAdd(
-        [this](VerilatedTraceBaseC* tfp, int levels, int options) { traceBaseModel(tfp, levels, options); });
 }
 
 VComplexExample::VComplexExample(const char* _vcname__)
@@ -85,7 +83,7 @@ void VComplexExample::eval_step() {
 bool VComplexExample::eventsPending() { return false; }
 
 uint64_t VComplexExample::nextTimeSlot() {
-    VL_FATAL_MT(__FILE__, __LINE__, "", "No delays in the design");
+    VL_FATAL_MT(__FILE__, __LINE__, "", "%Error: No delays in the design");
     return 0;
 }
 
@@ -143,14 +141,12 @@ VL_ATTR_COLD static void trace_init(void* voidSelf, VerilatedVcd* tracep, uint32
 
 VL_ATTR_COLD void VComplexExample___024root__trace_register(VComplexExample___024root* vlSelf, VerilatedVcd* tracep);
 
-VL_ATTR_COLD void VComplexExample::traceBaseModel(VerilatedTraceBaseC* tfp, int levels, int options) {
-    (void)levels; (void)options;
-    VerilatedVcdC* const stfp = dynamic_cast<VerilatedVcdC*>(tfp);
-    if (VL_UNLIKELY(!stfp)) {
-        vl_fatal(__FILE__, __LINE__, __FILE__,"'VComplexExample::trace()' called on non-VerilatedVcdC object;"
-            " use --trace-fst with VerilatedFst object, and --trace-vcd with VerilatedVcd object");
+VL_ATTR_COLD void VComplexExample::trace(VerilatedVcdC* tfp, int levels, int options) {
+    if (tfp->isOpen()) {
+        vl_fatal(__FILE__, __LINE__, __FILE__,"'VComplexExample::trace()' shall not be called after 'VerilatedVcdC::open()'.");
     }
-    stfp->spTrace()->addModel(this);
-    stfp->spTrace()->addInitCb(&trace_init, &(vlSymsp->TOP));
-    VComplexExample___024root__trace_register(&(vlSymsp->TOP), stfp->spTrace());
+    if (false && levels && options) {}  // Prevent unused
+    tfp->spTrace()->addModel(this);
+    tfp->spTrace()->addInitCb(&trace_init, &(vlSymsp->TOP));
+    VComplexExample___024root__trace_register(&(vlSymsp->TOP), tfp->spTrace());
 }

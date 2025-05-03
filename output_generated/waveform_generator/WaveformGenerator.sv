@@ -6,12 +6,12 @@ module WaveformGenerator(
   input  [15:0] io_freqCtrl,
                 io_phaseOffset,
   output [7:0]  io_output,
-  output        _mux_cond__s0,
-                _cond_pred__s0,
-                _cond_pred__s1,
-                _cond_pred__s2,
-                _cond_pred__s3,
-  output [15:0] _reg_signals__s0
+  output        _mc__s0,
+                _cp__s0,
+                _cp__s1,
+                _cp__s2,
+                _cp__s3,
+  output [15:0] _rs__s0
 );
 
   wire [255:0][7:0] _GEN =
@@ -799,11 +799,11 @@ module WaveformGenerator(
       phaseAcc <= phaseAcc + io_freqCtrl;
   end // always @(posedge)
   assign io_output = _GEN_3[io_waveType];
-  assign _mux_cond__s0 = _GEN_2[15];
-  assign _cond_pred__s0 = io_waveType == 2'h0;
-  assign _cond_pred__s1 = io_waveType == 2'h1;
-  assign _cond_pred__s2 = io_waveType == 2'h2;
-  assign _cond_pred__s3 = &io_waveType;
-  assign _reg_signals__s0 = phaseAcc;
+  assign _mc__s0 = _GEN_2[15];
+  assign _cp__s0 = io_waveType == 2'h0;
+  assign _cp__s1 = io_waveType == 2'h1;
+  assign _cp__s2 = io_waveType == 2'h2;
+  assign _cp__s3 = &io_waveType;
+  assign _rs__s0 = phaseAcc;
 endmodule
 

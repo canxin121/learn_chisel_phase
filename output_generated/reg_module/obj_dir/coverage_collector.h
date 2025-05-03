@@ -91,7 +91,7 @@ struct ConditionCoveragePoint {
                                           : 0.0;
 
     os << "    {\n"; // Note: Escaped backslashes removed for template clarity
-    os << "      \"name\": \"" << name << "\",\n";
+    os << "      \"compressed_name\": \"" << name << "\",\n";
     os << "      \"hit_true\": " << std::boolalpha << hit_true() << ",\n";
     os << "      \"hit_false\": " << std::boolalpha << hit_false() << ",\n";
     os << "      \"count_true\": " << count_true << ",\n";
@@ -292,7 +292,7 @@ struct RegisterCoveragePoint {
 
   void exportJson(std::ostream &os) const {
     os << "    {\n"; // Note: Escaped backslashes removed for template clarity
-    os << "      \"name\": \"" << name << "\",\n";
+    os << "      \"compressed_name\": \"" << name << "\",\n";
     os << "      \"width\": " << width << ",\n";
     os << "      \"bins_hit\": " << getHitBins() << ",\n";
     os << "      \"bins_total\": " << getTotalBins() << ",\n";
@@ -379,24 +379,34 @@ inline void CoverageCollector::initialize(VRegModule *top) {
 
   // --- Placeholder for dynamically generated emplace_back calls ---
   try {
-    condition_points.emplace_back("_cond_pred_RegModule__M__RegModule__S___T", &top->_cond_pred_RegModule___05FM___05FRegModule___05FS___05F_T);
+    condition_points.emplace_back("_cp__s0", &top->_cp___05Fs0);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_RegModule___05FM___05FRegModule___05FS___05F_T" << std::endl;
+    std::cerr << "Error adding cond point _cp___05Fs0" << std::endl;
   }
-  // Register signal: _reg_signals_RegModule__M__RegModule__S__regA (UInt<8>[3][2])
-        register_points.emplace_back("_reg_signals_RegModule__M__RegModule__S__regA_0_0", 8, reinterpret_cast<const void*>(&top->_reg_signals_RegModule___05FM___05FRegModule___05FS___05FregA_0_0));
-        register_points.emplace_back("_reg_signals_RegModule__M__RegModule__S__regA_0_1", 8, reinterpret_cast<const void*>(&top->_reg_signals_RegModule___05FM___05FRegModule___05FS___05FregA_0_1));
-        register_points.emplace_back("_reg_signals_RegModule__M__RegModule__S__regA_0_2", 8, reinterpret_cast<const void*>(&top->_reg_signals_RegModule___05FM___05FRegModule___05FS___05FregA_0_2));
-        register_points.emplace_back("_reg_signals_RegModule__M__RegModule__S__regA_1_0", 8, reinterpret_cast<const void*>(&top->_reg_signals_RegModule___05FM___05FRegModule___05FS___05FregA_1_0));
-        register_points.emplace_back("_reg_signals_RegModule__M__RegModule__S__regA_1_1", 8, reinterpret_cast<const void*>(&top->_reg_signals_RegModule___05FM___05FRegModule___05FS___05FregA_1_1));
-        register_points.emplace_back("_reg_signals_RegModule__M__RegModule__S__regA_1_2", 8, reinterpret_cast<const void*>(&top->_reg_signals_RegModule___05FM___05FRegModule___05FS___05FregA_1_2));
-  // Register signal: _reg_signals_RegModule__M__RegModule__S__regB (UInt<8>[3][2])
-        register_points.emplace_back("_reg_signals_RegModule__M__RegModule__S__regB_0_0", 8, reinterpret_cast<const void*>(&top->_reg_signals_RegModule___05FM___05FRegModule___05FS___05FregB_0_0));
-        register_points.emplace_back("_reg_signals_RegModule__M__RegModule__S__regB_0_1", 8, reinterpret_cast<const void*>(&top->_reg_signals_RegModule___05FM___05FRegModule___05FS___05FregB_0_1));
-        register_points.emplace_back("_reg_signals_RegModule__M__RegModule__S__regB_0_2", 8, reinterpret_cast<const void*>(&top->_reg_signals_RegModule___05FM___05FRegModule___05FS___05FregB_0_2));
-        register_points.emplace_back("_reg_signals_RegModule__M__RegModule__S__regB_1_0", 8, reinterpret_cast<const void*>(&top->_reg_signals_RegModule___05FM___05FRegModule___05FS___05FregB_1_0));
-        register_points.emplace_back("_reg_signals_RegModule__M__RegModule__S__regB_1_1", 8, reinterpret_cast<const void*>(&top->_reg_signals_RegModule___05FM___05FRegModule___05FS___05FregB_1_1));
-        register_points.emplace_back("_reg_signals_RegModule__M__RegModule__S__regB_1_2", 8, reinterpret_cast<const void*>(&top->_reg_signals_RegModule___05FM___05FRegModule___05FS___05FregB_1_2));
+  // Register signal: _rs__s0 (UInt<8>)
+        register_points.emplace_back("_rs__s0", 8, reinterpret_cast<const void*>(&top->_rs___05Fs0));
+  // Register signal: _rs__s1 (UInt<8>)
+        register_points.emplace_back("_rs__s1", 8, reinterpret_cast<const void*>(&top->_rs___05Fs1));
+  // Register signal: _rs__s10 (UInt<8>)
+        register_points.emplace_back("_rs__s10", 8, reinterpret_cast<const void*>(&top->_rs___05Fs10));
+  // Register signal: _rs__s11 (UInt<8>)
+        register_points.emplace_back("_rs__s11", 8, reinterpret_cast<const void*>(&top->_rs___05Fs11));
+  // Register signal: _rs__s2 (UInt<8>)
+        register_points.emplace_back("_rs__s2", 8, reinterpret_cast<const void*>(&top->_rs___05Fs2));
+  // Register signal: _rs__s3 (UInt<8>)
+        register_points.emplace_back("_rs__s3", 8, reinterpret_cast<const void*>(&top->_rs___05Fs3));
+  // Register signal: _rs__s4 (UInt<8>)
+        register_points.emplace_back("_rs__s4", 8, reinterpret_cast<const void*>(&top->_rs___05Fs4));
+  // Register signal: _rs__s5 (UInt<8>)
+        register_points.emplace_back("_rs__s5", 8, reinterpret_cast<const void*>(&top->_rs___05Fs5));
+  // Register signal: _rs__s6 (UInt<8>)
+        register_points.emplace_back("_rs__s6", 8, reinterpret_cast<const void*>(&top->_rs___05Fs6));
+  // Register signal: _rs__s7 (UInt<8>)
+        register_points.emplace_back("_rs__s7", 8, reinterpret_cast<const void*>(&top->_rs___05Fs7));
+  // Register signal: _rs__s8 (UInt<8>)
+        register_points.emplace_back("_rs__s8", 8, reinterpret_cast<const void*>(&top->_rs___05Fs8));
+  // Register signal: _rs__s9 (UInt<8>)
+        register_points.emplace_back("_rs__s9", 8, reinterpret_cast<const void*>(&top->_rs___05Fs9));
 
   // --- End of generated emplace_back calls ---
 

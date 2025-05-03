@@ -88,7 +88,7 @@ build_step() {
     # Run make using the Verilator-generated makefile
     # The target is typically V<module_name>
     echo "Running make in obj_dir..."
-    make -f V${module_name}.mk V${module_name}
+    make -j -f V${module_name}.mk V${module_name}
     local make_status=$?
 
     # Change back to the original directory
