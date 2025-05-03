@@ -1,0 +1,149 @@
+// Verilated -*- C++ -*-
+// DESCRIPTION: Verilator output: Symbol table internal header
+//
+// Internal details; most calling programs do not need this header,
+// unless using verilator public meta comments.
+
+#ifndef VERILATED_VEXAMPLEROCKETSYSTEM__SYMS_H_
+#define VERILATED_VEXAMPLEROCKETSYSTEM__SYMS_H_  // guard
+
+#include "verilated.h"
+
+// INCLUDE MODEL CLASS
+
+#include "VExampleRocketSystem.h"
+
+// INCLUDE MODULE CLASSES
+#include "VExampleRocketSystem___024root.h"
+
+// SYMS CLASS (contains all model state)
+class alignas(VL_CACHE_LINE_BYTES)VExampleRocketSystem__Syms final : public VerilatedSyms {
+  public:
+    // INTERNAL STATE
+    VExampleRocketSystem* const __Vm_modelp;
+    bool __Vm_activity = false;  ///< Used by trace routines to determine change occurred
+    uint32_t __Vm_baseCode = 0;  ///< Used by trace routines when tracing multiple models
+    VlDeleter __Vm_deleter;
+    bool __Vm_didInit = false;
+
+    // MODULE INSTANCE STATE
+    VExampleRocketSystem___024root TOP;
+
+    // SCOPE NAMES
+    VerilatedScope __Vscope_ExampleRocketSystem__bootrom_domain__bootrom__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__bootrom_domain__bootrom__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__cbus__atomics;
+    VerilatedScope __Vscope_ExampleRocketSystem__cbus__atomics__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__cbus__atomics__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__cbus__buffer__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__cbus__buffer__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__cbus__coupler_to_bootrom__fragmenter;
+    VerilatedScope __Vscope_ExampleRocketSystem__cbus__coupler_to_bootrom__fragmenter__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__cbus__coupler_to_bootrom__fragmenter__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__cbus__coupler_to_clint__fragmenter;
+    VerilatedScope __Vscope_ExampleRocketSystem__cbus__coupler_to_clint__fragmenter__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__cbus__coupler_to_clint__fragmenter__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__cbus__coupler_to_debug__fragmenter;
+    VerilatedScope __Vscope_ExampleRocketSystem__cbus__coupler_to_debug__fragmenter__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__cbus__coupler_to_debug__fragmenter__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__cbus__coupler_to_plic__fragmenter;
+    VerilatedScope __Vscope_ExampleRocketSystem__cbus__coupler_to_plic__fragmenter__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__cbus__coupler_to_plic__fragmenter__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__cbus__fixer__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__cbus__fixer__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__cbus__out_xbar;
+    VerilatedScope __Vscope_ExampleRocketSystem__cbus__out_xbar__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__cbus__out_xbar__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__cbus__wrapped_error_device__buffer__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__cbus__wrapped_error_device__buffer__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__cbus__wrapped_error_device__error__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__cbus__wrapped_error_device__error__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__clint_domain__clint__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__clint_domain__clint__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__coh_wrapper__binder__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__coh_wrapper__binder__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__coh_wrapper__broadcast_1;
+    VerilatedScope __Vscope_ExampleRocketSystem__coh_wrapper__broadcast_1__TLBroadcastTracker;
+    VerilatedScope __Vscope_ExampleRocketSystem__coh_wrapper__broadcast_1__TLBroadcastTracker_1;
+    VerilatedScope __Vscope_ExampleRocketSystem__coh_wrapper__broadcast_1__TLBroadcastTracker_2;
+    VerilatedScope __Vscope_ExampleRocketSystem__coh_wrapper__broadcast_1__TLBroadcastTracker_3;
+    VerilatedScope __Vscope_ExampleRocketSystem__coh_wrapper__broadcast_1__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__coh_wrapper__broadcast_1__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__fbus_buffer__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__fbus_buffer__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__fbus_coupler_from_port_named_slave_port_axi4__axi42tl;
+    VerilatedScope __Vscope_ExampleRocketSystem__fbus_coupler_from_port_named_slave_port_axi4__axi4frag;
+    VerilatedScope __Vscope_ExampleRocketSystem__fbus_coupler_from_port_named_slave_port_axi4__axi4yank;
+    VerilatedScope __Vscope_ExampleRocketSystem__fbus_coupler_from_port_named_slave_port_axi4__buffer__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__fbus_coupler_from_port_named_slave_port_axi4__buffer__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__fbus_coupler_from_port_named_slave_port_axi4__fixer__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__fbus_coupler_from_port_named_slave_port_axi4__fixer__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__mbus__coupler_to_memory_controller_port_named_axi4__axi4yank;
+    VerilatedScope __Vscope_ExampleRocketSystem__mbus__coupler_to_memory_controller_port_named_axi4__tl2axi4;
+    VerilatedScope __Vscope_ExampleRocketSystem__mbus__coupler_to_memory_controller_port_named_axi4__tl2axi4__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__mbus__coupler_to_memory_controller_port_named_axi4__tl2axi4__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__mbus__picker__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__mbus__picker__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__plic_domain__plic;
+    VerilatedScope __Vscope_ExampleRocketSystem__plic_domain__plic__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__plic_domain__plic__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__sbus__coupler_to_port_named_mmio_port_axi4__axi4deint;
+    VerilatedScope __Vscope_ExampleRocketSystem__sbus__coupler_to_port_named_mmio_port_axi4__axi4yank;
+    VerilatedScope __Vscope_ExampleRocketSystem__sbus__coupler_to_port_named_mmio_port_axi4__tl2axi4;
+    VerilatedScope __Vscope_ExampleRocketSystem__sbus__coupler_to_port_named_mmio_port_axi4__tl2axi4__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__sbus__coupler_to_port_named_mmio_port_axi4__tl2axi4__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__sbus__fixer__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__sbus__fixer__monitor_1;
+    VerilatedScope __Vscope_ExampleRocketSystem__sbus__fixer__monitor_1__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__sbus__fixer__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__sbus__system_bus_xbar;
+    VerilatedScope __Vscope_ExampleRocketSystem__sbus__system_bus_xbar__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__sbus__system_bus_xbar__monitor_1;
+    VerilatedScope __Vscope_ExampleRocketSystem__sbus__system_bus_xbar__monitor_1__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__sbus__system_bus_xbar__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__tile_prci_domain__buffer__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__tile_prci_domain__buffer__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__tile_prci_domain__element_reset_domain_rockettile__core;
+    VerilatedScope __Vscope_ExampleRocketSystem__tile_prci_domain__element_reset_domain_rockettile__core__PlusArgTimeout;
+    VerilatedScope __Vscope_ExampleRocketSystem__tile_prci_domain__element_reset_domain_rockettile__core__csr;
+    VerilatedScope __Vscope_ExampleRocketSystem__tile_prci_domain__element_reset_domain_rockettile__core__ibuf;
+    VerilatedScope __Vscope_ExampleRocketSystem__tile_prci_domain__element_reset_domain_rockettile__dcache;
+    VerilatedScope __Vscope_ExampleRocketSystem__tile_prci_domain__element_reset_domain_rockettile__dcache__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__tile_prci_domain__element_reset_domain_rockettile__fpuOpt;
+    VerilatedScope __Vscope_ExampleRocketSystem__tile_prci_domain__element_reset_domain_rockettile__frontend;
+    VerilatedScope __Vscope_ExampleRocketSystem__tile_prci_domain__element_reset_domain_rockettile__frontend__icache;
+    VerilatedScope __Vscope_ExampleRocketSystem__tile_prci_domain__element_reset_domain_rockettile__frontend__tlb;
+    VerilatedScope __Vscope_ExampleRocketSystem__tile_prci_domain__element_reset_domain_rockettile__ptw;
+    VerilatedScope __Vscope_ExampleRocketSystem__tile_prci_domain__element_reset_domain_rockettile__tlMasterXbar;
+    VerilatedScope __Vscope_ExampleRocketSystem__tile_prci_domain__element_reset_domain_rockettile__tlMasterXbar__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__tile_prci_domain__element_reset_domain_rockettile__tlMasterXbar__monitor_1;
+    VerilatedScope __Vscope_ExampleRocketSystem__tile_prci_domain__element_reset_domain_rockettile__tlMasterXbar__monitor_1__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__tile_prci_domain__element_reset_domain_rockettile__tlMasterXbar__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__tlDM__dmInner__dmInner;
+    VerilatedScope __Vscope_ExampleRocketSystem__tlDM__dmInner__dmInner__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__tlDM__dmInner__dmInner__monitor_1;
+    VerilatedScope __Vscope_ExampleRocketSystem__tlDM__dmInner__dmInner__monitor_1__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__tlDM__dmInner__dmInner__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__tlDM__dmInner__dmInner__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__tlDM__dmOuter__asource__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__tlDM__dmOuter__asource__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__tlDM__dmOuter__dmOuter__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__tlDM__dmOuter__dmOuter__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__tlDM__dmOuter__dmiBypass__bar__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__tlDM__dmOuter__dmiBypass__bar__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__tlDM__dmOuter__dmiBypass__error;
+    VerilatedScope __Vscope_ExampleRocketSystem__tlDM__dmOuter__dmiBypass__error__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__tlDM__dmOuter__dmiBypass__error__monitor__unnamedblk1;
+    VerilatedScope __Vscope_ExampleRocketSystem__tlDM__dmOuter__dmiXbar;
+    VerilatedScope __Vscope_ExampleRocketSystem__tlDM__dmOuter__dmiXbar__monitor;
+    VerilatedScope __Vscope_ExampleRocketSystem__tlDM__dmOuter__dmiXbar__monitor__unnamedblk1;
+
+    // CONSTRUCTORS
+    VExampleRocketSystem__Syms(VerilatedContext* contextp, const char* namep, VExampleRocketSystem* modelp);
+    ~VExampleRocketSystem__Syms();
+
+    // METHODS
+    const char* name() { return TOP.name(); }
+};
+
+#endif  // guard

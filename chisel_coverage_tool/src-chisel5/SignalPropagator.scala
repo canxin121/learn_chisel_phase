@@ -119,7 +119,8 @@ object SignalPropagator {
   case class ChildSignalSource(
       instanceName: String,
       propagatedFieldName: String,
-      originInfo: SignalOriginInfo
+      originInfo: SignalOriginInfo,
+      isConditional: Boolean // 新增：标记此信号是否来自条件定义的实例
   ) extends SignalSource {
     override def getOriginInfo: Info = originInfo.originInfo
   }
@@ -352,7 +353,7 @@ object SignalPropagator {
     val childSignalSources = mutable.ListBuffer[ChildSignalSource]()
     val childInstanceResults = mutable.Map[String, ModuleTransformResult]()
 
-    def findInstancesAndCollectChildSignals(statement: Statement): Unit =
+    def findInstancesAndCollectChildSignals(statement: Statement, isInConditionalContext: Boolean): Unit =
       statement match {
         case inst: DefInstance =>
           val childModuleName = inst.module
@@ -396,18 +397,19 @@ object SignalPropagator {
                 childSignalSources += ChildSignalSource(
                   inst.name,
                   field.name,
-                  originInfo
+                  originInfo,
+                  isInConditionalContext
                 )
               }
             case _ => ()
           }
-        case Block(stmts) => stmts.foreach(findInstancesAndCollectChildSignals)
+        case Block(stmts) => stmts.foreach(findInstancesAndCollectChildSignals(_, isInConditionalContext))
         case Conditionally(_, _, conseq, alt) =>
-          findInstancesAndCollectChildSignals(conseq);
-          findInstancesAndCollectChildSignals(alt)
+          findInstancesAndCollectChildSignals(conseq, true);
+          findInstancesAndCollectChildSignals(alt, true)
         case _ => ()
       }
-    findInstancesAndCollectChildSignals(module.body)
+    findInstancesAndCollectChildSignals(module.body, false)
 
     val allSignalSources: List[SignalSource] =
       localSignalSources ++ childSignalSources.toList
@@ -420,7 +422,7 @@ object SignalPropagator {
       val (propagatedFieldName, originalType, originInfo) = source match {
         case LocalSignalSource(pfname, sigOrigin) =>
           (pfname, sigOrigin.signalType, sigOrigin.originInfo)
-        case ChildSignalSource(_, pfname, sigOrigin) =>
+        case ChildSignalSource(_, pfname, sigOrigin, _) =>
           (pfname, sigOrigin.signalType, sigOrigin.originInfo)
       }
 
@@ -478,6 +480,9 @@ object SignalPropagator {
     val localSignalsNeedingIntermediateWire =
       mutable.Map[String, (Expression, Type, String)]()
 
+    val conditionalChildSignalsNeedingIntermediateWire =
+      mutable.Map[String, (String, Type, String)]()
+
     localSignalSources.foreach {
       case LocalSignalSource(pfname, SignalOriginInfo(expr, originalType, _)) =>
         getRootReferenceName(expr) match {
@@ -486,7 +491,7 @@ object SignalPropagator {
               case UnknownType =>
                 config.defaultTypeForUnknown.getOrElse(
                   throwInternalError(
-                    s"SignalPropagator: 模块 '${module.name}' 中，信号 '${expr.serialize}' (根 $rootRefName) 解析为 UnknownType，且未指定默认类型。"
+                    s"SignalPropagator: 模块 '${module.name}' 中，本地信号 '${expr.serialize}' (根 $rootRefName) 解析为 UnknownType，且未指定默认类型。"
                   )
                 )
               case validTpe => validTpe
@@ -499,54 +504,99 @@ object SignalPropagator {
         }
     }
 
-    val intermediateWireDefs: Seq[DefWire] =
+    childSignalSources.foreach {
+      case ChildSignalSource(instName, propFieldName, sigOrigin, isConditional) if isConditional =>
+         val resolvedWireType = sigOrigin.signalType match {
+              case UnknownType =>
+                 throwInternalError(
+                    s"SignalPropagator: 模块 '${module.name}' 中，来自条件实例 '$instName' 的信号 '$propFieldName' 解析为 UnknownType。"
+                  )
+              case validTpe => validTpe
+            }
+         val intermediateWireName = s"${config.intermediateWirePrefix}${propFieldName}"
+         conditionalChildSignalsNeedingIntermediateWire(propFieldName) = (instName, resolvedWireType, intermediateWireName)
+      case _ =>
+    }
+
+    val localIntermediateWireDefs: Seq[DefWire] =
       localSignalsNeedingIntermediateWire.values.map {
         case (_, resolvedType, wireName) =>
           DefWire(NoInfo, wireName, resolvedType)
       }.toSeq
 
-    val intermediateWireDefaultConnects: Seq[Statement] =
-      localSignalsNeedingIntermediateWire.values.map {
-        case (_, resolvedWireType, wireName) =>
-          IsInvalid(
-            NoInfo,
-            Reference(
-              wireName,
-              resolvedWireType
-            )
-          )
+    val childIntermediateWireDefs: Seq[DefWire] =
+      conditionalChildSignalsNeedingIntermediateWire.values.map {
+          case (_, resolvedType, wireName) => DefWire(NoInfo, wireName, resolvedType)
       }.toSeq
 
-    val nodeConnectedToIntermediateWire = mutable.Set[String]()
-    def addIntermediateConnects(statement: Statement): Seq[Statement] =
+    val localIntermediateWireDefaults: Seq[Statement] =
+      localSignalsNeedingIntermediateWire.values.map {
+        case (_, resolvedWireType, wireName) =>
+          IsInvalid(NoInfo, Reference(wireName, resolvedWireType))
+      }.toSeq
+
+    val childIntermediateWireDefaults: Seq[Statement] =
+      conditionalChildSignalsNeedingIntermediateWire.values.map {
+          case (_, resolvedType, wireName) => IsInvalid(NoInfo, Reference(wireName, resolvedType))
+      }.toSeq
+
+    val intermediateWireDefs = localIntermediateWireDefs ++ childIntermediateWireDefs
+    val intermediateWireDefaultConnects = localIntermediateWireDefaults ++ childIntermediateWireDefaults
+
+    val nodesConnectedToIntermediateWire = mutable.Set[String]()
+    val conditionalInstancesConnected = mutable.Set[String]()
+
+    def addIntermediateConnections(statement: Statement): Seq[Statement] =
       statement match {
         case nodeDef @ DefNode(info, nodeName, nodeValue) =>
           localSignalsNeedingIntermediateWire.get(nodeName) match {
             case Some((_, resolvedWireType, wireName))
-                if !nodeConnectedToIntermediateWire.contains(nodeName) =>
+                if !nodesConnectedToIntermediateWire.contains(nodeName) =>
               val intermediateWireRef = Reference(wireName, resolvedWireType)
               val nodeRef = Reference(nodeName, nodeValue.tpe)
               val connectStmt = Connect(info, intermediateWireRef, nodeRef)
-              nodeConnectedToIntermediateWire += nodeName
+              nodesConnectedToIntermediateWire += nodeName
               Seq(nodeDef, connectStmt)
             case _ => Seq(nodeDef)
           }
         case regDef @ DefRegister(info, regName, regType, clock, reset, init) =>
-          localSignalsNeedingIntermediateWire.get(regName) match {
+           localSignalsNeedingIntermediateWire.get(regName) match {
             case Some((_, resolvedWireType, wireName))
-                if !nodeConnectedToIntermediateWire.contains(regName) =>
+                if !nodesConnectedToIntermediateWire.contains(regName) =>
               val intermediateWireRef = Reference(wireName, resolvedWireType)
               val regRef = Reference(regName, regType)
               val connectStmt = Connect(info, intermediateWireRef, regRef)
-              nodeConnectedToIntermediateWire += regName
+              nodesConnectedToIntermediateWire += regName
               Seq(regDef, connectStmt)
             case _ => Seq(regDef)
           }
+        case inst @ DefInstance(info, instName, moduleName, _) =>
+          val connectsToAdd = conditionalChildSignalsNeedingIntermediateWire.collect {
+             case (propFieldName, (`instName`, wireType, wireName)) if !conditionalInstancesConnected.contains(propFieldName) =>
+                val sourceInfoOpt = allSignalSources.collectFirst {
+                    case cs @ ChildSignalSource(`instName`, `propFieldName`, _, true) => cs
+                }
+                sourceInfoOpt match {
+                    case Some(ChildSignalSource(_, _, sigOrigin, _)) =>
+                        val intermediateWireRef = Reference(wireName, wireType)
+                        if (sigOrigin.sourceExpression.tpe != wireType && sigOrigin.sourceExpression.tpe != UnknownType) {
+                             println(s"[WARN] SignalPropagator: 类型不匹配，连接条件实例 ${instName} 的信号 ${propFieldName} (${sigOrigin.sourceExpression.tpe.serialize}) 到中间线 ${wireName} (${wireType.serialize})")
+                        }
+                        val connectStmt = Connect(info, intermediateWireRef, sigOrigin.sourceExpression)
+                        conditionalInstancesConnected += propFieldName
+                        connectStmt
+                    case None =>
+                        throwInternalError(s"SignalPropagator: 找不到条件实例 ${instName} 信号 ${propFieldName} 的源信息。")
+
+                }
+          }.toSeq
+          Seq(inst) ++ connectsToAdd
+
         case block @ Block(stmts) =>
-          Seq(block.copy(stmts = stmts.flatMap(addIntermediateConnects)))
+          Seq(block.copy(stmts = stmts.flatMap(addIntermediateConnections)))
         case conditional @ Conditionally(info, pred, conseq, alt) =>
-          val newConseqStmts = addIntermediateConnects(conseq)
-          val newAltStmts = addIntermediateConnects(alt)
+          val newConseqStmts = addIntermediateConnections(conseq)
+          val newAltStmts = addIntermediateConnections(alt)
           val finalConseq = newConseqStmts match {
             case Seq(s) => s; case ss => Block(ss)
           }
@@ -560,8 +610,9 @@ object SignalPropagator {
     val existingBodyStmts = module.body match {
       case Block(stmts) => stmts; case EmptyStmt => Seq.empty; case s => Seq(s)
     }
+
     val bodyWithIntermediateConnectsAdded: Seq[Statement] =
-      existingBodyStmts.flatMap(addIntermediateConnects)
+      existingBodyStmts.flatMap(addIntermediateConnections)
 
     val finalPortFieldConnects: Seq[Connect] = finalUniqueBundleFields.map {
       field =>
@@ -574,7 +625,7 @@ object SignalPropagator {
         val sourceInfo = allSignalSources
           .find {
             case LocalSignalSource(fname, _)    => fname == field.name
-            case ChildSignalSource(_, fname, _) => fname == field.name
+            case ChildSignalSource(_, fname, _, _) => fname == field.name
           }
           .getOrElse(
             throwInternalError(
@@ -583,27 +634,25 @@ object SignalPropagator {
           )
 
         val connectSourceExpression: Expression = sourceInfo match {
-          case LocalSignalSource(_, origin @ SignalOriginInfo(_, _, _)) =>
+          case LocalSignalSource(pfname, origin @ SignalOriginInfo(_, _, _)) =>
             getRootReferenceName(origin.sourceExpression) match {
               case Some(rootRefName)
-                  if localSignalsNeedingIntermediateWire.contains(
-                    rootRefName
-                  ) &&
-                    nodeConnectedToIntermediateWire.contains(rootRefName) =>
+                  if localSignalsNeedingIntermediateWire.contains(rootRefName) =>
                 val (_, resolvedWireType, wireName) =
                   localSignalsNeedingIntermediateWire(rootRefName)
                 Reference(wireName, resolvedWireType)
               case _ =>
-                if (
-                  origin.signalType != field.tpe && origin.signalType != UnknownType
-                ) {
-                  println(
-                    s"[WARN] SignalPropagator: 模块 ${module.name} 连接 ${origin.sourceExpression.serialize} (类型 ${origin.signalType.serialize}) 到端口 ${field.name} (类型 ${field.tpe.serialize}) 时类型可能不匹配。"
-                  )
-                }
                 origin.sourceExpression
             }
-          case ChildSignalSource(_, _, origin) => origin.sourceExpression
+          case ChildSignalSource(_, propFieldName, origin, isConditional) =>
+             if (isConditional) {
+                 conditionalChildSignalsNeedingIntermediateWire.get(propFieldName) match {
+                     case Some((_, wireType, wireName)) => Reference(wireName, wireType)
+                     case None => throwInternalError(s"SignalPropagator: 找不到条件子信号 ${propFieldName} 的中间线信息。")
+                 }
+             } else {
+                 origin.sourceExpression
+             }
         }
         Connect(NoInfo, portFieldAccess, connectSourceExpression)
     }
@@ -733,7 +782,7 @@ object MuxCondPropagator {
       def findMuxCondsInStmt(statement: Statement): Unit = statement match {
         case stmt @ DefNode(info, _, value) => findMuxCondsInExpr(value, info)
         case stmt @ Connect(info, _, expr)  => findMuxCondsInExpr(expr, info)
-        case stmt @ DefRegister(info, _, _, clock, _, _) =>
+        case stmt @ DefRegister(info, _, _, clock, reset, init) =>
           findMuxCondsInExpr(clock, info)
         case stmt @ Stop(info, _, clk, en) =>
           findMuxCondsInExpr(clk, info); findMuxCondsInExpr(en, info)

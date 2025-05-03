@@ -90,8 +90,11 @@ object CoverageTool {
       moduleGenerator: () => RawModule,
       outputDir: String,
       enableDevOutput: Boolean = false,
-      firtoolOpts: Array[String] =
-        Array("-disable-all-randomization", "-strip-debug-info")
+      firtoolOpts: Array[String] = Array(
+        "-disable-all-randomization",
+        "-strip-debug-info",
+        "--disable-annotation-unknown"
+      )
   ): Unit = {
     println(
       s"--- 开始处理模块: ${TransformOutputData.mainModuleName} ($outputDir) ---"
@@ -211,10 +214,11 @@ object CoverageTool {
           try {
             // 调用 CoverageCollectorGenerator 中的方法
             val coverageInfoJson =
-              CoverageCollectorGenerator.generateCoverageInfoJson( // <-- 调用移动后的方法
-                moduleName,
-                retrievedPortInfoList
-              )
+              CoverageCollectorGenerator
+                .generateCoverageInfoJson( // <-- 调用移动后的方法
+                  moduleName,
+                  retrievedPortInfoList
+                )
             val jsonPath =
               s"$specificOutputDir/${moduleName}_coverage_info.json"
             // 将 overwrite 设置为 false

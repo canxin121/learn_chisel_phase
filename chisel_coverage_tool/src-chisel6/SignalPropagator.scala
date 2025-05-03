@@ -96,9 +96,9 @@ object SignalPropagator {
 
   // --- 常量定义 ---
   val InstanceSeparator = "__I__"
-  val ModuleMarker = "__M__" 
-  val SignalMarker = "__S__" 
-  val InternalSeparator = "__s__" 
+  val ModuleMarker = "__M__"
+  val SignalMarker = "__S__"
+  val InternalSeparator = "__s__"
 
   // --- 通用数据结构 ---
   case class SignalOriginInfo(
@@ -654,19 +654,11 @@ object SignalPropagator {
               case Some(rootRefName)
                   if localSignalsNeedingIntermediateWire.contains(
                     rootRefName
-                  ) &&
-                    nodeConnectedToIntermediateWire.contains(rootRefName) =>
+                  ) =>
                 val (_, resolvedWireType, wireName) =
                   localSignalsNeedingIntermediateWire(rootRefName)
                 Reference(wireName, resolvedWireType)
               case _ =>
-                if (
-                  origin.signalType != field.tpe && origin.signalType != UnknownType
-                ) {
-                  println(
-                    s"[WARN] SignalPropagator: 模块 ${module.name} 连接 ${origin.sourceExpression.serialize} (类型 ${origin.signalType.serialize}) 到端口 ${field.name} (类型 ${field.tpe.serialize}) 时类型可能不匹配。"
-                  )
-                }
                 origin.sourceExpression
             }
           case ChildSignalSource(_, _, origin) => origin.sourceExpression
