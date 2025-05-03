@@ -17,19 +17,19 @@ void VWaveformGenerator___024root__trace_chg_0(void* voidSelf, VerilatedVcd::Buf
 }
 
 void VWaveformGenerator___024root__trace_chg_0_sub_0(VWaveformGenerator___024root* vlSelf, VerilatedVcd::Buffer* bufp) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    VWaveformGenerator___024root__trace_chg_0_sub_0\n"); );
+    if (false && vlSelf) {}  // Prevent unused
     VWaveformGenerator__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    auto& vlSelfRef = std::ref(*vlSelf).get();
+    VL_DEBUG_IF(VL_DBG_MSGF("+    VWaveformGenerator___024root__trace_chg_0_sub_0\n"); );
     // Init
     uint32_t* const oldp VL_ATTR_UNUSED = bufp->oldp(vlSymsp->__Vm_baseCode + 1);
     // Body
-    bufp->chgBit(oldp+0,(vlSelfRef.clock));
-    bufp->chgBit(oldp+1,(vlSelfRef.reset));
-    bufp->chgCData(oldp+2,(vlSelfRef.io_waveType),2);
-    bufp->chgSData(oldp+3,(vlSelfRef.io_freqCtrl),16);
-    bufp->chgSData(oldp+4,(vlSelfRef.io_phaseOffset),16);
-    bufp->chgCData(oldp+5,(vlSelfRef.io_output),8);
-    bufp->chgSData(oldp+6,(vlSelfRef.WaveformGenerator__DOT__phaseAcc),16);
+    bufp->chgBit(oldp+0,(vlSelf->clock));
+    bufp->chgBit(oldp+1,(vlSelf->reset));
+    bufp->chgCData(oldp+2,(vlSelf->io_waveType),2);
+    bufp->chgSData(oldp+3,(vlSelf->io_freqCtrl),16);
+    bufp->chgSData(oldp+4,(vlSelf->io_phaseOffset),16);
+    bufp->chgCData(oldp+5,(vlSelf->io_output),8);
+    bufp->chgSData(oldp+6,(vlSelf->WaveformGenerator__DOT__phaseAcc),16);
 }
 
 void VWaveformGenerator___024root__trace_cleanup(void* voidSelf, VerilatedVcd* /*unused*/) {

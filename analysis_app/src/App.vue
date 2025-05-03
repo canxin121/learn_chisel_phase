@@ -17,7 +17,7 @@ const coverageStore = useCoverageStore();
 <template>
   <a-layout class="layout">
     <a-page-header class="page-header" title="Coverage Report Viewer"
-      sub-title="Upload coverage report (.json) and optional coverage info (.json)" />
+      sub-title="Upload coverage report (.json) and coverage info (.json)" />
     <a-layout-content class="content">
       <a-spin :spinning="coverageStore.isLoadingReport || coverageStore.isLoadingInfo" tip="Processing files...">
         <a-space direction="vertical" size="large" style="width: 100%">
@@ -28,10 +28,10 @@ const coverageStore = useCoverageStore();
           <ModuleRootDirEditor v-if="coverageStore.coverageInfo" />
 
           <!-- 摘要组件 -->
-          <CoverageSummary />
+          <CoverageSummary v-if="coverageStore.coverageReport"/>
 
           <!-- 详情和源代码查看器 -->
-          <template v-if="coverageStore.coverageReport">
+          <template v-if="coverageStore.coverageReport && coverageStore.coverageInfo">
             <!-- 详情组件 -->
             <CoverageDetails />
 
@@ -39,9 +39,11 @@ const coverageStore = useCoverageStore();
             <SourceViewer />
           </template>
 
-          <!-- 未加载报告时的消息 -->
+          <!-- 未加载报告或信息时的消息 -->
           <a-card v-else>
-            <p style="text-align: center; color: #888;">Please upload a coverage report file to view the analysis.</p>
+            <p style="text-align: center; color: #888;">
+              Please upload both a coverage report file and a coverage info file to view the analysis.
+            </p>
           </a-card>
         </a-space>
       </a-spin>

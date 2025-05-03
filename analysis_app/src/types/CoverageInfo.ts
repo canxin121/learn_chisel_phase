@@ -2,19 +2,28 @@ import { invoke } from '@tauri-apps/api/core';
 
 // 单个信号的信息
 export interface SignalInfo {
-    name: string; // 原始信号名称
+    compressedName: string; // 压缩名称
+    originName: string; // 原始信号名称
     type: string; // 信号类型
     info: string; // 原始信息字符串
     filePath?: string | null; // 相对文件路径
     line?: number | null; // 行号
     column?: number | null; // 列号
-
 }
 
 // 导出的端口信息
 export interface ExportedPort {
     type: string;
     signals: SignalInfo[];
+    // "nameMapping": {
+    //     "_s0": "WaveformGenerator__M__WaveformGenerator__S__phaseAcc",
+    //     "_s1": "WaveformGenerator__M__WaveformGenerator__S___T_1",
+    //     "_s3": "WaveformGenerator__M__WaveformGenerator__S___T_3",
+    //     "_s2": "WaveformGenerator__M__WaveformGenerator__S___T_2"
+    //   }
+    // 这里的 nameMapping 是一个映射关系，key 是压缩名称，value 是原始名称
+    // 并且这里不包含前缀, 前缀不被压缩
+    nameMapping: Record<string, string>; // 映射关系
 }
 
 
@@ -23,6 +32,7 @@ export interface SourceFileInfo {
     relativePath: string; // 相对路径
     rootDir: string | null; // 根目录
     content: string | null; // 文件内容
+    compressedName: string;
 }
 
 // ModuleInfo 包含一个源文件映射

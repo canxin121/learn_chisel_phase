@@ -5,9 +5,9 @@
 
 
 VL_ATTR_COLD void VWaveformGenerator___024root__trace_init_sub__TOP__0(VWaveformGenerator___024root* vlSelf, VerilatedVcd* tracep) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    VWaveformGenerator___024root__trace_init_sub__TOP__0\n"); );
+    if (false && vlSelf) {}  // Prevent unused
     VWaveformGenerator__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    auto& vlSelfRef = std::ref(*vlSelf).get();
+    VL_DEBUG_IF(VL_DBG_MSGF("+    VWaveformGenerator___024root__trace_init_sub__TOP__0\n"); );
     // Init
     const int c = vlSymsp->__Vm_baseCode;
     // Body
@@ -29,9 +29,9 @@ VL_ATTR_COLD void VWaveformGenerator___024root__trace_init_sub__TOP__0(VWaveform
 }
 
 VL_ATTR_COLD void VWaveformGenerator___024root__trace_init_top(VWaveformGenerator___024root* vlSelf, VerilatedVcd* tracep) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    VWaveformGenerator___024root__trace_init_top\n"); );
+    if (false && vlSelf) {}  // Prevent unused
     VWaveformGenerator__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    auto& vlSelfRef = std::ref(*vlSelf).get();
+    VL_DEBUG_IF(VL_DBG_MSGF("+    VWaveformGenerator___024root__trace_init_top\n"); );
     // Body
     VWaveformGenerator___024root__trace_init_sub__TOP__0(vlSelf, tracep);
 }
@@ -42,9 +42,9 @@ void VWaveformGenerator___024root__trace_chg_0(void* voidSelf, VerilatedVcd::Buf
 void VWaveformGenerator___024root__trace_cleanup(void* voidSelf, VerilatedVcd* /*unused*/);
 
 VL_ATTR_COLD void VWaveformGenerator___024root__trace_register(VWaveformGenerator___024root* vlSelf, VerilatedVcd* tracep) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    VWaveformGenerator___024root__trace_register\n"); );
+    if (false && vlSelf) {}  // Prevent unused
     VWaveformGenerator__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    auto& vlSelfRef = std::ref(*vlSelf).get();
+    VL_DEBUG_IF(VL_DBG_MSGF("+    VWaveformGenerator___024root__trace_register\n"); );
     // Body
     tracep->addConstCb(&VWaveformGenerator___024root__trace_const_0, 0U, vlSelf);
     tracep->addFullCb(&VWaveformGenerator___024root__trace_full_0, 0U, vlSelf);
@@ -71,17 +71,17 @@ VL_ATTR_COLD void VWaveformGenerator___024root__trace_full_0(void* voidSelf, Ver
 }
 
 VL_ATTR_COLD void VWaveformGenerator___024root__trace_full_0_sub_0(VWaveformGenerator___024root* vlSelf, VerilatedVcd::Buffer* bufp) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    VWaveformGenerator___024root__trace_full_0_sub_0\n"); );
+    if (false && vlSelf) {}  // Prevent unused
     VWaveformGenerator__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    auto& vlSelfRef = std::ref(*vlSelf).get();
+    VL_DEBUG_IF(VL_DBG_MSGF("+    VWaveformGenerator___024root__trace_full_0_sub_0\n"); );
     // Init
     uint32_t* const oldp VL_ATTR_UNUSED = bufp->oldp(vlSymsp->__Vm_baseCode);
     // Body
-    bufp->fullBit(oldp+1,(vlSelfRef.clock));
-    bufp->fullBit(oldp+2,(vlSelfRef.reset));
-    bufp->fullCData(oldp+3,(vlSelfRef.io_waveType),2);
-    bufp->fullSData(oldp+4,(vlSelfRef.io_freqCtrl),16);
-    bufp->fullSData(oldp+5,(vlSelfRef.io_phaseOffset),16);
-    bufp->fullCData(oldp+6,(vlSelfRef.io_output),8);
-    bufp->fullSData(oldp+7,(vlSelfRef.WaveformGenerator__DOT__phaseAcc),16);
+    bufp->fullBit(oldp+1,(vlSelf->clock));
+    bufp->fullBit(oldp+2,(vlSelf->reset));
+    bufp->fullCData(oldp+3,(vlSelf->io_waveType),2);
+    bufp->fullSData(oldp+4,(vlSelf->io_freqCtrl),16);
+    bufp->fullSData(oldp+5,(vlSelf->io_phaseOffset),16);
+    bufp->fullCData(oldp+6,(vlSelf->io_output),8);
+    bufp->fullSData(oldp+7,(vlSelf->WaveformGenerator__DOT__phaseAcc),16);
 }

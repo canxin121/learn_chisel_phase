@@ -115,59 +115,61 @@ export function buildCoverageTrees(report: CoverageReport, instanceSignalMap: In
     const currentInstancePath = [...currentPath, instanceNode.instanceName];
 
     instanceNode.signals.forEach(signalInfo => {
-      const parsed = parseSignalName(signalInfo.name);
+      // 使用 originName 进行解析以获取显示名称、路径、模块和类型
+      const parsed = parseSignalName(signalInfo.originName);
       let coverageData: ConditionCoveragePoint | RegisterCoveragePoint | undefined = undefined;
       let coveragePercent: number | undefined = undefined;
       let targetList: TreeNode[] | null = null;
 
-      // 在报告中查找相应的覆盖率数据
+      // 在报告中查找相应的覆盖率数据，使用 compressedName
       switch (parsed.type) {
         case 'predicate':
-          coverageData = report.conditional_predicates?.find(p => p.name === signalInfo.name);
+          // 使用 compressedName 查找
+          coverageData = report.conditional_predicates?.find(p => p.compressed_name === signalInfo.compressedName);
           targetList = predicateSignals;
           break;
         case 'mux':
-          coverageData = report.mux_conditions?.find(m => m.name === signalInfo.name);
+          // 使用 compressedName 查找
+          coverageData = report.mux_conditions?.find(m => m.compressed_name === signalInfo.compressedName);
           targetList = muxSignals;
           break;
         case 'register':
-          coverageData = report.register_coverage?.find(r => r.name === signalInfo.name);
+          // 使用 compressedName 查找
+          coverageData = report.register_coverage?.find(r => r.compressed_name === signalInfo.compressedName);
           targetList = registerSignals;
           break;
         default:
-          console.warn(`[buildCoverageTrees] Unknown signal type for: ${signalInfo.name}`);
+          console.warn(`[buildCoverageTrees] Unknown signal type for: ${signalInfo.originName}`);
           return; // 跳过未知类型
       }
 
       if (!coverageData) {
-        // console.warn(`[buildCoverageTrees] No coverage data found in report for signal: ${signalInfo.fieldName}`);
-        // 决定是否包含没有覆盖率数据的信号
-        // return; // 选项：跳过报告中没有的信号
+        // console.warn(`[buildCoverageTrees] No coverage data found in report for signal (compressed): ${signalInfo.compressedName}`);
         coveragePercent = undefined; // 包含但标记为无覆盖率数据
       } else {
         coveragePercent = coverageData.coverage_percent;
       }
 
-      // 确定源位置
+      // 确定源位置 (来自 info 文件)
       const sourceLocation = signalInfo.filePath && signalInfo.line !== null && signalInfo.line !== undefined
         ? { filePath: signalInfo.filePath, line: signalInfo.line, column: signalInfo.column ?? 0 }
         : undefined;
 
       // 为此信号创建 TreeNode
       const signalNode: TreeNode = {
-        key: signalInfo.name, // 唯一键
-        label: parsed.signal, // 显示名称
+        key: signalInfo.originName, // 唯一键使用 originName
+        label: parsed.signal, // 显示名称来自 originName 解析结果
         isSignal: true,
         coverage: coveragePercent,
-        originatingModule: instanceNode.moduleName, // 模块名称
+        originatingModule: parsed.originatingModule, // 模块名称来自 originName 解析结果
         sourceLocation: sourceLocation,
         // 附加数据
         data: {
-          ...(coverageData ?? {}), // 覆盖率数据
-          rawSignalInfo: signalInfo, // 原始信号信息
-          parsedName: parsed, // 解析后的名称
+          ...(coverageData ?? {}), // 覆盖率数据 (可能为空)
+          rawSignalInfo: signalInfo, // 原始信号信息 (包含 originName 和 compressedName)
+          parsedName: parsed, // 解析后的名称 (基于 originName)
           instancePath: currentInstancePath, // 实例路径
-          type: parsed.type, // 类型
+          type: parsed.type, // 类型 (基于 originName)
         },
         // children: undefined,
       };

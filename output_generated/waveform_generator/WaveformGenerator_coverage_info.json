@@ -4,47 +4,59 @@
     {
       "type": "mux_cond",
       "signals": [
-      {
-        "name": "_mux_cond_WaveformGenerator__M__WaveformGenerator__S___io_output_T_4",
-        "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\WaveformGenerator.scala 53:23]"
-      }
+        {
+          "compressed_name": "_mux_cond__s0",
+          "original_name": "WaveformGenerator__M__WaveformGenerator__S__phaseAcc",
+          "type": "UInt<1>",
+          "info": " @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 53:23]"
+        }
       ]
     },
     {
       "type": "cond_pred",
       "signals": [
-      {
-        "name": "_cond_pred_WaveformGenerator__M__WaveformGenerator__S___T",
-        "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\WaveformGenerator.scala 42:23]"
-      },
-      {
-        "name": "_cond_pred_WaveformGenerator__M__WaveformGenerator__S___T_1",
-        "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\WaveformGenerator.scala 42:23]"
-      },
-      {
-        "name": "_cond_pred_WaveformGenerator__M__WaveformGenerator__S___T_2",
-        "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\WaveformGenerator.scala 42:23]"
-      },
-      {
-        "name": "_cond_pred_WaveformGenerator__M__WaveformGenerator__S___T_3",
-        "type": "UInt<1>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\WaveformGenerator.scala 42:23]"
-      }
+        {
+          "compressed_name": "_cond_pred__s1",
+          "original_name": "WaveformGenerator__M__WaveformGenerator__S___T_1",
+          "type": "UInt<1>",
+          "info": " @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 42:23]"
+        },
+        {
+          "compressed_name": "_cond_pred__s2",
+          "original_name": "WaveformGenerator__M__WaveformGenerator__S___T_2",
+          "type": "UInt<1>",
+          "info": " @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 42:23]"
+        },
+        {
+          "compressed_name": "_cond_pred__s3",
+          "original_name": "WaveformGenerator__M__WaveformGenerator__S___T_3",
+          "type": "UInt<1>",
+          "info": " @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 42:23]"
+        },
+        {
+          "compressed_name": "_cond_pred__s0",
+          "original_name": "WaveformGenerator__M__WaveformGenerator__S__phaseAcc",
+          "type": "UInt<1>",
+          "info": " @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 42:23]"
+        }
       ]
     },
     {
       "type": "register",
       "signals": [
-      {
-        "name": "_reg_signals_WaveformGenerator__M__WaveformGenerator__S__phaseAcc",
-        "type": "UInt<16>",
-        "info": " @[\\\\chisel_coverage_tool\\\\src\\\\modules\\\\WaveformGenerator.scala 17:25]"
-      }
+        {
+          "compressed_name": "_reg_signals__s0",
+          "original_name": "WaveformGenerator__M__WaveformGenerator__S__phaseAcc",
+          "type": "UInt<16>",
+          "info": " @[chisel_coverage_tool/src/modules/WaveformGenerator.scala 17:25]"
+        }
       ]
     }
-  ]
+  ],
+  "nameMapping": {
+    "_s0": "WaveformGenerator__M__WaveformGenerator__S__phaseAcc",
+    "_s1": "WaveformGenerator__M__WaveformGenerator__S___T_1",
+    "_s3": "WaveformGenerator__M__WaveformGenerator__S___T_3",
+    "_s2": "WaveformGenerator__M__WaveformGenerator__S___T_2"
+  }
 }

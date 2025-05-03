@@ -17,8 +17,6 @@ VWaveformGenerator__Syms::VWaveformGenerator__Syms(VerilatedContext* contextp, c
     // Setup module instances
     , TOP{this, namep}
 {
-        // Check resources
-        Verilated::stackCheck(41);
     // Configure time unit / time precision
     _vm_contextp__->timeunit(-12);
     _vm_contextp__->timeprecision(-12);

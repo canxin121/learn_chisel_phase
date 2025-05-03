@@ -23,6 +23,4 @@
 #include "VWaveformGenerator__Syms.h"
 #include "VWaveformGenerator.h"
 
-// Additional include files added using '--compiler-include'
-
 #endif  // guard

@@ -14,20 +14,18 @@ VWaveformGenerator::VWaveformGenerator(VerilatedContext* _vcontextp__, const cha
     , reset{vlSymsp->TOP.reset}
     , io_waveType{vlSymsp->TOP.io_waveType}
     , io_output{vlSymsp->TOP.io_output}
-    , _mux_cond_WaveformGenerator___05FI___05Flocal___05FI___05F_io_output_T_4{vlSymsp->TOP._mux_cond_WaveformGenerator___05FI___05Flocal___05FI___05F_io_output_T_4}
-    , _cond_pred_WaveformGenerator___05FI___05Flocal___05FI___05F_T{vlSymsp->TOP._cond_pred_WaveformGenerator___05FI___05Flocal___05FI___05F_T}
-    , _cond_pred_WaveformGenerator___05FI___05Flocal___05FI___05F_T_1{vlSymsp->TOP._cond_pred_WaveformGenerator___05FI___05Flocal___05FI___05F_T_1}
-    , _cond_pred_WaveformGenerator___05FI___05Flocal___05FI___05F_T_2{vlSymsp->TOP._cond_pred_WaveformGenerator___05FI___05Flocal___05FI___05F_T_2}
-    , _cond_pred_WaveformGenerator___05FI___05Flocal___05FI___05F_T_3{vlSymsp->TOP._cond_pred_WaveformGenerator___05FI___05Flocal___05FI___05F_T_3}
+    , _mux_cond___05Fs0{vlSymsp->TOP._mux_cond___05Fs0}
+    , _cond_pred___05Fs0{vlSymsp->TOP._cond_pred___05Fs0}
+    , _cond_pred___05Fs1{vlSymsp->TOP._cond_pred___05Fs1}
+    , _cond_pred___05Fs2{vlSymsp->TOP._cond_pred___05Fs2}
+    , _cond_pred___05Fs3{vlSymsp->TOP._cond_pred___05Fs3}
     , io_freqCtrl{vlSymsp->TOP.io_freqCtrl}
     , io_phaseOffset{vlSymsp->TOP.io_phaseOffset}
-    , _reg_signals_WaveformGenerator___05FI___05Flocal___05FI___05FphaseAcc{vlSymsp->TOP._reg_signals_WaveformGenerator___05FI___05Flocal___05FI___05FphaseAcc}
+    , _reg_signals___05Fs0{vlSymsp->TOP._reg_signals___05Fs0}
     , rootp{&(vlSymsp->TOP)}
 {
     // Register model with the context
     contextp()->addModel(this);
-    contextp()->traceBaseModelCbAdd(
-        [this](VerilatedTraceBaseC* tfp, int levels, int options) { traceBaseModel(tfp, levels, options); });
 }
 
 VWaveformGenerator::VWaveformGenerator(const char* _vcname__)
@@ -79,7 +77,7 @@ void VWaveformGenerator::eval_step() {
 bool VWaveformGenerator::eventsPending() { return false; }
 
 uint64_t VWaveformGenerator::nextTimeSlot() {
-    VL_FATAL_MT(__FILE__, __LINE__, "", "No delays in the design");
+    VL_FATAL_MT(__FILE__, __LINE__, "", "%Error: No delays in the design");
     return 0;
 }
 
@@ -137,14 +135,12 @@ VL_ATTR_COLD static void trace_init(void* voidSelf, VerilatedVcd* tracep, uint32
 
 VL_ATTR_COLD void VWaveformGenerator___024root__trace_register(VWaveformGenerator___024root* vlSelf, VerilatedVcd* tracep);
 
-VL_ATTR_COLD void VWaveformGenerator::traceBaseModel(VerilatedTraceBaseC* tfp, int levels, int options) {
-    (void)levels; (void)options;
-    VerilatedVcdC* const stfp = dynamic_cast<VerilatedVcdC*>(tfp);
-    if (VL_UNLIKELY(!stfp)) {
-        vl_fatal(__FILE__, __LINE__, __FILE__,"'VWaveformGenerator::trace()' called on non-VerilatedVcdC object;"
-            " use --trace-fst with VerilatedFst object, and --trace-vcd with VerilatedVcd object");
+VL_ATTR_COLD void VWaveformGenerator::trace(VerilatedVcdC* tfp, int levels, int options) {
+    if (tfp->isOpen()) {
+        vl_fatal(__FILE__, __LINE__, __FILE__,"'VWaveformGenerator::trace()' shall not be called after 'VerilatedVcdC::open()'.");
     }
-    stfp->spTrace()->addModel(this);
-    stfp->spTrace()->addInitCb(&trace_init, &(vlSymsp->TOP));
-    VWaveformGenerator___024root__trace_register(&(vlSymsp->TOP), stfp->spTrace());
+    if (false && levels && options) {}  // Prevent unused
+    tfp->spTrace()->addModel(this);
+    tfp->spTrace()->addInitCb(&trace_init, &(vlSymsp->TOP));
+    VWaveformGenerator___024root__trace_register(&(vlSymsp->TOP), tfp->spTrace());
 }

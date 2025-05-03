@@ -250,19 +250,19 @@ struct RegisterCoveragePoint {
       for (int i = 0; i < width; ++i) {
         const auto &bit = bit_coverage[i];
         uint64_t total_updates = bit.count_zero + bit.count_one;
-        double zero_perc = (total_updates > 0)
-                               ? static_cast<double>(bit.count_zero) /
-                                     total_updates * 100.0
-                               : 0.0;
-        double one_perc = (total_updates > 0)
-                              ? static_cast<double>(bit.count_one) /
-                                    total_updates * 100.0
-                              : 0.0;
+        double zero_perc =
+            (total_updates > 0)
+                ? static_cast<double>(bit.count_zero) / total_updates * 100.0
+                : 0.0;
+        double one_perc =
+            (total_updates > 0)
+                ? static_cast<double>(bit.count_one) / total_updates * 100.0
+                : 0.0;
         std::string status_symbol = bit.get_status_symbol();
         bool is_covered = bit.is_covered();
 
-        std::cout << "      Bit " << std::setw(3) << i << ": "
-                  << std::setw(3) << status_symbol << " "
+        std::cout << "      Bit " << std::setw(3) << i << ": " << std::setw(3)
+                  << status_symbol << " "
                   << "C0:" << std::setw(6) << bit.count_zero << " "
                   << "C1:" << std::setw(6) << bit.count_one << " ("
                   << std::fixed << std::setprecision(1) << std::setw(5)
@@ -370,7 +370,8 @@ inline void CoverageCollector::initialize(VWaveformGenerator *top) {
         "Error: DUT pointer is null in CoverageCollector::initialize.");
   }
   dut_ptr = top;
-  std::cout << "CoverageCollector: Initializing coverage points for VWaveformGenerator..."
+  std::cout << "CoverageCollector: Initializing coverage points for "
+               "VWaveformGenerator..."
             << std::endl;
 
   condition_points.clear();
@@ -379,32 +380,34 @@ inline void CoverageCollector::initialize(VWaveformGenerator *top) {
 
   // --- Placeholder for dynamically generated emplace_back calls ---
   try {
-    mux_condition_points.emplace_back("_mux_cond_WaveformGenerator__M__WaveformGenerator__S___io_output_T_4", &top->_mux_cond_WaveformGenerator___05FM___05FWaveformGenerator___05FS___05F_io_output_T_4);
+    mux_condition_points.emplace_back("_mux_cond__s0", &top->_mux_cond___05Fs0);
   } catch (...) {
-    std::cerr << "Error adding mux point _mux_cond_WaveformGenerator___05FM___05FWaveformGenerator___05FS___05F_io_output_T_4" << std::endl;
+    std::cerr << "Error adding mux point _mux_cond___05Fs0" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_WaveformGenerator__M__WaveformGenerator__S___T", &top->_cond_pred_WaveformGenerator___05FM___05FWaveformGenerator___05FS___05F_T);
+    condition_points.emplace_back("_cond_pred__s0", &top->_cond_pred___05Fs0);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_WaveformGenerator___05FM___05FWaveformGenerator___05FS___05F_T" << std::endl;
+    std::cerr << "Error adding cond point _cond_pred___05Fs0" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_WaveformGenerator__M__WaveformGenerator__S___T_1", &top->_cond_pred_WaveformGenerator___05FM___05FWaveformGenerator___05FS___05F_T_1);
+    condition_points.emplace_back("_cond_pred__s1", &top->_cond_pred___05Fs1);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_WaveformGenerator___05FM___05FWaveformGenerator___05FS___05F_T_1" << std::endl;
+    std::cerr << "Error adding cond point _cond_pred___05Fs1" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_WaveformGenerator__M__WaveformGenerator__S___T_2", &top->_cond_pred_WaveformGenerator___05FM___05FWaveformGenerator___05FS___05F_T_2);
+    condition_points.emplace_back("_cond_pred__s2", &top->_cond_pred___05Fs2);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_WaveformGenerator___05FM___05FWaveformGenerator___05FS___05F_T_2" << std::endl;
+    std::cerr << "Error adding cond point _cond_pred___05Fs2" << std::endl;
   }
   try {
-    condition_points.emplace_back("_cond_pred_WaveformGenerator__M__WaveformGenerator__S___T_3", &top->_cond_pred_WaveformGenerator___05FM___05FWaveformGenerator___05FS___05F_T_3);
+    condition_points.emplace_back("_cond_pred__s3", &top->_cond_pred___05Fs3);
   } catch (...) {
-    std::cerr << "Error adding cond point _cond_pred_WaveformGenerator___05FM___05FWaveformGenerator___05FS___05F_T_3" << std::endl;
+    std::cerr << "Error adding cond point _cond_pred___05Fs3" << std::endl;
   }
-  // Register signal: _reg_signals_WaveformGenerator__M__WaveformGenerator__S__phaseAcc (UInt<16>)
-        register_points.emplace_back("_reg_signals_WaveformGenerator__M__WaveformGenerator__S__phaseAcc", 16, reinterpret_cast<const void*>(&top->_reg_signals_WaveformGenerator___05FM___05FWaveformGenerator___05FS___05FphaseAcc));
+  // Register signal: _reg_signals__s0 (UInt<16>)
+  register_points.emplace_back(
+      "_reg_signals__s0", 16,
+      reinterpret_cast<const void *>(&top->_reg_signals___05Fs0));
 
   // --- End of generated emplace_back calls ---
 

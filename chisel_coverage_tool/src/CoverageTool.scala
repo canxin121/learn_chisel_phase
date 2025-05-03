@@ -14,7 +14,8 @@ object TransformOutputData {
   var coverageCollectorHeader: String = ""
   var simMainCpp: String = ""
   var coverageBashScript: String = ""
-  var portInfoList: List[TopLevelExportInfo] = Nil // <-- 新增字段
+  var portInfoList: List[TopLevelExportInfo] = Nil
+  var nameDictionary: Map[String, String] = Map.empty // 新增字段: 存储名称映射
 
   def reset(): Unit = {
     mainModuleName = ""
@@ -23,7 +24,8 @@ object TransformOutputData {
     coverageCollectorHeader = ""
     simMainCpp = ""
     coverageBashScript = ""
-    portInfoList = Nil // <-- 重置新增字段
+    portInfoList = Nil
+    nameDictionary = Map.empty // 重置新增字段
   }
 }
 
@@ -41,14 +43,17 @@ class CoverageTransform extends firrtl.options.Phase {
 
     val circuit = circuitAnno.circuit
 
-    val (new_mux_circuit, mux_port_info) = MuxCondPropagator.transform(circuit)
-    val (new_cond_circuit, cond_port_info) =
+    val (new_mux_circuit, mux_port_info, mux_name_dict) =
+      MuxCondPropagator.transform(circuit)
+    val (new_cond_circuit, cond_port_info, cond_name_dict) =
       ConditionallyPredPropagator.transform(new_mux_circuit)
-    val (new_reg_circuit, reg_port_info) =
+    val (new_reg_circuit, reg_port_info, reg_name_dict) =
       RegisterSignalPropagator.transform(new_cond_circuit)
 
     val port_info_list: List[TopLevelExportInfo] =
       (mux_port_info ++ cond_port_info ++ reg_port_info).toList
+    val combined_name_dictionary: Map[String, String] =
+      mux_name_dict ++ cond_name_dict ++ reg_name_dict
 
     val coverageHeaderCode =
       CoverageCollectorGenerator.generateCoverageCollectorHeader(
@@ -67,7 +72,8 @@ class CoverageTransform extends firrtl.options.Phase {
     TransformOutputData.coverageCollectorHeader = coverageHeaderCode
     TransformOutputData.simMainCpp = simMainCode
     TransformOutputData.coverageBashScript = coverageBashCode
-    TransformOutputData.portInfoList = port_info_list // <-- 存储端口信息
+    TransformOutputData.portInfoList = port_info_list
+    TransformOutputData.nameDictionary = combined_name_dictionary // 存储合并后的名称字典
 
     firrtl.stage.FirrtlCircuitAnnotation(new_reg_circuit) +: otherAnnos
   }
@@ -145,7 +151,8 @@ object CoverageTool {
     // 2. 通过 CustomStage 运行，触发 CustomTransform 并尝试生成转换后的 SV
     var transformedSvOption: Option[String] = None
     var moduleName: String = ""
-    var retrievedPortInfoList: List[TopLevelExportInfo] = Nil // 用于存储端口信息
+    var retrievedPortInfoList: List[TopLevelExportInfo] = Nil
+    var retrievedNameDictionary: Map[String, String] = Map.empty // 用于存储名称字典
     try {
       println(s"  运行 CustomStage (转换并尝试生成 .sv)...")
       val transformed_sv = stage.emitSystemVerilog(
@@ -153,10 +160,9 @@ object CoverageTool {
         firtoolOpts = firtoolOpts
       )
       transformedSvOption = Some(transformed_sv)
-      moduleName = TransformOutputData.mainModuleName // 获取模块名
-      // 注意：这里获取的 portInfoList 仍然是 SignalPropagator 输出的原始列表
-      // JSON 生成函数内部会处理展开逻辑
+      moduleName = TransformOutputData.mainModuleName
       retrievedPortInfoList = TransformOutputData.portInfoList
+      retrievedNameDictionary = TransformOutputData.nameDictionary // 获取名称字典
       if (moduleName.isEmpty) {
         println(s"  警告: CustomTransform 未能设置模块名。")
       }
@@ -166,9 +172,9 @@ object CoverageTool {
         println(
           s"  运行 CustomStage (生成 .sv) 时出错: ${e.getMessage}"
         )
-        // 即使 SV 生成失败，仍然尝试获取模块名和端口信息
         moduleName = TransformOutputData.mainModuleName
         retrievedPortInfoList = TransformOutputData.portInfoList
+        retrievedNameDictionary = TransformOutputData.nameDictionary // 获取名称字典
         if (moduleName.nonEmpty) {
           println(s"  虽然 SV 生成失败，但获取到模块名: $moduleName")
         } else {
@@ -176,7 +182,7 @@ object CoverageTool {
         }
     }
 
-    // 3. 尝试写入其他文件 (FIRRTL, C++, Bash, JSON)，特别是当 enableDevOutput 为 true 时
+    // 3. 尝试写入其他文件 (FIRRTL, C++, Bash, JSON)
     if (moduleName.nonEmpty) {
       try {
         println(s"  尝试写入 FIRRTL, C++, Bash, JSON 文件...")
@@ -212,18 +218,16 @@ object CoverageTool {
         // 写入 Coverage Info JSON 文件
         if (retrievedPortInfoList.nonEmpty) {
           try {
-            // 调用 CoverageCollectorGenerator 中的方法
             val coverageInfoJson =
-              CoverageCollectorGenerator
-                .generateCoverageInfoJson( // <-- 调用移动后的方法
-                  moduleName,
-                  retrievedPortInfoList
-                )
+              CoverageCollectorGenerator.generateCoverageInfoJson(
+                moduleName,
+                retrievedPortInfoList,
+                retrievedNameDictionary // 传递名称字典
+              )
             val jsonPath =
               s"$specificOutputDir/${moduleName}_coverage_info.json"
-            // 将 overwrite 设置为 false
             FileUtil.writeToFile(jsonPath, coverageInfoJson, overwrite = false)
-            println(s"  成功写入 $jsonPath (如果不存在)") // 更新日志消息
+            println(s"  成功写入 $jsonPath (如果不存在)")
           } catch {
             case e: Exception =>
               println(s"   生成或写入 Coverage Info JSON 时出错: ${e.getMessage}")

@@ -67,9 +67,11 @@ export const useCoverageStore = defineStore('coverageStore', () => {
 
   // --- Actions ---
   function rebuildTreesAndUpdateState() {
+    // 检查 report 和 info 是否都已加载
     if (coverageReport.value && coverageInfo.value?.instanceSignalMap) {
       try {
         console.log("Rebuilding coverage trees using report and backend's instanceSignalMap...");
+        // 使用 originName 进行解析和构建树，使用 compressedName 查找覆盖率
         const trees = buildCoverageTrees(coverageReport.value, coverageInfo.value.instanceSignalMap);
         predicateTreeData.value = trees.predicates;
         muxTreeData.value = trees.mux;
@@ -83,12 +85,14 @@ export const useCoverageStore = defineStore('coverageStore', () => {
         registerTreeData.value = [];
       }
     } else {
+      // 如果任一文件未加载，则清除树数据
       predicateTreeData.value = [];
       muxTreeData.value = [];
       registerTreeData.value = [];
       if (!coverageReport.value) {
         console.log("Coverage report not loaded, clearing trees.");
-      } else if (!coverageInfo.value?.instanceSignalMap) {
+      }
+      if (!coverageInfo.value?.instanceSignalMap) { // 检查 info 文件和其内容
         console.log("Coverage info or instanceSignalMap not available, clearing trees.");
       }
     }
@@ -119,7 +123,7 @@ export const useCoverageStore = defineStore('coverageStore', () => {
         }
         coverageReport.value = reportData
         message.success(`${file.name} 上传并解析成功!`)
-        rebuildTreesAndUpdateState(); // 重建树
+        rebuildTreesAndUpdateState(); // 尝试重建树
       } catch (error: any) {
         message.error(`解析 ${file.name} 失败: ${error.message || '无效的 JSON。'}`)
         coverageReport.value = null
@@ -172,7 +176,7 @@ export const useCoverageStore = defineStore('coverageStore', () => {
         }
       }
 
-      rebuildTreesAndUpdateState(); // 重建树
+      rebuildTreesAndUpdateState(); // 尝试重建树
     } catch (error: any) {
       const fileName = filePath.split(/[\\/]/).pop() || filePath;
       message.error(`处理 ${fileName} 失败: ${error instanceof Error ? error.message : String(error)}`)
@@ -228,7 +232,7 @@ export const useCoverageStore = defineStore('coverageStore', () => {
         }
       }
 
-      rebuildTreesAndUpdateState();
+      rebuildTreesAndUpdateState(); // 根目录更新后也需要重建树
       return Promise.resolve(); // 成功
 
     } catch (error) {

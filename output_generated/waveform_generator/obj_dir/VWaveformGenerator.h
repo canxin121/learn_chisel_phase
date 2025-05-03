@@ -22,10 +22,6 @@ class alignas(VL_CACHE_LINE_BYTES) VWaveformGenerator VL_NOT_FINAL : public Veri
 
   public:
 
-    // CONSTEXPR CAPABILITIES
-    // Verilated with --trace?
-    static constexpr bool traceCapable = true;
-
     // PORTS
     // The application code writes and reads these signals to
     // propagate new values into/out from the Verilated model.
@@ -33,14 +29,14 @@ class alignas(VL_CACHE_LINE_BYTES) VWaveformGenerator VL_NOT_FINAL : public Veri
     VL_IN8(&reset,0,0);
     VL_IN8(&io_waveType,1,0);
     VL_OUT8(&io_output,7,0);
-    VL_OUT8(&_mux_cond_WaveformGenerator___05FI___05Flocal___05FI___05F_io_output_T_4,0,0);
-    VL_OUT8(&_cond_pred_WaveformGenerator___05FI___05Flocal___05FI___05F_T,0,0);
-    VL_OUT8(&_cond_pred_WaveformGenerator___05FI___05Flocal___05FI___05F_T_1,0,0);
-    VL_OUT8(&_cond_pred_WaveformGenerator___05FI___05Flocal___05FI___05F_T_2,0,0);
-    VL_OUT8(&_cond_pred_WaveformGenerator___05FI___05Flocal___05FI___05F_T_3,0,0);
+    VL_OUT8(&_mux_cond___05Fs0,0,0);
+    VL_OUT8(&_cond_pred___05Fs0,0,0);
+    VL_OUT8(&_cond_pred___05Fs1,0,0);
+    VL_OUT8(&_cond_pred___05Fs2,0,0);
+    VL_OUT8(&_cond_pred___05Fs3,0,0);
     VL_IN16(&io_freqCtrl,15,0);
     VL_IN16(&io_phaseOffset,15,0);
-    VL_OUT16(&_reg_signals_WaveformGenerator___05FI___05Flocal___05FI___05FphaseAcc,15,0);
+    VL_OUT16(&_reg_signals___05Fs0,15,0);
 
     // CELLS
     // Public to allow access to /* verilator public */ items.
@@ -78,7 +74,7 @@ class alignas(VL_CACHE_LINE_BYTES) VWaveformGenerator VL_NOT_FINAL : public Veri
     /// Returns time at next time slot. Aborts if !eventsPending()
     uint64_t nextTimeSlot();
     /// Trace signals in the model; called by application code
-    void trace(VerilatedTraceBaseC* tfp, int levels, int options = 0) { contextp()->trace(tfp, levels, options); }
+    void trace(VerilatedVcdC* tfp, int levels, int options = 0);
     /// Retrieve name of this model instance (as passed to constructor).
     const char* name() const;
 
@@ -93,9 +89,6 @@ class alignas(VL_CACHE_LINE_BYTES) VWaveformGenerator VL_NOT_FINAL : public Veri
     /// Re-allocate necessary resources. Called after cloning.
     void atClone() const;
     std::unique_ptr<VerilatedTraceConfig> traceConfig() const override final;
-  private:
-    // Internal functions - trace registration
-    void traceBaseModel(VerilatedTraceBaseC* tfp, int levels, int options);
 };
 
 #endif  // guard

@@ -9,7 +9,8 @@ pub struct SignalInfo {
     // TopModuleNameAsTopInstanceName__I__subinstance1__I__subinstance2__M__SubInstance2Module__S__signal1__s__out
     // 上述是一个 探针信号名称, 首先是 将TopModule的名字作为顶层实例的名字, 然后使用__I__连接实例路径, 然后使用__M__标志最后一个实例的Module名称, 然后使用__S__标注信号名称, __s__则是代替信号中的`.`
     // 可以保证M标志的Module名称是 唯一的
-    pub name: String,
+    pub compressed_name: String,
+    pub original_name: String,
     pub r#type: String,
     pub info: String,
     // info包含下面三个字段的值
@@ -28,6 +29,15 @@ pub struct SignalInfo {
 pub struct ExportedPort {
     pub r#type: String,
     pub signals: Vec<SignalInfo>,
+    // "nameMapping": {
+    //     "_s0": "WaveformGenerator__M__WaveformGenerator__S__phaseAcc",
+    //     "_s1": "WaveformGenerator__M__WaveformGenerator__S___T_1",
+    //     "_s3": "WaveformGenerator__M__WaveformGenerator__S___T_3",
+    //     "_s2": "WaveformGenerator__M__WaveformGenerator__S___T_2"
+    //   }
+    // 这里的 name_mapping 是一个映射关系，key 是压缩名称，value 是原始名称
+    // 并且这里不包含前缀, 前缀不被压缩
+    name_mapping: HashMap<String, String>, // 映射关系
 }
 
 // NEW: Structure to hold info about a single source file associated with a module
@@ -147,8 +157,8 @@ impl CoverageInfo {
                 signal.file_path = corrected_relative_path.clone(); // Clone for signal
 
                 // Extract module name, instance path, and update module_info_map / instance_signal_map
-                if let Some(s_start) = signal.name.find("__S__") {
-                    let instance_module_part = &signal.name[..s_start];
+                if let Some(s_start) = signal.original_name.find("__S__") {
+                    let instance_module_part = &signal.original_name[..s_start];
                     let mut module_name_extracted = String::new();
                     let mut instance_path_parts: Vec<&str> = Vec::new();
 
@@ -181,7 +191,7 @@ impl CoverageInfo {
                         } else {
                             eprintln!(
                                 "Warning: Signal '{}' has module name '{}' but no file path could be parsed from info string '{}'. Cannot associate with source file.",
-                                signal.name, module_name_extracted, signal.info
+                                signal.original_name, module_name_extracted, signal.info
                             );
                         }
                     } else {
@@ -209,7 +219,7 @@ impl CoverageInfo {
                         } else {
                             eprintln!(
                                 "Warning: Top-level signal '{}' has no file path parsed from info string '{}'.",
-                                signal.name, signal.info
+                                signal.original_name, signal.info
                             );
                         }
                     }
@@ -249,7 +259,7 @@ impl CoverageInfo {
                 } else {
                     eprintln!(
                         "Warning: Signal name '{}' does not contain '__S__'. Skipping processing.",
-                        signal.name
+                        signal.original_name
                     );
                 }
             }

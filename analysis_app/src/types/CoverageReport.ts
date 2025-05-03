@@ -15,7 +15,7 @@ export interface CoverageSummary {
 
 // 条件覆盖点 (用于谓词和 Mux)
 export interface ConditionCoveragePoint {
-    name: string; // 覆盖点名称
+    compressed_name: string; // 覆盖点名称
     hit_true: boolean; // 是否命中 true 分支
     hit_false: boolean; // 是否命中 false 分支
     bins_hit: number; // 此覆盖点命中的 bin 数
@@ -30,7 +30,7 @@ export interface ConditionCoveragePoint {
 
 // 寄存器覆盖点
 export interface RegisterCoveragePoint {
-    name: string; // 寄存器信号名称
+    compressed_name: string; // 寄存器信号名称
     width: number; // 寄存器位宽
     bins_hit: number; // 命中的 bin 数 (通常是 hit_zero + hit_one 的总和)
     bins_total: number; // 总 bin 数 (通常是 width * 2)

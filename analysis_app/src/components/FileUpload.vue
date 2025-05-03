@@ -72,13 +72,13 @@ const handleUploadInfoClick = async () => {
           </div>
 
           <div>
-            <a-tooltip title="Select Coverage Info File (*_coverage_info.json) (Optional)">
+            <a-tooltip title="Select Coverage Info File (*_coverage_info.json)">
               <!-- Info 文件上传按钮 -->
               <a-button @click="handleUploadInfoClick" :loading="coverageStore.isLoadingInfo">
                 <template #icon>
                   <FileTextOutlined />
                 </template>
-                Upload Info (Optional)
+                Upload Info
               </a-button>
             </a-tooltip>
             <div v-if="coverageStore.coverageInfo" style="margin-top: 8px; color: green; text-align: center;">

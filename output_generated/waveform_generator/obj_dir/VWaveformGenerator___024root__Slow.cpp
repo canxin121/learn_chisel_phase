@@ -17,7 +17,7 @@ VWaveformGenerator___024root::VWaveformGenerator___024root(VWaveformGenerator__S
 }
 
 void VWaveformGenerator___024root::__Vconfigure(bool first) {
-    (void)first;  // Prevent unused variable warning
+    if (false && first) {}  // Prevent unused
 }
 
 VWaveformGenerator___024root::~VWaveformGenerator___024root() {

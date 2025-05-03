@@ -270,19 +270,19 @@ const updateCoverageDataForSelectedInstance = () => {
     // 检查信号行号
     if (signalInfo.line !== null && signalInfo.line !== undefined && signalInfo.line > 0 && signalInfo.filePath) {
       const lineNumber = signalInfo.line;
-      const parsed = parseSignalName(signalInfo.name);
+      const parsed = parseSignalName(signalInfo.originName);
       let coverageData: ConditionCoveragePoint | RegisterCoveragePoint | undefined = undefined;
 
       // 查找覆盖率数据
       switch (parsed.type) {
         case 'predicate':
-          coverageData = report.conditional_predicates?.find(p => p.name === signalInfo.name);
+          coverageData = report.conditional_predicates?.find(p => p.compressed_name === signalInfo.compressedName);
           break;
         case 'mux':
-          coverageData = report.mux_conditions?.find(m => m.name === signalInfo.name);
+          coverageData = report.mux_conditions?.find(m => m.compressed_name === signalInfo.compressedName);
           break;
         case 'register':
-          coverageData = report.register_coverage?.find(r => r.name === signalInfo.name);
+          coverageData = report.register_coverage?.find(r => r.compressed_name === signalInfo.compressedName);
           break;
       }
 

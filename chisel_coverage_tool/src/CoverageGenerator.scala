@@ -330,46 +330,79 @@ object CoverageCollectorGenerator {
   }
 
   // --- generateCoverageInfoJson (Moved from CoverageTool and made public) ---
-  /** 生成包含 TopLevelExportInfo 信息的 JSON 字符串 (新格式) */
+  /** 生成包含 TopLevelExportInfo 和名称映射信息的 JSON 字符串
+    *
+    * @param topModuleName
+    *   顶层模块名称
+    * @param exportInfos
+    *   端口和信号信息列表 (信号名是压缩后的)
+    * @param nameDictionary
+    *   从压缩名称映射到原始完整名称的字典
+    * @return
+    *   JSON 格式的字符串
+    */
   def generateCoverageInfoJson(
       topModuleName: String,
-      exportInfos: List[TopLevelExportInfo]
+      exportInfos: List[TopLevelExportInfo],
+      nameDictionary: Map[String, String] // <-- 新增参数
   ): String = {
     val portsJson = exportInfos
       .map { portInfo =>
-        // 1. 将 portName 映射到 type
         val portTypeString = portInfo.portName match {
           case "_cond_pred"   => "cond_pred"
           case "_mux_cond"    => "mux_cond"
-          case "_reg_signals" => "register" // 修正: 寄存器类型名称是 "_reg_signals"
-          case other          => escapeJsonString(other) // 保留未知类型，进行转义
+          case "_reg_signals" => "register"
+          case other          => escapeJsonString(other)
         }
 
-        // 2. 对每个端口中的信号列表进行 flatMap 操作，应用 flattenSignalInfo
-        val flattenedSignals = portInfo.exportedSignals.flatMap { signal =>
-          // 构建完整的信号名称 (前缀 + 字段名)
-          val fullSignalName = s"${portInfo.portName}_${signal.fieldName}"
-          // 调用 flattenSignalInfo，传入完整的原始名称
-          flattenSignalInfo(fullSignalName, signal.fieldtype, signal.info)
+        // 展开信号，但这次保留压缩名称和原始名称
+        val flattenedSignalsWithNames = portInfo.exportedSignals.flatMap { signal =>
+          // signal.fieldName 是压缩名称
+          val compressedName = signal.fieldName
+          // 从字典中查找原始名称
+          val originalFullName = nameDictionary.getOrElse(
+            compressedName, {
+              println(
+                s"[WARN] CoverageGenerator: Cannot find original name for compressed name '$compressedName' in dictionary. Using compressed name as original."
+              )
+              compressedName // Fallback
+            }
+          )
+          // 构建完整的压缩信号名称 (用于查找 C++ 侧)
+          val fullCompressedSignalName = s"${portInfo.portName}_$compressedName"
+
+          // 展开类型，但传递原始名称和压缩名称
+          flattenSignalInfo(
+            originalFullName, // 传递原始名称给 flatten 函数
+            signal.fieldtype,
+            signal.info
+          ).map { flatData =>
+            (
+              fullCompressedSignalName, // 完整的压缩名称
+              flatData.originalName, // 完整的原始名称 (来自 flattenSignalInfo)
+              flatData.scalarType,
+              flatData.info
+            )
+          }
         }
 
-        // 3. 为展开后的每个标量信号生成 JSON 条目 (使用新格式)
-        val signalsJson = flattenedSignals
-          .sortBy(_.originalName) // 按原始名称排序以保持一致性
-          .map { flatSignal =>
+        // 生成信号 JSON，包含压缩名和原始名
+        val signalsJson = flattenedSignalsWithNames
+          .sortBy(_._2) // 按原始名称排序
+          .map { case (compName, origName, scalarType, info) =>
             s"""      {
-               |        "name": "${escapeJsonString(
-                flatSignal.originalName // 使用包含前缀的完整原始名称
+               |        "compressed_name": "${escapeJsonString(
+                compName // 完整的压缩名称
               )}",
-               |        "type": "${escapeJsonString(
-                flatSignal.scalarType.serialize // 使用展开后的标量类型
+               |        "original_name": "${escapeJsonString(
+                origName // 完整的原始名称
               )}",
-               |        "info": "${escapeJsonString(flatSignal.info.serialize)}"
+               |        "type": "${escapeJsonString(scalarType.serialize)}",
+               |        "info": "${escapeJsonString(info.serialize)}"
                |      }""".stripMargin
           }
           .mkString(",\n")
 
-        // 4. 生成端口/类型组的 JSON
         s"""    {
            |      "type": "$portTypeString",
            |      "signals": [
@@ -379,12 +412,24 @@ object CoverageCollectorGenerator {
       }
       .mkString(",\n")
 
-    // 5. 生成顶层 JSON 结构
+    // 生成 nameMapping JSON 对象
+    val nameMappingJson = nameDictionary
+      .map { case (compressed, original) =>
+        s"""    "${escapeJsonString(compressed)}": "${escapeJsonString(
+            original
+          )}""""
+      }
+      .mkString(",\n")
+
+    // 生成顶层 JSON 结构，包含 nameMapping
     s"""{
        |  "topModuleName": "${escapeJsonString(topModuleName)}",
        |  "exportedPorts": [
        |$portsJson
-       |  ]
+       |  ],
+       |  "nameMapping": {
+       |$nameMappingJson
+       |  }
        |}""".stripMargin
   }
 
