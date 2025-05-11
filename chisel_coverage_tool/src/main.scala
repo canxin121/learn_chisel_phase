@@ -22,15 +22,11 @@ import freechips.rocketchip.tile.{RocketTileParams, TileKey, LookupByHartIdImpl}
 import freechips.rocketchip.tile.RocketTile
 import org.chipsalliance.diplomacy.lazymodule.LazyModule
 import freechips.rocketchip.system.ExampleRocketSystem
+import freechips.rocketchip.system.TestHarness
 
 object Main {
   def main(args: Array[String]): Unit = {
-    implicit val p: Parameters = new Config(
-      new Config((site, here, up) => { case TileKey =>
-        RocketTileParams()
-      }) ++ new DefaultConfig
-    ).toInstance
-
+    implicit val p: Parameters = new DefaultConfig()
     val baseOutputDir = "output_generated"
 
     val modulesToProcess: Seq[(() => RawModule, String)] = Seq(
@@ -48,14 +44,10 @@ object Main {
       ),
       (() => new RegModule(), "reg_module"),
       (() => new ComplexExample(), "complex_example"),
-      (() => new ALU(), "rocket_alu"),
-      (() => new MulDiv(MulDivParams(), width = 64), "rocket_muldiv"),
+      // RocketChip
       (
-        () => {
-          val ldut = LazyModule(new ExampleRocketSystem)
-          ldut.module 
-        },
-        "example_rocket_system"
+        () => new TestHarness(),
+        "rocket_test_harness"
       )
     )
 
