@@ -5,8 +5,8 @@ import { useCoverageStore } from "./stores/coverageStore";
 import FileUpload from './components/FileUpload.vue';
 import CoverageSummary from './components/CoverageSummary.vue';
 import CoverageDetails from './components/CoverageDetails.vue';
-import SourceViewer from './components/SourceViewer.vue';
 import ModuleRootDirEditor from './components/ModuleRootDirEditor.vue'; // 导入组件
+import SourceViewer from "./components/SourceViewer.vue";
 
 // 使用 Pinia Store
 const coverageStore = useCoverageStore();
@@ -41,7 +41,9 @@ const coverageStore = useCoverageStore();
           <!-- 未加载报告或信息时的消息 -->
           <a-card v-else>
             <p style="text-align: center; color: #888;">
-              Please upload both a coverage report file (*_coverage_report.json) and a coverage info file (*_coverage_info.json) to view the analysis.
+              Please upload both a coverage report file (*_coverage_report.json) and a coverage info file
+              (*_coverage_info.json)
+              to view the analysis.
             </p>
           </a-card>
         </a-space>

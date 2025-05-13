@@ -1,248 +1,417 @@
 <script setup lang="ts">
 // 导入组件和图标
-import { ref } from 'vue';
-import { Tag as ATag, Tabs as ATabs, TabPane as ATabPane, Button as AButton, Tooltip as ATooltip } from 'ant-design-vue';
-import { LinkOutlined, PlusSquareOutlined, MinusSquareOutlined } from '@ant-design/icons-vue'; // 导入图标
+import { ref, computed } from 'vue';
+import { Tag as ATag, Tabs as ATabs, TabPane as ATabPane, Button as AButton, Card as ACard, DirectoryTree as ADirectoryTree, Tooltip as ATooltip, message } from 'ant-design-vue'; // 导入 ADirectoryTree 和 ATooltip
+import { PlusSquareOutlined, MinusSquareOutlined, CodeOutlined } from '@ant-design/icons-vue'; // Added CodeOutlined
 import { formatCoverage, getNodeStyle, getConditionTagColor, getBitTagColor, formatCount, formatPercent } from '../utils/coverageUtils';
 import { useCoverageStore } from "../stores/coverageStore";
-import type { TreeNode } from '../types/TreeNode'; // TreeNode 类型
-import type { RegisterBitCoverage } from '../types/CoverageReport'; // 导入类型
+// 导入新的类型定义
+import type {
+  ConditionCoverageNode,
+  RegisterCoverageNode,
+  RegisterBitCoverage,
+  ConditionCoveragePoint, // Added
+  RegisterCoveragePoint // Added
+} from '../types/CoverageReport';
+import type { SignalInfo } from '../types/CoverageInfo'; // Added
+
+// 定义统一树节点类型
+interface UnifiedTreeNode {
+  key: string;
+  title: string; // instance_name or origin_name 
+  children?: UnifiedTreeNode[];
+  nodeType: 'instance' | 'conditionPoint' | 'muxPoint' | 'registerPoint';
+  isLeaf: boolean;
+  fullInstancePath: string; // Added: e.g., "Top.sub.leaf_inst" or "Top__I__Sub" for SourceViewer matching
+  parentInstanceModuleName?: string; // Added: Module name of the direct parent instance (for points)
+
+  // Instance specific
+  instance_name?: string; // Name of this instance if nodeType is 'instance'
+  module_name?: string;   // Module type of this instance if nodeType is 'instance'
+
+  // Point specific data (copied for direct access in template)
+  compressed_name?: string; // Added: compressed_name for points, crucial for linking
+  origin_name?: string;
+  coverage_percent?: number;
+  // Condition/Mux
+  hit_true?: boolean;
+  count_true?: number;
+  true_percentage?: number;
+  hit_false?: boolean;
+  count_false?: number;
+  false_percentage?: number;
+  total_updates?: number;
+  // Register
+  width?: number;
+  bins_hit?: number;
+  bins_total?: number;
+  bit_details?: RegisterBitCoverage[];
+}
 
 const coverageStore = useCoverageStore();
-const expandedRegisterNodes = ref<Set<string>>(new Set()); // 跟踪展开的寄存器节点
+const expandedRegisterPoints = ref<Set<string>>(new Set()); // Stores UnifiedTreeNode.key for register points
+const expandedPredicateKeys = ref<string[]>([]);
+const expandedMuxKeys = ref<string[]>([]);
+const expandedRegisterKeys = ref<string[]>([]);
 
-// 跳转到源代码
-const jumpToSource = (nodeData: TreeNode) => {
-  if (nodeData.isSignal && nodeData.sourceLocation && nodeData.data?.instancePath && nodeData.originatingModule) {
-    console.log("Requesting navigation to:", nodeData.sourceLocation, "in instance", nodeData.data.instancePath.join('.'));
-    coverageStore.navigateToSource({
-      signalKey: nodeData.key, // 信号键
-      instancePath: nodeData.data.instancePath,
-      sourceLocation: nodeData.sourceLocation,
-      moduleName: nodeData.originatingModule,
-    });
+const toggleRegisterPointExpansion = (nodeKey: string) => {
+  if (expandedRegisterPoints.value.has(nodeKey)) {
+    expandedRegisterPoints.value.delete(nodeKey);
   } else {
-    console.warn("Cannot navigate: Missing required data (sourceLocation, instancePath, or originatingModule) for node:", nodeData);
+    expandedRegisterPoints.value.add(nodeKey);
   }
+  expandedRegisterPoints.value = new Set(expandedRegisterPoints.value);
 };
 
-// 切换寄存器节点展开
-const toggleRegisterNodeExpansion = (key: string) => {
-  if (expandedRegisterNodes.value.has(key)) {
-    expandedRegisterNodes.value.delete(key);
-  } else {
-    expandedRegisterNodes.value.add(key);
-  }
-  expandedRegisterNodes.value = new Set(expandedRegisterNodes.value); // 触发响应性
+const isRegisterPointExpanded = (nodeKey: string): boolean => {
+  return expandedRegisterPoints.value.has(nodeKey);
 };
 
-// 检查寄存器节点是否展开
-const isRegisterNodeExpanded = (key: string): boolean => {
-  return expandedRegisterNodes.value.has(key);
-};
-
-// 获取未覆盖的位
-const getUncoveredBits = (nodeData: TreeNode): RegisterBitCoverage[] => {
-  if (nodeData.isSignal && nodeData.data?.type === 'register' && nodeData.data.bit_details) {
-    return nodeData.data.bit_details.filter((bit: RegisterBitCoverage) => !bit.covered);
+const getUncoveredBits = (nodeData: UnifiedTreeNode): RegisterBitCoverage[] => {
+  if (nodeData.nodeType === 'registerPoint' && nodeData.bit_details) {
+    return nodeData.bit_details.filter((bit: RegisterBitCoverage) => !bit.covered);
   }
   return [];
 };
+
+// --- Data Transformation ---
+let treeNodeKeyCounter = 0;
+function generateUniqueKey(prefix: string): string {
+  const sanitizedPrefix = prefix.replace(/[^a-zA-Z0-9_.]/g, '_'); // Allow dots for instance paths
+  return `${sanitizedPrefix}_${treeNodeKeyCounter++}`;
+}
+
+function transformSingleConditionNode(
+  node: ConditionCoverageNode,
+  parentFullInstancePath: string, // Changed from parentPathKey
+  pointType: 'conditionPoint' | 'muxPoint'
+): UnifiedTreeNode {
+  // Use a more stable path construction, e.g. using __I__ as in SourceViewer
+  const currentFullInstancePath = parentFullInstancePath
+    ? `${parentFullInstancePath}__I__${node.instance_name}`
+    : node.instance_name;
+  const instanceKey = generateUniqueKey(`instance_${currentFullInstancePath}`);
+
+  const instanceUnifiedNode: UnifiedTreeNode = {
+    key: instanceKey,
+    title: node.instance_name,
+    nodeType: 'instance',
+    instance_name: node.instance_name,
+    module_name: node.module_name,
+    fullInstancePath: currentFullInstancePath, // Set full instance path
+    isLeaf: false,
+    children: [],
+  };
+
+  if (node.coverage_points) {
+    node.coverage_points.forEach((point: ConditionCoveragePoint) => { // Added type for point
+      const pointKey = generateUniqueKey(`point_${instanceKey}_${point.origin_name || point.compressed_name}`);
+      instanceUnifiedNode.children?.push({
+        key: pointKey,
+        title: point.origin_name || point.compressed_name, // Use compressed_name as fallback for title
+        nodeType: pointType,
+        isLeaf: true,
+        fullInstancePath: currentFullInstancePath, // Path of the instance containing this point
+        parentInstanceModuleName: node.module_name, // Module name of the instance
+        compressed_name: point.compressed_name, // Store compressed_name
+        origin_name: point.origin_name,
+        coverage_percent: point.coverage_percent,
+        hit_true: point.hit_true,
+        count_true: point.count_true,
+        true_percentage: point.true_percentage,
+        hit_false: point.hit_false,
+        count_false: point.count_false,
+        false_percentage: point.false_percentage,
+        total_updates: point.total_updates,
+      });
+    });
+  }
+
+  if (node.sub_instances) {
+    node.sub_instances.forEach(subInstance => {
+      instanceUnifiedNode.children?.push(transformSingleConditionNode(subInstance, currentFullInstancePath, pointType));
+    });
+  }
+  return instanceUnifiedNode;
+}
+
+function transformSingleRegisterNode(
+  node: RegisterCoverageNode,
+  parentFullInstancePath: string // Changed from parentPathKey
+): UnifiedTreeNode {
+  const currentFullInstancePath = parentFullInstancePath
+    ? `${parentFullInstancePath}__I__${node.instance_name}`
+    : node.instance_name;
+  const instanceKey = generateUniqueKey(`reginstance_${currentFullInstancePath}`);
+
+  const instanceUnifiedNode: UnifiedTreeNode = {
+    key: instanceKey,
+    title: node.instance_name,
+    nodeType: 'instance',
+    instance_name: node.instance_name,
+    module_name: node.module_name,
+    fullInstancePath: currentFullInstancePath, // Set full instance path
+    isLeaf: false,
+    children: [],
+  };
+
+  if (node.coverage_points) {
+    node.coverage_points.forEach((point: RegisterCoveragePoint) => { // Added type for point
+      const pointKey = generateUniqueKey(`regpoint_${instanceKey}_${point.origin_name || point.compressed_name}`);
+      instanceUnifiedNode.children?.push({
+        key: pointKey,
+        title: point.origin_name || point.compressed_name, // Use compressed_name as fallback
+        nodeType: 'registerPoint',
+        isLeaf: true,
+        fullInstancePath: currentFullInstancePath, // Path of the instance
+        parentInstanceModuleName: node.module_name, // Module name of the instance
+        compressed_name: point.compressed_name, // Store compressed_name
+        origin_name: point.origin_name,
+        coverage_percent: point.coverage_percent,
+        width: point.width,
+        bins_hit: point.bins_hit,
+        bins_total: point.bins_total,
+        bit_details: point.bit_details,
+      });
+    });
+  }
+
+  if (node.sub_instances) {
+    node.sub_instances.forEach(subInstance => {
+      instanceUnifiedNode.children?.push(transformSingleRegisterNode(subInstance, currentFullInstancePath));
+    });
+  }
+  return instanceUnifiedNode;
+}
+
+const transformedConditionalTreeData = computed(() => {
+  treeNodeKeyCounter = 0;
+  if (!coverageStore.coverageReport?.conditional_coverage_tree) return [];
+  // Pass empty string for root parentFullInstancePath
+  return [transformSingleConditionNode(coverageStore.coverageReport.conditional_coverage_tree, '', 'conditionPoint')];
+});
+
+const transformedMuxTreeData = computed(() => {
+  treeNodeKeyCounter = 0;
+  if (!coverageStore.coverageReport?.mux_condition_tree) return [];
+  // Pass empty string for root parentFullInstancePath
+  return [transformSingleConditionNode(coverageStore.coverageReport.mux_condition_tree, '', 'muxPoint')];
+});
+
+const transformedRegisterTreeData = computed(() => {
+  treeNodeKeyCounter = 0;
+  if (!coverageStore.coverageReport?.register_coverage_tree) return [];
+  // Pass empty string for root parentFullInstancePath
+  return [transformSingleRegisterNode(coverageStore.coverageReport.register_coverage_tree, '')];
+});
+
+
+const handleNavigateToSource = (pointNode: UnifiedTreeNode, event?: Event) => {
+  if (!pointNode.compressed_name || !pointNode.fullInstancePath || !pointNode.parentInstanceModuleName) {
+    message.error("Navigation data incomplete for this point.");
+    console.error("Navigation data incomplete:", pointNode);
+    return;
+  }
+
+  const signalInfo: SignalInfo | undefined = coverageStore.getSignalInfoByCompressedName(pointNode.compressed_name);
+
+  if (!signalInfo || signalInfo.file_path == null || signalInfo.line == null || signalInfo.column == null) {
+    message.warn(`Source location not found for signal: ${pointNode.origin_name || pointNode.compressed_name}. Ensure Coverage Info file is processed and contains source mapping.`);
+    console.warn("Signal info or source location not found:", signalInfo, "for compressed_name:", pointNode.compressed_name);
+    return;
+  }
+
+  coverageStore.navigateToSource({
+    signalKey: pointNode.compressed_name,
+    instancePath: pointNode.fullInstancePath, // This is already the full path like "Top__I__Sub"
+    sourceLocation: {
+      filePath: signalInfo.file_path,
+      line: signalInfo.line,
+      column: signalInfo.column,
+    },
+    moduleName: pointNode.parentInstanceModuleName, // Module type of the instance containing the signal
+    signalOriginName: pointNode.origin_name,
+  });
+
+  // Blur the clicked button to avoid focus issues with hidden tab panes
+  if (event && event.currentTarget instanceof HTMLElement) {
+    event.currentTarget.blur();
+  }
+};
+
 </script>
 
 <template>
   <a-card class="coverage-details-card" title="Coverage Details">
     <a-tabs v-model:activeKey="coverageStore.activeTabKey">
-      <!-- 条件谓词 -->
       <a-tab-pane key="predicates" tab="Conditional Predicates">
-        <div class="tree-container">
-          <a-directory-tree :showLine="true" v-if="coverageStore.predicateTreeData.length > 0"
-            :tree-data="coverageStore.predicateTreeData" :default-expand-all="false" selectable
-            :fieldNames="{ title: 'label', key: 'key', children: 'children' }">
-            <template #title="{ data: nodeData }">
-              <span class="tree-node-title">
-                <!-- 节点标签 -->
-                <span :style="getNodeStyle(nodeData.coverage)" class="node-text">{{ nodeData.label }}</span>
-
-                <!-- 覆盖率值 -->
-                <span v-if="nodeData.coverage !== undefined" class="coverage-value"
-                  :style="getNodeStyle(nodeData.coverage)">
-                  ({{ formatCoverage(nodeData.coverage) }})
-                </span>
-
-                <!-- 信号详情 -->
-                <span v-if="nodeData.isSignal && nodeData.data?.type === 'predicate' && nodeData.data"
-                  class="node-details condition-details">
-                  <a-tag :color="getConditionTagColor(nodeData.data.hit_true)">True</a-tag>
-                  <span class="detail-count">({{ formatCount(nodeData.data.count_true) }}, {{
-                    formatPercent(nodeData.data.true_percentage) }})</span>
-                  <a-tag :color="getConditionTagColor(nodeData.data.hit_false)">False</a-tag>
-                  <span class="detail-count">({{ formatCount(nodeData.data.count_false) }}, {{
-                    formatPercent(nodeData.data.false_percentage) }})</span>
-                </span>
-
-                <!-- 原始模块指示器 -->
-                <span v-if="nodeData.isSignal && nodeData.originatingModule && nodeData.originatingModule !== '?'"
-                  class="originating-module-indicator" :title="`Originating Module: ${nodeData.originatingModule}`">
-                  M:{{ nodeData.originatingModule }}
-                </span>
-
-                <!-- 跳转源代码图标 -->
-                <span v-if="nodeData.isSignal && nodeData.sourceLocation" class="source-link-icon-wrapper">
-                  <a-tooltip title="Jump to Source">
-                    <a-button type="text" size="small" @click.stop="jumpToSource(nodeData)" class="source-link-button">
+        <div v-if="transformedConditionalTreeData.length > 0" class="tree-container">
+          <a-directory-tree :tree-data="transformedConditionalTreeData as any" show-line block-node :show-icon="false"
+            :field-names="{ children: 'children', title: 'title', key: 'key' }"
+            v-model:expandedKeys="expandedPredicateKeys">
+            <template #title="nodeData">
+              <!-- nodeData is UnifiedTreeNode -->
+              <div class="node-content-wrapper-custom">
+                <template v-if="nodeData.nodeType === 'instance'">
+                  <span class="node-text instance-name">{{ nodeData.title }}</span>
+                  <span v-if="nodeData.module_name" class="originating-module-indicator">
+                    ({{ nodeData.module_name }})
+                  </span>
+                </template>
+                <template v-else-if="nodeData.nodeType === 'conditionPoint'">
+                  <a-tooltip title="Go to Source">
+                    <a-button type="text" size="small" class="nav-button"
+                      @click.stop="handleNavigateToSource(nodeData as UnifiedTreeNode, $event)">
                       <template #icon>
-                        <LinkOutlined />
+                        <CodeOutlined />
                       </template>
                     </a-button>
                   </a-tooltip>
-                </span>
-              </span>
-            </template>
-          </a-directory-tree>
-          <p v-else class="empty-tree-msg">No Conditional Predicate coverage points found.</p>
-        </div>
-      </a-tab-pane>
-
-      <!-- Mux 条件 -->
-      <a-tab-pane key="mux" tab="Mux Conditions">
-        <div class="tree-container">
-          <a-directory-tree v-if="coverageStore.muxTreeData.length > 0" :tree-data="coverageStore.muxTreeData"
-            :default-expand-all="false" selectable :fieldNames="{ title: 'label', key: 'key', children: 'children' }">
-            <template #title="{ data: nodeData }">
-              <span class="tree-node-title">
-                <!-- 节点标签 -->
-                <span :style="getNodeStyle(nodeData.coverage)" class="node-text">{{ nodeData.label }}</span>
-
-                <!-- 覆盖率值 -->
-                <span v-if="nodeData.coverage !== undefined" class="coverage-value"
-                  :style="getNodeStyle(nodeData.coverage)">
-                  ({{ formatCoverage(nodeData.coverage) }})
-                </span>
-
-                <!-- 信号详情 -->
-                <span v-if="nodeData.isSignal && nodeData.data?.type === 'mux' && nodeData.data"
-                  class="node-details condition-details">
-                  <a-tag :color="getConditionTagColor(nodeData.data.hit_true)">True</a-tag>
-                  <span class="detail-count">({{ formatCount(nodeData.data.count_true) }}, {{
-                    formatPercent(nodeData.data.true_percentage) }})</span>
-                  <a-tag :color="getConditionTagColor(nodeData.data.hit_false)">False</a-tag>
-                  <span class="detail-count">({{ formatCount(nodeData.data.count_false) }}, {{
-                    formatPercent(nodeData.data.false_percentage) }})</span>
-                </span>
-
-                <!-- 原始模块指示器 -->
-                <span v-if="nodeData.isSignal && nodeData.originatingModule && nodeData.originatingModule !== '?'"
-                  class="originating-module-indicator" :title="`Originating Module: ${nodeData.originatingModule}`">
-                  M:{{ nodeData.originatingModule }}
-                </span>
-
-                <!-- 跳转源代码图标 -->
-                <span v-if="nodeData.isSignal && nodeData.sourceLocation" class="source-link-icon-wrapper">
-                  <a-tooltip title="Jump to Source">
-                    <a-button type="text" size="small" @click.stop="jumpToSource(nodeData)" class="source-link-button">
-                      <template #icon>
-                        <LinkOutlined />
-                      </template>
-                    </a-button>
-                  </a-tooltip>
-                </span>
-              </span>
-            </template>
-          </a-directory-tree>
-          <p v-else class="empty-tree-msg">No Mux Condition coverage points found.</p>
-        </div>
-      </a-tab-pane>
-
-      <!-- 寄存器位 -->
-      <a-tab-pane key="registers" tab="Register Bits">
-        <div class="tree-container">
-          <a-directory-tree :showLine="true" v-if="coverageStore.registerTreeData.length > 0"
-            :tree-data="coverageStore.registerTreeData" :default-expand-all="false" selectable
-            :fieldNames="{ title: 'label', key: 'key', children: 'children' }">
-            <template #title="{ data: nodeData }">
-              <div class="register-node-wrapper"> <!-- Wrapper for layout -->
-                <span class="tree-node-title">
-                  <!-- Expand/Collapse Button -->
-                  <a-button
-                    v-if="nodeData.isSignal && nodeData.data?.type === 'register' && getUncoveredBits(nodeData).length > 0"
-                    type="text" size="small" class="bit-expand-button-tree"
-                    @click.stop="toggleRegisterNodeExpansion(nodeData.key)"
-                    :title="isRegisterNodeExpanded(nodeData.key) ? 'Collapse uncovered bits' : 'Expand uncovered bits'">
-                    <template #icon>
-                      <component
-                        :is="isRegisterNodeExpanded(nodeData.key) ? MinusSquareOutlined : PlusSquareOutlined" />
-                    </template>
-                  </a-button>
-                  <span v-else-if="nodeData.isSignal && nodeData.data?.type === 'register'"
-                    class="bit-expand-placeholder-tree"></span> <!-- Placeholder -->
-
-                  <!-- 节点标签 -->
-                  <span :style="getNodeStyle(nodeData.coverage)" class="node-text">{{ nodeData.label }}</span>
-
-                  <!-- 覆盖率值 -->
-                  <span v-if="nodeData.coverage !== undefined" class="coverage-value"
-                    :style="getNodeStyle(nodeData.coverage)">
-                    ({{ formatCoverage(nodeData.coverage) }})
+                  <span class="node-text ">{{ nodeData.title }}</span>
+                  <span v-if="nodeData.origin_name && nodeData.origin_name !== nodeData.title"
+                    class="origin-name-indicator">
+                    ({{ nodeData.origin_name }})
                   </span>
-
-                  <!-- 寄存器摘要 -->
-                  <span v-if="nodeData.isSignal && nodeData.data?.type === 'register' && nodeData.data"
-                    class="node-details register-summary-details">
-                    (W: {{ nodeData.data.width }}, Hit: {{ nodeData.data.bins_hit }}/{{
-                      nodeData.data.bins_total }})
+                  <span class="coverage-value" :style="getNodeStyle(nodeData.coverage_percent!)">
+                    {{ formatCoverage(nodeData.coverage_percent!) }}
                   </span>
-
-                  <!-- 寄存器位详情 -->
-                  <span v-if="nodeData.isSignal && nodeData.data?.type === 'register_bit' && nodeData.data"
-                    class="node-details bit-details">
-                    <a-tag :color="getBitTagColor(nodeData.data.hit_zero)">0</a-tag>
-                    <span class="detail-count">({{ formatCount(nodeData.data.count_zero) }}, {{
-                      formatPercent(nodeData.data.zero_percentage) }})</span>
-                    <a-tag :color="getBitTagColor(nodeData.data.hit_one)">1</a-tag>
-                    <span class="detail-count">({{ formatCount(nodeData.data.count_one) }}, {{
-                      formatPercent(nodeData.data.one_percentage) }})</span>
-                    <span v-if="nodeData.data.missing" class="missing-indicator"> ({{ nodeData.data.missing }})
-                    </span>
+                  <span class="node-details">
+                    <a-tag :color="getConditionTagColor(nodeData.hit_true!)">
+                      True: {{ formatCount(nodeData.count_true!) }} ({{ formatPercent(nodeData.true_percentage!) }})
+                    </a-tag>
+                    <a-tag :color="getConditionTagColor(nodeData.hit_false!)">
+                      False: {{ formatCount(nodeData.count_false!) }} ({{ formatPercent(nodeData.false_percentage!) }})
+                    </a-tag>
+                    <span class="detail-count">Total: {{ formatCount(nodeData.total_updates!) }}</span>
                   </span>
-
-                  <!-- 原始模块指示器 -->
-                  <span v-if="nodeData.isSignal && nodeData.originatingModule && nodeData.originatingModule !== '?'"
-                    class="originating-module-indicator" :title="`Originating Module: ${nodeData.originatingModule}`">
-                    M:{{ nodeData.originatingModule }}
-                  </span>
-
-                  <!-- 跳转源代码图标 -->
-                  <span v-if="nodeData.isSignal && nodeData.sourceLocation" class="source-link-icon-wrapper">
-                    <a-tooltip title="Jump to Source">
-                      <a-button type="text" size="small" @click.stop="jumpToSource(nodeData)"
-                        class="source-link-button">
-                        <template #icon>
-                          <LinkOutlined />
-                        </template>
-                      </a-button>
-                    </a-tooltip>
-                  </span>
-                </span>
-                <!-- Expanded Uncovered Bit Details -->
-                <div
-                  v-if="nodeData.isSignal && nodeData.data?.type === 'register' && isRegisterNodeExpanded(nodeData.key)"
-                  class="uncovered-bit-details-tree">
-                  <div v-for="bit in getUncoveredBits(nodeData)" :key="bit.bit" class="uncovered-bit-item-tree">
-                    <span class="bit-number">Bit {{ bit.bit }}:</span>
-                    <span class="bit-status">{{ bit.status }}</span>
-                    <span v-if="bit.missing" class="bit-missing">(Missing: {{ bit.missing }})</span>
-                    <span class="bit-counts">
-                      (0: {{ formatCount(bit.count_zero) }} [{{ formatPercent(bit.zero_percentage) }}] /
-                      1: {{ formatCount(bit.count_one) }} [{{ formatPercent(bit.one_percentage) }}])
-                    </span>
-                  </div>
-                </div>
+                </template>
               </div>
             </template>
           </a-directory-tree>
-          <p v-else class="empty-tree-msg">No Register coverage points found.</p>
         </div>
+        <div v-else class="empty-tree-msg">No predicate coverage data available.</div>
+      </a-tab-pane>
+
+      <a-tab-pane key="mux" tab="Mux Conditions">
+        <div v-if="transformedMuxTreeData.length > 0" class="tree-container">
+          <a-directory-tree :tree-data="transformedMuxTreeData as any" show-line block-node :show-icon="false"
+            :field-names="{ children: 'children', title: 'title', key: 'key' }" v-model:expandedKeys="expandedMuxKeys">
+            <template #title="nodeData">
+              <!-- nodeData is UnifiedTreeNode -->
+              <div class="node-content-wrapper-custom">
+                <template v-if="nodeData.nodeType === 'instance'">
+                  <span class="node-text instance-name">{{ nodeData.title }}</span>
+                  <span v-if="nodeData.module_name" class="originating-module-indicator">
+                    ({{ nodeData.module_name }})
+                  </span>
+                </template>
+                <template v-else-if="nodeData.nodeType === 'muxPoint'">
+                  <a-tooltip title="Go to Source">
+                    <a-button type="text" size="small" class="nav-button"
+                      @click.stop="handleNavigateToSource(nodeData as UnifiedTreeNode, $event)">
+                      <template #icon>
+                        <CodeOutlined />
+                      </template>
+                    </a-button>
+                  </a-tooltip>
+                  <span class="node-text ">{{ nodeData.title }}</span>
+                  <span v-if="nodeData.origin_name && nodeData.origin_name !== nodeData.title"
+                    class="origin-name-indicator">
+                    ({{ nodeData.origin_name }})
+                  </span>
+                  <span class="coverage-value" :style="getNodeStyle(nodeData.coverage_percent!)">
+                    {{ formatCoverage(nodeData.coverage_percent!) }}
+                  </span>
+                  <span class="node-details">
+                    <a-tag :color="getConditionTagColor(nodeData.hit_true!)">
+                      True: {{ formatCount(nodeData.count_true!) }} ({{ formatPercent(nodeData.true_percentage!) }})
+                    </a-tag>
+                    <a-tag :color="getConditionTagColor(nodeData.hit_false!)">
+                      False: {{ formatCount(nodeData.count_false!) }} ({{ formatPercent(nodeData.false_percentage!) }})
+                    </a-tag>
+                    <span class="detail-count">Total: {{ formatCount(nodeData.total_updates!) }}</span>
+                  </span>
+                </template>
+              </div>
+            </template>
+          </a-directory-tree>
+        </div>
+        <div v-else class="empty-tree-msg">No Mux condition coverage data available.</div>
+      </a-tab-pane>
+
+      <a-tab-pane key="registers" tab="Register Bits">
+        <div v-if="transformedRegisterTreeData.length > 0" class="tree-container">
+          <a-directory-tree :tree-data="transformedRegisterTreeData as any" show-line block-node :show-icon="false"
+            :field-names="{ children: 'children', title: 'title', key: 'key' }"
+            v-model:expandedKeys="expandedRegisterKeys">
+            <template #title="nodeData">
+              <!-- nodeData is UnifiedTreeNode -->
+              <div class="node-content-wrapper-custom">
+                <template v-if="nodeData.nodeType === 'instance'">
+                  <span class="node-text instance-name">{{ nodeData.title }}</span>
+                  <span v-if="nodeData.module_name" class="originating-module-indicator">
+                    ({{ nodeData.module_name }})
+                  </span>
+                </template>
+                <template v-else-if="nodeData.nodeType === 'registerPoint'">
+                  <div class="register-point-summary-wrapper">
+                    <div class="register-point-summary">
+                      <a-tooltip title="Go to Source">
+                        <a-button type="text" size="small" class="nav-button register-nav-button"
+                          @click.stop="handleNavigateToSource(nodeData as UnifiedTreeNode, $event)">
+                          <template #icon>
+                            <CodeOutlined />
+                          </template>
+                        </a-button>
+                      </a-tooltip>
+                      <a-button v-if="nodeData.bit_details?.length! > 0" type="text" size="small"
+                        @click.stop="toggleRegisterPointExpansion(nodeData.key)" class="bit-expand-button">
+                        <template #icon>
+                          <PlusSquareOutlined v-if="!isRegisterPointExpanded(nodeData.key)" />
+                          <MinusSquareOutlined v-else />
+                        </template>
+                      </a-button>
+                      <span v-else class="bit-expand-placeholder"></span>
+
+                      <span class="node-text ">{{ nodeData.title }}</span>
+                      <span v-if="nodeData.origin_name && nodeData.origin_name !== nodeData.title"
+                        class="origin-name-indicator">
+                        ({{ nodeData.origin_name }})
+                      </span>
+                      <span class="coverage-value" :style="getNodeStyle(nodeData.coverage_percent!)">
+                        {{ formatCoverage(nodeData.coverage_percent!) }}
+                      </span>
+                      <span class="node-details register-summary-details">
+                        <a-tag color="blue">Width: {{ nodeData.width }}</a-tag>
+                        <a-tag :color="nodeData.bins_hit === nodeData.bins_total ? 'success' : 'error'">
+                          Bits Hit: {{ nodeData.bins_hit }}/{{ nodeData.bins_total }}
+                        </a-tag>
+                        <span v-if="getUncoveredBits(nodeData).length > 0" class="missing-indicator">
+                          (Missing Bits: {{getUncoveredBits(nodeData).map(b => b.bit).join(', ')}})
+                        </span>
+                      </span>
+                    </div>
+                    <div v-if="nodeData.bit_details?.length! > 0 && isRegisterPointExpanded(nodeData.key)"
+                      class="uncovered-bit-details">
+                      <div v-for="bit in nodeData.bit_details" :key="bit.bit" class="uncovered-bit-item">
+                        <span class="bit-number">Bit {{ bit.bit }}:</span>
+                        <span class="bit-status">
+                          <a-tag :color="getBitTagColor(bit.hit_zero)">Zero: {{ formatCount(bit.count_zero) }} ({{
+                            formatPercent(bit.zero_percentage) }})</a-tag>
+                          <a-tag :color="getBitTagColor(bit.hit_one)">One: {{ formatCount(bit.count_one) }} ({{
+                            formatPercent(bit.one_percentage) }})</a-tag>
+                        </span>
+                        <span v-if="!bit.covered" class="bit-missing">Missing: {{ bit.missing }}</span>
+                        <span class="bit-counts">Total Updates: {{ formatCount(bit.total_updates) }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </template>
+          </a-directory-tree>
+        </div>
+        <div v-else class="empty-tree-msg">No register coverage data available.</div>
       </a-tab-pane>
     </a-tabs>
   </a-card>
@@ -275,12 +444,44 @@ const getUncoveredBits = (nodeData: TreeNode): RegisterBitCoverage[] => {
   padding: 20px;
 }
 
-.tree-node-title {
+/* New main wrapper for content within a tree node's title slot */
+.node-content-wrapper-custom {
   display: flex;
   align-items: center;
+  width: 100%;
   flex-wrap: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.5;
+  /* Changed from normal to 1.5 for better vertical alignment consistency */
+  gap: 4px;
+  /* Add gap for items like nav button and text */
+}
+
+.nav-button {
+  padding: 0 4px;
+  border: none;
+  box-shadow: none;
+  background: transparent;
+  color: #555;
+  flex-shrink: 0;
+}
+
+.nav-button:hover {
+  color: #1890ff;
+  background: #e6f7ff;
+}
+
+.register-nav-button {
+  /* Specific adjustments if needed, for now inherits .nav-button */
+  /* May need to adjust margin if it interferes with expand button */
+  margin-right: -4px;
+  /* Pull closer to text if expand button is present */
+}
+
+.register-point-summary-wrapper {
+  display: flex;
+  flex-direction: column;
   width: 100%;
 }
 
@@ -292,8 +493,12 @@ const getUncoveredBits = (nodeData: TreeNode): RegisterBitCoverage[] => {
   min-width: 50px;
 }
 
+.instance-name {
+  font-weight: 500;
+}
+
 .coverage-value {
-  margin-left: 0;
+  margin-left: 8px;
   margin-right: 8px;
   white-space: nowrap;
   flex-shrink: 0;
@@ -304,248 +509,127 @@ const getUncoveredBits = (nodeData: TreeNode): RegisterBitCoverage[] => {
   padding-left: 10px;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.condition-details .ant-tag,
-.bit-details .ant-tag {
-  margin: 0;
-  padding: 0 5px;
-  line-height: 18px;
-  font-size: 0.85em;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .detail-count {
+  margin-left: 8px;
   font-size: 0.85em;
   color: #555;
-  margin-right: 6px;
   white-space: nowrap;
 }
 
-.register-summary-details {
-  color: #888;
-  font-size: 0.9em;
-  white-space: nowrap;
-  flex-shrink: 0;
+.register-summary-details .ant-tag {
+  margin-right: 4px;
 }
 
 .missing-indicator {
-  margin-left: 5px;
-  font-size: 0.8em;
-  color: #ff4d4f;
-  font-style: italic;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-:deep(.ant-tree-node-content-wrapper) {
-  padding: 2px 5px;
-  border-radius: 3px;
-  line-height: 1.8;
-  display: flex;
-  align-items: center;
-  width: 100%;
-  overflow: hidden;
-}
-
-:deep(.ant-tree-node-content-wrapper:hover) {
-  background-color: #e6f7ff;
-}
-
-.source-link-icon-wrapper {
-  margin-left: auto;
-  /* 将图标推到最右边 */
-  padding-left: 10px;
-  /* 与其他详情保持间距 */
-  flex-shrink: 0;
-  /* 防止收缩 */
-  display: inline-flex;
-  /* 确保按钮正确显示 */
-  align-items: center;
-  /* 垂直居中 */
-}
-
-.source-link-button {
-  color: #1890ff;
-  padding: 0 4px;
-  /* 调整按钮内边距 */
-  height: auto;
-  /* 允许按钮根据内容调整高度 */
-  line-height: 1;
-  /* 确保图标垂直居中 */
-}
-
-.source-link-button:hover {
-  color: #40a9ff;
-  background-color: transparent !important;
-  /* 覆盖悬停背景 */
-}
-
-/* 如果没有详情或模块指示器，确保图标仍然在右侧 */
-.coverage-value+.source-link-icon-wrapper {
-  margin-left: auto;
-}
-
-/* 调整节点标题以适应图标 */
-.tree-node-title {
-  /* display: flex; align-items: center; 已存在 */
-  justify-content: space-between;
-  /* 尝试在元素间分配空间 */
-}
-
-.node-text,
-.coverage-value {
-  flex-shrink: 1;
-  /* 允许文本和值收缩 */
-}
-
-.node-details,
-.originating-module-indicator,
-.source-link-icon-wrapper {
-  flex-shrink: 0;
-  /* 防止这些元素收缩 */
-}
-
-.node-details {
   margin-left: 8px;
-  /* 覆盖之前的 margin-left: auto */
-}
-
-.originating-module-indicator {
-  margin-left: 8px;
-  /* 覆盖之前的 margin-left: 10px */
-}
-
-.source-link-icon-wrapper {
-  margin-left: 8px;
-  /* 覆盖之前的 margin-left: auto */
-}
-
-/* 确保最后一个元素是跳转图标时，它被推到右边 */
-.tree-node-title>*:last-child.source-link-icon-wrapper {
-  margin-left: auto;
-}
-
-/* --- 新增样式 --- */
-.register-node-wrapper {
-  display: flex;
-  flex-direction: column;
-  /* Allow details below title */
-  width: 100%;
-}
-
-.bit-expand-button-tree {
-  padding: 0 4px;
-  height: auto;
-  line-height: 1;
-  color: #555;
-  margin-right: 4px;
-  flex-shrink: 0;
-}
-
-.bit-expand-button-tree:hover {
-  color: #1890ff;
-  background-color: transparent !important;
-}
-
-.bit-expand-placeholder-tree {
-  display: inline-block;
-  width: 20px;
-  /* Match button width approx */
-  height: 18px;
-  /* Match button height approx */
-  margin-right: 4px;
-  flex-shrink: 0;
-}
-
-.uncovered-bit-details-tree {
-  width: calc(100% - 20px);
-  /* Adjust width considering tree indentation */
-  margin-left: 20px;
-  /* Indent details */
-  margin-top: 4px;
-  padding: 6px 8px;
-  background-color: #f9f9f9;
-  border: 1px solid #eee;
-  border-left: 3px solid #faad14;
-  /* Use a different color for tree details */
-  border-radius: 3px;
   font-size: 0.85em;
+  color: #ff4d4f;
+  white-space: nowrap;
 }
 
-.uncovered-bit-item-tree {
-  margin-bottom: 2px;
-  padding-bottom: 2px;
-  border-bottom: 1px dashed #ccc;
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.uncovered-bit-item-tree:last-child {
-  margin-bottom: 0;
-  padding-bottom: 0;
-  border-bottom: none;
-}
-
-.uncovered-bit-details-tree .bit-number {
-  font-weight: bold;
-  color: #333;
-  flex-shrink: 0;
-}
-
-.uncovered-bit-details-tree .bit-status {
-  color: #777;
-  flex-shrink: 0;
-}
-
-.uncovered-bit-details-tree .bit-missing {
-  color: #cc0000;
+.origin-name-indicator {
   font-style: italic;
-  flex-shrink: 0;
-}
-
-.uncovered-bit-details-tree .bit-counts {
-  color: #444;
+  color: #888;
+  margin-left: 4px;
   font-size: 0.9em;
   white-space: nowrap;
 }
 
-:deep(.ant-tree-node-content-wrapper) {
-  padding: 0;
-  /* Remove padding to allow wrapper to control layout */
-  border-radius: 3px;
-  line-height: normal;
-  /* Reset line-height */
+.register-point-summary {
   display: flex;
-  align-items: stretch;
-  /* Stretch wrapper vertically */
+  align-items: center;
   width: 100%;
-  overflow: visible;
-  /* Allow details to overflow */
-  position: relative;
-  /* For potential absolute positioning if needed */
+}
+
+:deep(.ant-tree-node-content-wrapper) {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 2px 0px;
+  /* Adjusted padding for row spacing */
+  line-height: 1.5;
+  /* More standard line-height */
+}
+
+:deep(.ant-tree-node-content-wrapper:hover) {
+  background-color: #f0f5ff;
+}
+
+.originating-module-indicator {
+  font-style: italic;
+  color: #777;
+  margin-left: 5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.bit-expand-button {
+  margin-right: 4px;
+  /* Keep margin for expand button */
+}
+
+.bit-expand-placeholder {
+  display: inline-block;
+  width: 20px;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.uncovered-bit-details {
+  margin-left: 24px;
+  padding: 4px 0;
+  border-left: 1px dashed #d9d9d9;
+  font-size: 0.9em;
+  width: calc(100% - 24px);
+  box-sizing: border-box;
+}
+
+.uncovered-bit-item {
+  display: flex;
+  align-items: center;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.uncovered-bit-item:last-child {
+  margin-bottom: 0;
+}
+
+.uncovered-bit-details .bit-number {
+  font-weight: bold;
+  margin-right: 8px;
+  min-width: 50px;
+}
+
+.uncovered-bit-details .bit-status {
+  margin-right: 8px;
+}
+
+.uncovered-bit-details .bit-status .ant-tag {
+  margin-right: 4px;
+}
+
+.uncovered-bit-details .bit-missing {
+  color: #ff4d4f;
+  margin-right: 8px;
+}
+
+.uncovered-bit-details .bit-counts {
+  color: #555;
+  font-size: 0.9em;
 }
 
 :deep(.ant-tree-treenode) {
-  /* Ensure tree nodes allow vertical space for expanded content */
-  padding-top: 2px;
-  padding-bottom: 2px;
-}
-
-/* Hide the default icon element rendered by Ant Tree */
-:deep(.ant-tree-iconEle) {
-  display: none !important;
-  /* Add !important */
-}
-
-:deep(.ant-tree-node-selected) {
-  /* 没有背景颜色 */
-  background-color: transparent;
-  /* Add background color */
-
+  /* MODIFICATION START */
+  display: flex;
+  align-items: center;
+  /* MODIFICATION END */
+  padding-top: 1px;
+  padding-bottom: 1px;
 }
 </style>

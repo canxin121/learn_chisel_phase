@@ -1,9 +1,13 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { CoverageInfo } from "../types/CoverageInfo"; // 导入 CoverageInfo 类型
+import { message } from "ant-design-vue";
 
-// 将 CoverageInfo 对象写回 JSON 文件的函数
-export async function writeCoverageInfo(path: string, coverageInfo: CoverageInfo): Promise<void> {
-    console.log(`Calling backend write_coverage_info for path: ${path}`);
-    return await invoke("write_coverage_info", { path, coverageInfo });
+export async function readFile(path:
+    string
+): Promise<string> {
+    console.log(`Calling backend read_file for path: ${path}`);
+    const startTime = performance.now();
+    const result = await invoke<string>("read_file", { path });
+    const endTime = performance.now();
+    message.info(`read_file for ${path} took ${(endTime - startTime).toFixed(2)} ms.`);
+    return result;
 }
-

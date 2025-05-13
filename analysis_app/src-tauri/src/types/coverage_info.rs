@@ -27,24 +27,15 @@ pub struct ExportedPort {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct SourceFileInfo {
-    relative_path: String,
     root_dir: Option<String>,
     content: Option<String>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
-pub struct ModuleInfo {
-    #[serde(default)]
-    source_files: HashMap<String, SourceFileInfo>,
 }
 
 #[derive(Default, Serialize, Deserialize, Debug, Clone)]
 pub struct InstanceSignalTree {
     pub instance_name: String,
     pub module_name: String,
-    #[serde(default)]
     pub sub_instances: Vec<InstanceSignalTree>,
-    #[serde(default)]
     pub signals: Vec<SignalInfo>,
 }
 
@@ -58,22 +49,27 @@ pub struct SourceFileIdentifier {
 pub struct CoverageInfo {
     pub top_module_name: String,
     pub exported_ports: Vec<ExportedPort>,
-    #[serde(default)]
-    pub module_info_map: HashMap<String, ModuleInfo>,
-    #[serde(default)]
-    pub instance_signal_tree: InstanceSignalTree,
-    #[serde(default)]
-    pub available_root_dirs: Vec<String>,
+    pub module_source_files: Option<HashMap<String, Vec<String>>>,
+    pub source_file_info_map: Option<HashMap<String, SourceFileInfo>>,
+    pub instance_signal_tree: Option<InstanceSignalTree>,
+    pub available_root_dirs: Option<Vec<String>>,
 }
 
 impl CoverageInfo {
     pub fn parse(&mut self) {
-        self.instance_signal_tree = InstanceSignalTree {
+        self.instance_signal_tree = Some(InstanceSignalTree {
             instance_name: self.top_module_name.clone(),
             module_name: self.top_module_name.clone(),
             sub_instances: Vec::new(),
             signals: Vec::new(),
-        };
+        });
+
+        if self.module_source_files.is_none() {
+            self.module_source_files = Some(HashMap::new());
+        }
+        if self.source_file_info_map.is_none() {
+            self.source_file_info_map = Some(HashMap::new());
+        }
 
         let mut encountered_module_files = std::collections::HashSet::<(String, String)>::new();
 
@@ -162,19 +158,24 @@ impl CoverageInfo {
                     instance_path_parts = instance_part.split("__I__").collect();
 
                     if let Some(relative_path) = &corrected_relative_path {
-                        let module_entry = self
-                            .module_info_map
+                        let module_files = self
+                            .module_source_files
+                            .as_mut()
+                            .unwrap()
                             .entry(module_name_extracted.clone())
-                            .or_insert_with(ModuleInfo::default);
+                            .or_insert_with(Vec::new);
 
-                        let _source_file_entry = module_entry
-                            .source_files
+                        if !module_files.contains(relative_path) {
+                            module_files.push(relative_path.clone());
+                        }
+
+                        let _source_file_entry = self
+                            .source_file_info_map
+                            .as_mut()
+                            .unwrap()
                             .entry(relative_path.clone())
-                            .or_insert_with(|| SourceFileInfo {
-                                relative_path: relative_path.clone(),
-                                root_dir: None,
-                                content: None,
-                            });
+                            .or_insert_with(SourceFileInfo::default);
+
                         encountered_module_files
                             .insert((module_name_extracted.clone(), relative_path.clone()));
                     } else {
@@ -184,7 +185,7 @@ impl CoverageInfo {
                         );
                     }
 
-                    let mut current_node = &mut self.instance_signal_tree;
+                    let mut current_node = self.instance_signal_tree.as_mut().unwrap();
                     for (i, &instance_name_part) in instance_path_parts.iter().enumerate().skip(1) {
                         let position = current_node
                             .sub_instances
@@ -233,106 +234,46 @@ impl CoverageInfo {
             }
         }
 
-        // New section: Attempt to determine root_dir and load content for SourceFileInfo
-        // if root_dir is missing or content is invalid.
-        let available_roots = self.available_root_dirs.clone();
-        for (module_name, module_info) in self.module_info_map.iter_mut() {
-            for (relative_path_str, source_file_info) in module_info.source_files.iter_mut() {
-                let needs_processing = source_file_info.root_dir.is_none()
-                    || source_file_info.content.is_none()
-                    || source_file_info
-                        .content
-                        .as_ref()
-                        .map_or(false, |c| c.starts_with("Error"));
+        let available_roots = self.available_root_dirs.clone().unwrap_or_default();
+        if let Some(source_map) = self.source_file_info_map.as_mut() {
+            for (relative_path_str, source_file_info) in source_map.iter_mut() {
+                if source_file_info.content.is_none() {
+                    let mut loaded_successfully = false;
+                    let mut root_dir_where_file_existed: Option<String> = None;
 
-                if needs_processing {
-                    let mut loaded_successfully_in_block = false;
                     for potential_root_dir in &available_roots {
-                        let path_to_try =
-                            PathBuf::from(potential_root_dir).join(&source_file_info.relative_path);
+                        let path_to_try = PathBuf::from(potential_root_dir).join(relative_path_str);
 
                         if path_to_try.exists() && path_to_try.is_file() {
+                            root_dir_where_file_existed = Some(potential_root_dir.to_string());
                             match fs::read_to_string(&path_to_try) {
                                 Ok(content_data) => {
                                     source_file_info.root_dir =
                                         Some(potential_root_dir.to_string());
                                     source_file_info.content = Some(content_data);
-                                    loaded_successfully_in_block = true;
-                                    break; // Found working root and content
+                                    loaded_successfully = true;
+                                    break;
                                 }
                                 Err(e) => {
-                                    // Path exists but read failed. Update info to this attempt's failure.
-                                    // Allow next potential_root_dir to override if it works.
-                                    source_file_info.root_dir =
-                                        Some(potential_root_dir.to_string());
-                                    let error_message = format!(
-                                        "Error reading file (path exists with trial root '{}'): {} (Full Path: {})",
-                                        potential_root_dir, e, path_to_try.display()
-                                    );
-                                    source_file_info.content = Some(error_message.clone());
                                     eprintln!(
-                                        "Failed content load attempt for Module: '{}', File: '{}'. Error: {}",
-                                        module_name, relative_path_str, error_message
+                                        "Error reading existing file '{}' with root '{}': {}. (Full Path: {})",
+                                        relative_path_str, potential_root_dir, e, path_to_try.display()
                                     );
+                                    source_file_info.content = None;
                                 }
                             }
                         }
                     }
 
-                    if !loaded_successfully_in_block && source_file_info.root_dir.is_none() {
-                        // If no root_dir was found (no path from available_roots existed)
-                        // and content isn't already an error (e.g. from a previous state before parse)
-                        if !source_file_info
-                            .content
-                            .as_ref()
-                            .map_or(false, |c| c.starts_with("Error"))
-                        {
-                            source_file_info.content = Some(format!(
-                                "Error: Source file '{}' for module '{}' not found using any available root directory.",
-                                source_file_info.relative_path, module_name
-                            ));
-                        }
-                    }
-                }
-            }
-        }
+                    if !loaded_successfully {
+                        source_file_info.content = None;
+                        source_file_info.root_dir = root_dir_where_file_existed;
 
-        self.load_all_module_content();
-    }
-
-    fn load_all_module_content(&mut self) {
-        for (module_name, module_info) in self.module_info_map.iter_mut() {
-            for (relative_path_key, source_file_info) in module_info.source_files.iter_mut() {
-                if let Some(root_dir_str) = source_file_info.root_dir.as_ref() {
-                    // Attempt to load if content is missing or is an error message
-                    if source_file_info.content.is_none()
-                        || source_file_info
-                            .content
-                            .as_ref()
-                            .map_or(false, |c| c.starts_with("Error"))
-                    {
-                        let current_relative_path = Path::new(&source_file_info.relative_path);
-
-                        let root_normalized = root_dir_str.replace('\\', "/");
-                        let mut combined_path = PathBuf::from(root_normalized);
-                        combined_path.push(current_relative_path);
-
-                        match fs::read_to_string(&combined_path) {
-                            Ok(content) => {
-                                source_file_info.content = Some(content);
-                            }
-                            Err(e) => {
-                                let error_msg = format!(
-                                    "Error reading file: {} (Path: {})",
-                                    e,
-                                    combined_path.display()
-                                );
-                                eprintln!(
-                                    "{} (Module: {}, File: {})",
-                                    error_msg, module_name, relative_path_key
-                                );
-                                source_file_info.content = Some(error_msg);
-                            }
+                        if source_file_info.root_dir.is_none() {
+                            eprintln!(
+                                "Source file '{}' not found using any available root directory.",
+                                relative_path_str
+                            );
                         }
                     }
                 }
@@ -344,72 +285,115 @@ impl CoverageInfo {
         &mut self,
         source_file_identifiers: &[SourceFileIdentifier],
         new_root_dir: &str,
-    ) -> Result<CoverageInfo, String> {
-        let mut updated_count = 0;
-        let mut not_found_files = Vec::new();
-        let mut needs_reload = false;
+    ) -> Result<(), String> {
+        let mut all_successful = true;
+        let mut errors: Vec<String> = Vec::new();
 
-        for identifier in source_file_identifiers {
-            if let Some(module_info) = self.module_info_map.get_mut(&identifier.module_name) {
-                if let Some(source_file_info) =
-                    module_info.source_files.get_mut(&identifier.relative_path)
-                {
-                    let old_root_dir = source_file_info.root_dir.clone();
-                    if old_root_dir.as_deref() != Some(new_root_dir)
-                        || source_file_info.content.is_none()
-                        || source_file_info
-                            .content
-                            .as_ref()
-                            .map_or(false, |c| c.starts_with("Error reading file:"))
-                    {
-                        source_file_info.root_dir = Some(new_root_dir.to_string());
-                        source_file_info.content = None;
-                        needs_reload = true;
-                        updated_count += 1;
+        if let Some(source_map) = self.source_file_info_map.as_mut() {
+            for identifier in source_file_identifiers {
+                if let Some(source_file) = source_map.get_mut(&identifier.relative_path) {
+                    source_file.root_dir = Some(new_root_dir.to_string());
+                    source_file.content = None;
+                    let current_relative_path = Path::new(&identifier.relative_path);
+                    let root_normalized = new_root_dir.replace('\\', "/");
+                    let mut combined_path = PathBuf::from(root_normalized);
+                    combined_path.push(current_relative_path);
+
+                    match fs::read_to_string(&combined_path) {
+                        Ok(content) => {
+                            source_file.content = Some(content);
+                        }
+                        Err(e) => {
+                            let error_msg = format!(
+                                "Error reloading file '{}' with new root '{}': {} (Path: {})",
+                                identifier.relative_path,
+                                new_root_dir,
+                                e,
+                                combined_path.display()
+                            );
+                            eprintln!("{}", error_msg);
+                            source_file.content = None;
+                            errors.push(error_msg);
+                            all_successful = false;
+                        }
                     }
                 } else {
-                    not_found_files.push(identifier.clone());
-                    eprintln!(
-                        "Warning: Relative path '{}' not found within module '{}' during batch update.",
-                        identifier.relative_path, identifier.module_name
+                    let error_msg = format!(
+                        "Source file relative path not found in map: {}",
+                        identifier.relative_path
                     );
+                    errors.push(error_msg);
+                    all_successful = false;
                 }
-            } else {
-                not_found_files.push(identifier.clone());
-                eprintln!(
-                    "Warning: Module name '{}' not found during batch update.",
-                    identifier.module_name
-                );
+            }
+        } else {
+            errors.push("Source file info map is not available.".to_string());
+            all_successful = false;
+        }
+
+        if all_successful {
+            Ok(())
+        } else {
+            Err(errors.join("; "))
+        }
+    }
+
+    pub fn set_available_root_dirs(&mut self, new_dirs: Vec<String>) {
+        self.available_root_dirs = Some(new_dirs);
+        if let Some(source_map) = self.source_file_info_map.as_mut() {
+            for (relative_path_str, source_file_info) in source_map.iter_mut() {
+                if source_file_info
+                    .content
+                    .as_ref()
+                    .map_or(false, |c| c.starts_with("Error:"))
+                {
+                    source_file_info.content = None;
+                    source_file_info.root_dir = None;
+                }
+
+                if source_file_info.content.is_none() {
+                    let mut loaded_successfully = false;
+                    let mut root_dir_where_file_existed: Option<String> = None;
+
+                    if let Some(available_roots) = self.available_root_dirs.as_ref() {
+                        for potential_root_dir in available_roots {
+                            let path_to_try =
+                                PathBuf::from(potential_root_dir).join(relative_path_str);
+                            if path_to_try.exists() && path_to_try.is_file() {
+                                root_dir_where_file_existed = Some(potential_root_dir.to_string());
+                                match fs::read_to_string(&path_to_try) {
+                                    Ok(content_data) => {
+                                        source_file_info.root_dir =
+                                            Some(potential_root_dir.to_string());
+                                        source_file_info.content = Some(content_data);
+                                        loaded_successfully = true;
+                                        break;
+                                    }
+                                    Err(e) => {
+                                        eprintln!(
+                                            "Error reading existing file '{}' with root '{}' during set_available_root_dirs: {}. (Full Path: {})",
+                                            relative_path_str, potential_root_dir, e, path_to_try.display()
+                                        );
+                                        source_file_info.content = None;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if !loaded_successfully {
+                        source_file_info.content = None;
+                        source_file_info.root_dir = root_dir_where_file_existed;
+
+                        if source_file_info.root_dir.is_none() {
+                            eprintln!(
+                                "Error: Source file '{}' not found using any available root directory after update.",
+                                relative_path_str
+                            );
+                        }
+                    }
+                }
             }
         }
-
-        if !not_found_files.is_empty() {
-            eprintln!(
-                "Batch update: {} files updated. Source files not found: {:?}",
-                updated_count, not_found_files
-            );
-        }
-
-        if needs_reload {
-            self.load_all_module_content();
-        }
-
-        if updated_count == 0
-            && !source_file_identifiers.is_empty()
-            && not_found_files.len() == source_file_identifiers.len()
-        {
-            return Err("No valid source file identifiers found for update.".to_string());
-        } else if updated_count == 0 && !needs_reload && source_file_identifiers.is_empty() {
-            return Ok(self.clone());
-        } else if updated_count == 0
-            && !needs_reload
-            && !source_file_identifiers.is_empty()
-            && not_found_files.is_empty()
-        {
-            return Ok(self.clone());
-        }
-
-        Ok(self.clone())
     }
 }
 
@@ -418,17 +402,52 @@ pub mod test {
     #[test]
     pub fn test_parse() {
         use super::*;
-        let content = std::fs::read_to_string(r"/home/canxin/git/chisel_coverage_tool/output_generated/uart_rx/UART_rx_coverage_info.json").unwrap();
+        let content = std::fs::read_to_string(r"data\TestHarness_coverage_info.json").unwrap();
         let mut info = serde_json::from_str::<CoverageInfo>(&content).unwrap();
+        // modify this
+        info.available_root_dirs = Some(vec![
+            r"D:\git\chisel".to_string(),
+            r"D:\git\rocket-chip".to_string(),
+        ]);
+        let start_time = std::time::Instant::now();
         info.parse();
+        let duration = start_time.elapsed();
+        println!("Parsing took: {:?}", duration);
+
+        assert!(info.module_source_files.is_some());
+        assert!(info.source_file_info_map.is_some());
+        if let Some(module_files_map) = &info.module_source_files {
+            if let Some(files) = module_files_map.get("TestHarness") {
+                assert!(
+                    !files.is_empty(),
+                    "TestHarness module should have source files"
+                );
+                if let Some(source_map) = &info.source_file_info_map {
+                    for file_path in files {
+                        assert!(
+                            source_map.contains_key(file_path),
+                            "Source file {} for TestHarness not found in source_file_info_map",
+                            file_path
+                        );
+                    }
+                } else {
+                    panic!("source_file_info_map is None after parse");
+                }
+            } else {
+                println!(
+                    "Warning: Module 'TestHarness' not found in module_source_files for testing."
+                );
+            }
+        } else {
+            panic!("module_source_files is None after parse");
+        }
 
         let parsed_content = serde_json::to_string_pretty(&info).unwrap();
         std::fs::write(
-            r"/home/canxin/git/chisel_coverage_tool/output_generated/uart_rx/UART_rx_coverage_info_parsed.json",
+            r"data\TestHarness_coverage_info_parsed.json",
             parsed_content,
         ).unwrap();
 
-        // 递归检查info的instace_signal_tree中是否所有 "signals 不为空的" instance 的 module 都不是 UNKNOWN_MODULE_PLACEHOLDER
         fn check_instance(instance: &InstanceSignalTree) -> bool {
             if instance.module_name == UNKNOWN_MODULE_PLACEHOLDER && !instance.signals.is_empty() {
                 return false;
@@ -440,7 +459,7 @@ pub mod test {
             }
             true
         }
-        let all_instances_valid = check_instance(&info.instance_signal_tree);
+        let all_instances_valid = check_instance(&info.instance_signal_tree.unwrap());
         assert!(
             all_instances_valid,
             "There are instances with UNKNOWN_MODULE_PLACEHOLDER in their module names."

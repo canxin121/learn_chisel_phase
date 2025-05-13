@@ -1,7 +1,7 @@
 use cmds::{
-    parse_coverage_info, read_file, reread_files_with_new_root_batch, // Use batch command
-    write_coverage_info, write_file,
-    // Removed: reread_file_with_new_root
+    parse_coverage_info, parse_coverage_report_with_coverage_info, read_file,
+    reread_files_with_new_root_batch, 
+    update_available_root_dirs,
 };
 
 pub mod cmds;
@@ -14,11 +14,10 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             parse_coverage_info,
-            write_coverage_info,
-            reread_files_with_new_root_batch, // Register batch command
-            // Removed: reread_file_with_new_root
+            reread_files_with_new_root_batch,
             read_file,
-            write_file
+            parse_coverage_report_with_coverage_info,
+            update_available_root_dirs,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

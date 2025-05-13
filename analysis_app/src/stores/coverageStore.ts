@@ -1,362 +1,301 @@
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import { message, type UploadFile } from 'ant-design-vue'
-import { invoke } from '@tauri-apps/api/core';
-import type { CoverageReport } from '../types/CoverageReport'
-import { type CoverageInfo, parseCoverageInfo, rereadFilesWithNewRootBatch, type SourceFileIdentifier } from '../types/CoverageInfo'
-import type { TreeNode } from '../types/TreeNode'
-import { buildCoverageTrees } from '../utils/coverageUtils'
-import { writeCoverageInfo } from '../utils/file'
+import { defineStore } from 'pinia';
+import { ref, computed } from 'vue';
+import { message } from 'ant-design-vue';
+import { readFile } from '../utils/file'; // 确保这个工具函数存在且能用
+import type { CoverageInfo, ParsedCoverageInfo, SourceFileIdentifier, InstanceSignalTree, SignalInfo } from '../types/CoverageInfo'; // Added InstanceSignalTree, SignalInfo
+import { parseCoverageInfo, rereadFilesWithNewRootBatch, updateAvailableRootDirs } from '../types/CoverageInfo';
+import type { ParsedCoverageReport } from '../types/CoverageReport'; // Added CoverageReport
+import { parseCoverageReportWithCoverageInfo } from '../types/CoverageReport';
 
-// 定义导航目标的数据结构
-interface NavigationTarget {
-  signalKey: string; // 目标信号的唯一键
-  instancePath: string[];
+export interface NavigationTarget {
+  signalKey: string; // compressed_name of the signal
+  instancePath: string; // Hierarchical path to the instance e.g. "Top.Sub.Leaf" or "Top__I__Sub"
   sourceLocation: { filePath: string; line: number; column: number };
-  moduleName: string;
+  moduleName: string; // Module type of the instance in instancePath
+  signalOriginName?: string; // origin_name of the signal, for display or finer highlighting
 }
 
-// 定义覆盖率数据的 Pinia store
 export const useCoverageStore = defineStore('coverageStore', () => {
-  // --- State ---
-  const coverageReport = ref<CoverageReport | null>(null) // 覆盖率报告
-  const coverageInfo = ref<CoverageInfo | null>(null) // 覆盖率信息
-  const predicateTreeData = ref<TreeNode[]>([]) // 条件谓词树
-  const muxTreeData = ref<TreeNode[]>([]) // Mux 条件树
-  const registerTreeData = ref<TreeNode[]>([]) // 寄存器覆盖树
-  const userDefinedRootDirs = ref<Record<string, string>>({}) // 用户定义的模块根目录
-  const originalInfoFilePath = ref<string | null>(null); // 原始 info 文件路径
-  const reportFileList = ref<UploadFile[]>([]) // 报告文件列表
-  const isLoadingReport = ref(false) // 报告加载状态
-  const isLoadingInfo = ref(false) // 信息加载状态
-  const activeTabKey = ref('predicates') // 当前活动选项卡
+  const coverageInfo = ref<ParsedCoverageInfo | null>(null);
+  const coverageReport = ref<ParsedCoverageReport | null>(null);
+  const originalInfoFilePath = ref<string | null>(null);
+  const originalReportFilePath = ref<string | null>(null);
+
+  const isLoadingInfo = ref(false);
+  const isLoadingReport = ref(false);
+
+  const activeTabKey = ref('predicates');
   const navigationTarget = ref<NavigationTarget | null>(null);
 
-  // --- Computed ---
-  const overallCoverage = computed(() => coverageReport.value?.summary?.overall_coverage_percent ?? 0)
-  const totalBins = computed(() => coverageReport.value?.summary?.total_bins ?? 0)
-  const hitBins = computed(() => coverageReport.value?.summary?.total_bins_hit ?? 0)
-  const predicateStats = computed(() => {
-    let total = 0
-    let hit = 0
-    coverageReport.value?.conditional_predicates.forEach(p => {
-      total += p.bins_total
-      hit += p.bins_hit
-    })
-    return { total, hit, coverage: total > 0 ? (hit / total) * 100 : 0 }
-  })
-  const muxStats = computed(() => {
-    let total = 0
-    let hit = 0
-    coverageReport.value?.mux_conditions.forEach(p => {
-      total += p.bins_total
-      hit += p.bins_hit
-    })
-    return { total, hit, coverage: total > 0 ? (hit / total) * 100 : 0 }
-  })
-  const registerStats = computed(() => {
-    let total = 0
-    let hit = 0
-    coverageReport.value?.register_coverage.forEach(p => {
-      total += p.bins_total
-      hit += p.bins_hit
-    })
-    return { total, hit, coverage: total > 0 ? (hit / total) * 100 : 0 }
-  })
-
-
-  // --- Actions ---
-  function rebuildTreesAndUpdateState() {
-    // 严格检查 report 和 info 是否都已加载
-    if (coverageReport.value && coverageInfo.value?.instance_signal_tree) {
-      try {
-        console.log("Rebuilding coverage trees: Both report and info are available.");
-
-        // 直接使用各 port 的 mapping 列表
-        const trees = buildCoverageTrees(
-            coverageReport.value,
-            coverageInfo.value.instance_signal_tree,
-            coverageInfo.value.exported_ports
-        );
-        predicateTreeData.value = trees.predicates;
-        muxTreeData.value = trees.mux;
-        registerTreeData.value = trees.registers;
-        console.log("Coverage trees rebuilt successfully.");
-      } catch (error) {
-        console.error("Error rebuilding coverage trees:", error);
-        message.error(`Failed to update coverage data view: ${error instanceof Error ? error.message : String(error)}`);
-        // 清空树数据
-        predicateTreeData.value = [];
-        muxTreeData.value = [];
-        registerTreeData.value = [];
-      }
-    } else {
-      // 如果任一文件未加载，则清除树数据
-      console.log("Clearing coverage trees: Report or Info (or its instance_signal_tree) is missing.");
-      predicateTreeData.value = [];
-      muxTreeData.value = [];
-      registerTreeData.value = [];
-      if (!coverageReport.value) {
-        console.log("Reason: Coverage report not loaded.");
-      }
-      if (!coverageInfo.value) {
-        console.log("Reason: Coverage info not loaded.");
-      } else if (!coverageInfo.value.instance_signal_tree) {
-        console.log("Reason: Coverage info loaded, but instance_signal_tree is missing.");
-      }
+  // Helper to read and parse JSON file
+  async function readAndParseJsonFile<T>(filePath: string): Promise<T> {
+    try {
+      const content = await readFile(filePath); // readFile from utils/file.ts
+      return JSON.parse(content) as T;
+    } catch (error: any) {
+      console.error(`Error reading or parsing JSON file ${filePath}:`, error);
+      throw new Error(`Failed to read/parse ${filePath}: ${error.message || String(error)}`);
     }
   }
 
-  function processReportFile(file: File) {
-    const isJson = file.type === 'application/json'
-    if (!isJson) {
-      message.error(`${file.name} 不是有效的 JSON 文件!`)
-      return
-    }
-    isLoadingReport.value = true
-    // 清空旧报告和树数据
-    coverageReport.value = null
-    rebuildTreesAndUpdateState(); // 清空树
-
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      try {
-        const jsonContent = e.target?.result as string
-        if (!jsonContent) {
-          throw new Error("文件内容为空。")
+  async function processInfoFile(filePath: string, forceReparse = false) {
+    isLoadingInfo.value = true;
+    try {
+      if (!forceReparse) {
+        try {
+          // 尝试读取并检查是否已解析
+          const loadedInfo = await readAndParseJsonFile<ParsedCoverageInfo>(filePath);
+          // ParsedCoverageInfo 要求 instance_signal_tree 存在
+          if (loadedInfo.instance_signal_tree && loadedInfo.top_module_name && loadedInfo.exported_ports) {
+            coverageInfo.value = loadedInfo;
+            originalInfoFilePath.value = filePath;
+            coverageReport.value = null; // 重置报告
+            originalReportFilePath.value = null;
+            message.success("覆盖率信息文件已加载 (已解析)。");
+            isLoadingInfo.value = false;
+            return; // 跳过后端解析
+          }
+        } catch (e) {
+          console.warn("预检查：信息文件未处于已解析状态或预检查读取期间出错。继续完整解析。", e);
         }
-        const reportData: CoverageReport = JSON.parse(jsonContent)
-        if (!reportData || !reportData.summary || !reportData.conditional_predicates ||
-          !reportData.mux_conditions || !reportData.register_coverage) {
-          throw new Error("无效的覆盖率报告结构。")
-        }
-        coverageReport.value = reportData
-        message.success(`${file.name} 上传并解析成功!`)
-        // 只有在 info 文件也存在时才重建树
-        if (coverageInfo.value) {
-            rebuildTreesAndUpdateState();
-        } else {
-            console.log("Report processed, waiting for info file to rebuild trees.");
-        }
-      } catch (error: any) {
-        message.error(`解析 ${file.name} 失败: ${error.message || '无效的 JSON。'}`)
-        coverageReport.value = null // 确保失败时清空
-        rebuildTreesAndUpdateState(); // 清空树
-      } finally {
-        reportFileList.value = [] // 清空上传列表
-        isLoadingReport.value = false
       }
+
+      // 完整解析（强制或预检查失败/跳过）
+      await parseCoverageInfo(filePath); // 后端命令
+      const newInfo = await readAndParseJsonFile<ParsedCoverageInfo>(filePath); // 重新读取
+      coverageInfo.value = newInfo;
+      originalInfoFilePath.value = filePath;
+      coverageReport.value = null;
+      originalReportFilePath.value = null;
+      message.success(forceReparse ? "覆盖率信息文件已重新处理。" : "覆盖率信息文件处理成功。");
+    } catch (error: any) {
+      console.error("处理信息文件时出错:", error);
+      message.error(`处理覆盖率信息文件失败: ${error.message || String(error)}`);
+      coverageInfo.value = null;
+      originalInfoFilePath.value = null;
+      coverageReport.value = null;
+      originalReportFilePath.value = null;
+    } finally {
+      isLoadingInfo.value = false;
     }
-    reader.onerror = () => {
-      message.error(`读取 ${file.name} 时出错。`)
-      coverageReport.value = null // 确保失败时清空
-      rebuildTreesAndUpdateState(); // 清空树
-      isLoadingReport.value = false
-      reportFileList.value = []
-    }
-    reader.readAsText(file)
   }
 
-  async function processInfoFile(filePath: string) {
-    if (!filePath || !filePath.toLowerCase().endsWith('.json')) {
-      message.error(`Invalid file path provided: ${filePath}`);
+  async function processReportFile(filePath: string, forceReparse = false) {
+    if (!originalInfoFilePath.value) {
+      message.error("请先处理覆盖率信息文件。");
       return;
     }
-    console.log("Storing original info file path:", filePath);
-    originalInfoFilePath.value = filePath; // 存储路径
-    isLoadingInfo.value = true;
-    // 清空旧 info 和树数据
-    coverageInfo.value = null;
-    userDefinedRootDirs.value = {}; // 清空根目录设置
-    rebuildTreesAndUpdateState(); // 清空树
-
+    isLoadingReport.value = true;
     try {
-      console.log(`Reading file content from: ${filePath}`);
-      const jsonContent = await invoke<string>('read_file', { path: filePath });
-      if (!jsonContent) {
-        throw new Error("文件内容为空。");
-      }
-      const rawInfoData = JSON.parse(jsonContent);
-      const processedInfoData = await parseCoverageInfo(rawInfoData);
-      coverageInfo.value = processedInfoData;
-      const fileName = filePath.split(/[\\/]/).pop() || filePath;
-      message.success(`${fileName} 上传并处理成功!`)
-
-      if (originalInfoFilePath.value && coverageInfo.value) {
+      if (!forceReparse) {
         try {
-          console.log(`Attempting to save processed info back to: ${originalInfoFilePath.value}`);
-          await writeCoverageInfo(originalInfoFilePath.value, coverageInfo.value);
-          message.info(`Coverage info automatically saved to ${originalInfoFilePath.value}.`, 3);
-        } catch (saveError) {
-          console.error("Failed to automatically save coverage info after processing:", saveError);
-          message.error(`自动保存处理后的覆盖率信息失败: ${saveError instanceof Error ? saveError.message : String(saveError)}`, 5);
+          // 尝试读取并检查是否已解析
+          const loadedReport = await readAndParseJsonFile<ParsedCoverageReport>(filePath);
+          // ParsedCoverageReport 要求这些树结构存在
+          if (loadedReport.conditional_coverage_tree &&
+            loadedReport.mux_condition_tree &&
+            loadedReport.register_coverage_tree) {
+            coverageReport.value = loadedReport;
+            originalReportFilePath.value = filePath;
+            message.success("覆盖率报告文件已加载 (已解析)。");
+            isLoadingReport.value = false;
+            return; // 跳过后端解析
+          }
+        } catch (e) {
+          console.warn("预检查：报告文件未处于已解析状态或预检查读取期间出错。继续完整解析。", e);
         }
       }
 
-      // 只有在 report 文件也存在时才重建树
-      if (coverageReport.value) {
-          rebuildTreesAndUpdateState();
-      } else {
-          console.log("Info processed, waiting for report file to rebuild trees.");
-      }
+      // 完整解析（强制或预检查失败/跳过）
+      await parseCoverageReportWithCoverageInfo(filePath, originalInfoFilePath.value); // 后端命令
+      const newReport = await readAndParseJsonFile<ParsedCoverageReport>(filePath); // 重新读取
+      coverageReport.value = newReport;
+      originalReportFilePath.value = filePath;
+      message.success(forceReparse ? "覆盖率报告文件已重新处理。" : "覆盖率报告文件处理成功。");
     } catch (error: any) {
-      const fileName = filePath.split(/[\\/]/).pop() || filePath;
-      message.error(`处理 ${fileName} 失败: ${error instanceof Error ? error.message : String(error)}`)
-      coverageInfo.value = null // 确保失败时清空
-      originalInfoFilePath.value = null; // 清除路径
-      rebuildTreesAndUpdateState(); // 清空树
+      console.error("处理报告文件时出错:", error);
+      message.error(`处理覆盖率报告文件失败: ${error.message || String(error)}`);
+      coverageReport.value = null;
+      originalReportFilePath.value = null;
+    } finally {
+      isLoadingReport.value = false;
+    }
+  }
+
+  async function updateCoverageInfoWithNewRoots(sourceFileIdentifiers: SourceFileIdentifier[], newRootDir: string) {
+    if (!originalInfoFilePath.value) {
+      console.error("Cannot update root dirs: Coverage info file path not set.");
+      message.error("无法更新根目录：未设置覆盖率信息文件路径。");
+      return;
+    }
+    isLoadingInfo.value = true;
+    try {
+      // Backend command modifies the info file on disk
+      await rereadFilesWithNewRootBatch(originalInfoFilePath.value, sourceFileIdentifiers, newRootDir);
+      // Re-read the modified info file
+      const updatedInfo = await readAndParseJsonFile<ParsedCoverageInfo>(originalInfoFilePath.value);
+      coverageInfo.value = updatedInfo;
+      message.success("根目录已更新，文件已重新加载。");
+      console.log(`Coverage info with updated roots re-read from ${originalInfoFilePath.value}`);
+    } catch (error: any) {
+      console.error("使用新根目录更新覆盖信息时出错:", error);
+      message.error(`使用新根目录更新覆盖信息失败: ${error.message || String(error)}`);
+      // Optionally, reload the previous state or handle error more gracefully
     } finally {
       isLoadingInfo.value = false;
     }
   }
 
-  async function updateFileRootBatch(sourceFileIdentifiers: SourceFileIdentifier[], newRootDir: string) {
-    if (!coverageInfo.value) {
-      message.error("Coverage info not loaded.");
-      return Promise.reject("Coverage info not loaded.");
-    }
+  const saveAndUpdateAvailableRootDirs = async (newRootDirs: string[]) => {
     if (!originalInfoFilePath.value) {
-      message.error("Cannot update root directory: Original file path is missing.");
-      return Promise.reject("Original file path is missing.");
+      console.error("Cannot update available root dirs, originalInfoFilePath is not set.");
+      message.error("无法更新可用根目录：未设置覆盖率信息文件路径。");
+      return;
     }
-    if (sourceFileIdentifiers.length === 0) {
-        message.warn("No source files selected for root directory update.");
-        return Promise.resolve();
-    }
-
-    const count = sourceFileIdentifiers.length;
-    const firstFileDesc = count > 0 ? `${sourceFileIdentifiers[0].module_name}/${sourceFileIdentifiers[0].relative_path}` : '';
-    const logMsg = count > 1 ? `${firstFileDesc} and ${count - 1} other(s)` : firstFileDesc;
-
-    console.log(`Updating root directory for source file(s) [${logMsg}] to "${newRootDir}"`);
-    message.loading({ content: `Processing root directory change for ${count} source file(s)...`, key: 'updateRootBatch', duration: 0 });
     isLoadingInfo.value = true;
-
     try {
-      const updatedCoverageInfo = await rereadFilesWithNewRootBatch(
-        coverageInfo.value,
-        sourceFileIdentifiers, // 标识符数组
-        newRootDir
-      );
-
-      coverageInfo.value = updatedCoverageInfo;
-
-      message.success({ content: `Root directory updated and files re-processed for ${count} source file(s).`, key: 'updateRootBatch', duration: 3 });
-
-      if (originalInfoFilePath.value && coverageInfo.value) {
-        try {
-          console.log(`Attempting to save updated info back to: ${originalInfoFilePath.value}`);
-          await writeCoverageInfo(originalInfoFilePath.value, coverageInfo.value);
-          message.info(`Coverage info automatically saved back to ${originalInfoFilePath.value}.`, 3);
-        } catch (saveError) {
-          console.error("Failed to automatically save coverage info after batch root update:", saveError);
-          message.error(`自动保存更新后的覆盖率信息失败: ${saveError instanceof Error ? saveError.message : String(saveError)}`, 5);
-        }
-      }
-
-      // 根目录更新后，如果 report 也存在，则需要重建树
-      if (coverageReport.value) {
-          rebuildTreesAndUpdateState();
-      } else {
-          console.log("Info updated after root change, but report is missing. Trees not rebuilt yet.");
-      }
-      return Promise.resolve(); // 成功
-
-    } catch (error) {
-      console.error(`Error updating root directory via batch backend for files [${logMsg}]:`, error);
-      message.error({ content: `Failed to update root directory: ${error instanceof Error ? error.message : String(error)}`, key: 'updateRootBatch', duration: 5 });
-      return Promise.reject(error); // 失败
-    } finally {
-      isLoadingInfo.value = false;
-    }
-  }
-
-  // 新增: 保存并更新 available_root_dirs
-  async function saveAndUpdateAvailableRootDirs(newDirs: string[]) {
-    if (!coverageInfo.value) {
-      message.error("Coverage info not loaded. Cannot save available root directories.");
-      return Promise.reject("Coverage info not loaded.");
-    }
-    if (!originalInfoFilePath.value) {
-      message.error("Original info file path is missing. Cannot save available root directories.");
-      return Promise.reject("Original info file path is missing.");
-    }
-
-    isLoadingInfo.value = true;
-    message.loading({ content: 'Saving available root directories...', key: 'saveAvailableDirs', duration: 0 });
-
-    try {
-      // 1. 更新 store 中的 available_root_dirs
-      coverageInfo.value.available_root_dirs = [...newDirs]; // 使用新数组确保响应性
-
-      // 2. 调用 parseCoverageInfo (后端可能会使用更新后的 available_root_dirs)
-      console.log("Calling parseCoverageInfo after updating available_root_dirs:", coverageInfo.value);
-      const processedInfo = await parseCoverageInfo(coverageInfo.value);
-
-      // 3. 将 parseCoverageInfo 的结果更新回 store
-      coverageInfo.value = processedInfo;
-      console.log("Updated coverageInfo from parseCoverageInfo:", coverageInfo.value);
-
-
-      // 4. 将更新后的 coverageInfo 写回文件
-      await writeCoverageInfo(originalInfoFilePath.value, coverageInfo.value);
-      message.success({ content: 'Available root directories saved and info file updated.', key: 'saveAvailableDirs', duration: 3 });
-
-      // 5. 重建树 (因为 coverageInfo 可能已更改)
-      if (coverageReport.value) {
-        rebuildTreesAndUpdateState();
-      } else {
-        console.log("Available root directories saved, but report is missing. Trees not rebuilt yet.");
-      }
-      return Promise.resolve();
-    } catch (error) {
+      await updateAvailableRootDirs(originalInfoFilePath.value, newRootDirs);
+      const updatedInfo = await readAndParseJsonFile<ParsedCoverageInfo>(originalInfoFilePath.value);
+      coverageInfo.value = updatedInfo;
+      message.success('可用根目录已成功更新并保存到信息文件。');
+    } catch (error: any) {
       console.error("Error saving available root directories:", error);
-      message.error({ content: `Failed to save available root directories: ${error instanceof Error ? error.message : String(error)}`, key: 'saveAvailableDirs', duration: 5 });
-      // 发生错误时，可能需要考虑是否回滚 coverageInfo.value.available_root_dirs
-      // 但由于 parseCoverageInfo 也可能失败，状态可能已经不一致，最好提示用户重新加载
-      return Promise.reject(error);
+      message.error(`保存可用根目录失败: ${error.message || String(error)}`);
     } finally {
       isLoadingInfo.value = false;
     }
-  }
+  };
 
-  // 导航到源代码
-  function navigateToSource(target: NavigationTarget) {
-    console.log("Store: Setting navigation target:", target);
+  const reprocessInfoFile = async () => {
+    if (!originalInfoFilePath.value) {
+      message.warn("没有信息文件可重新处理。");
+      return;
+    }
+    await processInfoFile(originalInfoFilePath.value, true);
+  };
+
+  const reprocessReportFile = async () => {
+    if (!originalReportFilePath.value) {
+      message.warn("没有报告文件可重新处理。");
+      return;
+    }
+    if (!coverageInfo.value) { // 检查 coverageInfo 是否已加载
+      message.error("信息文件数据未加载，无法重新处理报告文件。");
+      return;
+    }
+    await processReportFile(originalReportFilePath.value, true);
+  };
+
+  const overallCoverage = computed(() => coverageReport.value?.summary?.overall_coverage_percent ?? 0);
+  const hitBins = computed(() => coverageReport.value?.summary?.total_bins_hit ?? 0);
+  const totalBins = computed(() => coverageReport.value?.summary?.total_bins ?? 0);
+
+  const predicateStats = computed(() => {
+    if (!coverageReport.value || !coverageReport.value.conditional_predicates) return { count: 0, coverage: 0 };
+    const points = coverageReport.value.conditional_predicates;
+    const total = points.length;
+    if (total === 0) return { count: 0, coverage: 0 };
+    const sumCoverage = points.reduce((sum, p) => sum + p.coverage_percent, 0);
+    return { count: total, coverage: sumCoverage / total };
+  });
+
+  const muxStats = computed(() => {
+    if (!coverageReport.value || !coverageReport.value.mux_conditions) return { count: 0, coverage: 0 };
+    const points = coverageReport.value.mux_conditions;
+    const total = points.length;
+    if (total === 0) return { count: 0, coverage: 0 };
+    const sumCoverage = points.reduce((sum, p) => sum + p.coverage_percent, 0);
+    return { count: total, coverage: sumCoverage / total };
+  });
+
+  const registerStats = computed(() => {
+    if (!coverageReport.value || !coverageReport.value.register_coverage) return { count: 0, coverage: 0 };
+    const points = coverageReport.value.register_coverage;
+    const total = points.length;
+    if (total === 0) return { count: 0, coverage: 0 };
+    const sumCoverage = points.reduce((sum, p) => sum + p.coverage_percent, 0);
+    return { count: total, coverage: sumCoverage / total };
+  });
+
+  function navigateToSource(target: NavigationTarget) { // Use NavigationTarget directly
     navigationTarget.value = target;
   }
 
-  // 清除导航目标
   function clearNavigationTarget() {
-    console.log("Store: Clearing navigation target.");
     navigationTarget.value = null;
   }
 
+  function findSignalInfoRecursive(instanceNode: InstanceSignalTree | undefined, compressedName: string): SignalInfo | undefined {
+    if (!instanceNode) return undefined;
+    const signal = instanceNode.signals.find(s => s.compressed_name === compressedName);
+    if (signal) return signal;
+    for (const subInstance of instanceNode.sub_instances) {
+      const foundInSub = findSignalInfoRecursive(subInstance, compressedName);
+      if (foundInSub) return foundInSub;
+    }
+    return undefined;
+  }
+
+  const getSignalInfoByCompressedName = (compressedName: string): SignalInfo | undefined => {
+    if (!coverageInfo.value || !coverageInfo.value.instance_signal_tree) {
+      return undefined;
+    }
+    return findSignalInfoRecursive(coverageInfo.value.instance_signal_tree, compressedName);
+  };
 
   return {
-    coverageReport,
     coverageInfo,
-    predicateTreeData,
-    muxTreeData,
-    registerTreeData,
-    userDefinedRootDirs,
+    coverageReport,
     originalInfoFilePath,
-    reportFileList,
-    isLoadingReport,
+    originalReportFilePath,
     isLoadingInfo,
-    activeTabKey,
-    navigationTarget, // 导航目标 state
+    isLoadingReport,
+    processInfoFile,
+    processReportFile,
+    reprocessInfoFile,
+    reprocessReportFile,
+    updateCoverageInfoWithNewRoots,
+    saveAndUpdateAvailableRootDirs,
     overallCoverage,
-    totalBins,
     hitBins,
+    totalBins,
     predicateStats,
     muxStats,
     registerStats,
-    processReportFile,
-    processInfoFile,
-    updateFileRootBatch,
-    saveAndUpdateAvailableRootDirs, // 导出新 action
-    navigateToSource, // 导航 action
-    clearNavigationTarget, // 清除导航 action
+    activeTabKey,
+    navigationTarget,
+    navigateToSource,
+    clearNavigationTarget, // Added
+    getSignalInfoByCompressedName, // Added
+  };
+});
+
+// Helper function to resolve the actual file path
+export function resolveActualFilePath(
+  relativePath: string,
+  coverageInfoData: CoverageInfo | null // Pass the entire coverageInfo object
+): string | undefined {
+  if (!coverageInfoData || !coverageInfoData.source_file_info_map) return undefined;
+
+  // Get the specific file info using the relative path
+  const fileInfo = coverageInfoData.source_file_info_map[relativePath];
+
+  if (!fileInfo) return undefined; // File info not found for this path
+
+  if (fileInfo.root_dir && fileInfo.content && !fileInfo.content.startsWith("Error:")) {
+    // If a specific root_dir is already set and content is valid, use it
+    return `${fileInfo.root_dir}/${relativePath}`.replace(/\\/g, '/');
   }
-})
+
+  // Fallback: try available_root_dirs if root_dir is not set or content is an error
+  if (coverageInfoData.available_root_dirs) {
+    for (const root of coverageInfoData.available_root_dirs) {
+      const potentialPath = `${root}/${relativePath}`.replace(/\\/g, '/');
+      if (fileInfo.root_dir === root) return potentialPath;
+    }
+    if (fileInfo.root_dir && coverageInfoData.available_root_dirs.includes(fileInfo.root_dir)) {
+      return `${fileInfo.root_dir}/${relativePath}`.replace(/\\/g, '/');
+    }
+  }
+  return undefined;
+}

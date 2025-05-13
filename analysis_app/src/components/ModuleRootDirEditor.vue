@@ -4,8 +4,8 @@ import { Collapse as ACollapse, CollapsePanel as ACollapsePanel, Table as ATable
 import type { Key } from 'ant-design-vue/es/table/interface';
 import { FolderOpenOutlined, SaveOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons-vue';
 import { useCoverageStore } from "../stores/coverageStore";
-import { open } from '@tauri-apps/plugin-dialog';
-import type { ModuleInfo, SourceFileIdentifier } from '../types/CoverageInfo';
+import { selectSingleDirectory } from '../utils/dialogUtils'; // IMPORT new utility
+import type { SourceFileIdentifier, SourceFileInfo } from '../types/CoverageInfo';
 
 const coverageStore = useCoverageStore();
 
@@ -25,7 +25,7 @@ const currentPageSize = ref(10); // 添加响应式的页面大小
 const editableAvailableRootDirs = ref<string[]>([]);
 const newAvailableRootDirInput = ref('');
 const isSavingAvailableDirs = ref(false);
-const activeCollapseKeys = ref<string[]>(['1']); // 默认展开第一个面板
+const activeCollapseKeys = ref<string[]>([]); // 默认折叠所有面板
 
 watch(() => coverageStore.coverageInfo?.available_root_dirs, (newDirs) => {
     if (newDirs) {
@@ -36,25 +36,30 @@ watch(() => coverageStore.coverageInfo?.available_root_dirs, (newDirs) => {
 }, { immediate: true, deep: true });
 
 const tableData = computed((): SourceFileTableItem[] => {
-    if (!coverageStore.coverageInfo?.module_info_map) {
-        return [];
-    }
     const items: SourceFileTableItem[] = [];
-    // 遍历模块
-    Object.entries(coverageStore.coverageInfo.module_info_map).forEach(([moduleName, moduleInfo]: [string, ModuleInfo]) => {
-        if (moduleInfo.source_files) {
-            // 遍历文件
-            Object.entries(moduleInfo.source_files).forEach(([relativePath, sourceFileInfo]) => {
-                items.push({
-                    key: `${moduleName}::${relativePath}`, // 键
-                    moduleName: moduleName,
-                    relativePath: relativePath,
-                    root_dir: sourceFileInfo.root_dir ?? null, // 根目录
-                });
+    // Use module_source_files and source_file_info_map instead of module_info_map
+    if (!coverageStore.coverageInfo?.module_source_files || !coverageStore.coverageInfo?.source_file_info_map) {
+        return items;
+    }
+
+    const sourceMap = coverageStore.coverageInfo.source_file_info_map;
+
+    // Iterate through modules and their source file paths
+    Object.entries(coverageStore.coverageInfo.module_source_files).forEach(([moduleName, relativePaths]) => {
+        relativePaths.forEach(relativePath => {
+            // Get SourceFileInfo using the relative path as key in source_file_info_map
+            const sourceFileInfo: SourceFileInfo | undefined = sourceMap[relativePath];
+            items.push({
+                key: `${moduleName}::${relativePath}`, // Unique key
+                moduleName: moduleName,
+                relativePath: relativePath,
+                // Access root_dir from the retrieved sourceFileInfo
+                root_dir: sourceFileInfo?.root_dir ?? null,
             });
-        }
+        });
     });
-    // 排序项目
+
+    // Sort items
     items.sort((a, b) => {
         if (a.moduleName !== b.moduleName) {
             return a.moduleName.localeCompare(b.moduleName);
@@ -112,12 +117,10 @@ const paginationConfig = computed(() => ({
 // 选择目录
 const selectDirectory = async (targetInput?: 'newRootDir' | 'newAvailableRootDir') => {
     try {
-        const selected = await open({
-            directory: true, // 目录
-            multiple: false, // 单选
-            title: targetInput === 'newAvailableRootDir' ? 'Select Available Root Directory' : 'Select New Root Directory', // 标题
+        const selected = await selectSingleDirectory({ // USE new utility
+            title: targetInput === 'newAvailableRootDir' ? 'Select Available Root Directory' : 'Select New Root Directory',
         });
-        if (selected && typeof selected === 'string') {
+        if (selected) { // selectSingleDirectory returns string | null
             if (targetInput === 'newAvailableRootDir') {
                 newAvailableRootDirInput.value = selected;
             } else {
@@ -131,47 +134,25 @@ const selectDirectory = async (targetInput?: 'newRootDir' | 'newAvailableRootDir
 };
 
 // 应用新根目录
-const applyNewRootDir = async () => {
-    if (selectedRowKeys.value.length === 0) {
-        message.warn('Please select at least one source file to update.');
-        return;
-    }
-    if (!newRootDir.value) {
-        message.warn('Please enter or select a new root directory.');
+const handleApplyRootDir = async () => {
+    if (selectedRowKeys.value.length === 0 || !newRootDir.value) {
+        message.warn("Please select files and specify a new root directory.");
         return;
     }
     isApplying.value = true;
-
-    // 映射键到标识符
-    const identifiersToUpdate: SourceFileIdentifier[] = selectedRowKeys.value.map(key => {
-        const [moduleName, relativePath] = String(key).split('::');
-        // 修正属性名以匹配 SourceFileIdentifier
-        return { module_name: moduleName, relative_path: relativePath };
-    }).filter(id => id.module_name && id.relative_path); // 使用修正后的属性名验证
-
-    if (identifiersToUpdate.length !== selectedRowKeys.value.length) {
-         console.warn("Some selected keys could not be parsed into identifiers:", selectedRowKeys.value);
-    }
-
-    if (identifiersToUpdate.length === 0) {
-        message.warn('No valid source file identifiers could be determined from selection.');
-        isApplying.value = false;
-        return;
-    }
-
     try {
-        // 调用 store action
-        await coverageStore.updateFileRootBatch(identifiersToUpdate, newRootDir.value);
-
-        message.success(`Batch root directory update request processed successfully for ${identifiersToUpdate.length} source file(s).`);
-        selectedRowKeys.value = []; // 清除选择
-        newRootDir.value = ''; // 清除输入
-
+        const identifiersToUpdate: SourceFileIdentifier[] = selectedRowKeys.value.map(key => {
+            const item = tableData.value.find(d => d.key === key);
+            return { module_name: item!.moduleName, relative_path: item!.relativePath };
+        });
+        await coverageStore.updateCoverageInfoWithNewRoots(identifiersToUpdate, newRootDir.value);
+        message.success("Root directory updated and files reread successfully.");
+        // 清空选择和输入
+        selectedRowKeys.value = [];
+        newRootDir.value = '';
     } catch (error) {
         message.error(`Batch root directory update request failed. See console or previous messages for details.`);
         console.error("Error during batch root directory update process:", error);
-        // 清除选择
-        // selectedRowKeys.value = [];
     } finally {
         isApplying.value = false;
     }
@@ -200,10 +181,8 @@ const handleSaveAvailableRootDirs = async () => {
     isSavingAvailableDirs.value = true;
     try {
         await coverageStore.saveAndUpdateAvailableRootDirs(editableAvailableRootDirs.value);
-        // store action 会显示成功消息
     } catch (error) {
-        // store action 会显示错误消息
-        console.error("Error in handleSaveAvailableRootDirs:", error);
+        console.error("Error saving available root directories:", error);
     } finally {
         isSavingAvailableDirs.value = false;
     }
@@ -211,6 +190,62 @@ const handleSaveAvailableRootDirs = async () => {
 </script>
 <template>
     <a-collapse v-model:activeKey="activeCollapseKeys" accordion>
+        <a-collapse-panel key="2" header="Manage Available Root Directories for Source File Discovery">
+            <a-space direction="vertical" style="width: 100%">
+                <a-alert v-if="!coverageStore.originalInfoFilePath" type="warning"
+                    message="Load a Coverage Info file to manage its available root directories." show-icon />
+                <template v-if="coverageStore.originalInfoFilePath && coverageStore.coverageInfo">
+                    <a-row :gutter="16" align="middle">
+                        <a-col flex="auto">
+                            <a-input v-model:value="newAvailableRootDirInput"
+                                placeholder="Enter or browse for a new available root directory path"
+                                @keyup.enter="handleAddAvailableRootDir" />
+                        </a-col>
+                        <a-col flex="none">
+                            <a-button @click="selectDirectory('newAvailableRootDir')">
+                                <template #icon>
+                                    <FolderOpenOutlined />
+                                </template>
+                                Browse
+                            </a-button>
+                        </a-col>
+                        <a-col flex="none">
+                            <a-button type="dashed" @click="handleAddAvailableRootDir"
+                                :disabled="!newAvailableRootDirInput.trim()">
+                                <template #icon>
+                                    <PlusOutlined />
+                                </template>
+                                Add Directory
+                            </a-button>
+                        </a-col>
+                    </a-row>
+
+                    <div
+                        style="margin-top: 10px; margin-bottom: 10px; max-height: 150px; overflow-y: auto; border: 1px solid #d9d9d9; padding: 8px; border-radius: 4px;">
+                        <span v-if="editableAvailableRootDirs.length === 0" style="color: #888;">
+                            No available root directories defined. Add directories that might contain your source files.
+                        </span>
+                        <a-tag v-for="dir in editableAvailableRootDirs" :key="dir" closable
+                            @close="handleRemoveAvailableRootDir(dir)"
+                            style="margin-bottom: 4px; white-space: normal; height: auto; padding: 4px 8px; line-height: 1.5; display: block; background-color: #f0f0f0; border-color: #d9d9d9;">
+                            <template #closeIcon>
+                                <DeleteOutlined style="color: #888;" />
+                            </template>
+                            {{ dir }}
+                        </a-tag>
+                    </div>
+
+                    <a-button type="primary" @click="handleSaveAvailableRootDirs"
+                        :loading="isSavingAvailableDirs || coverageStore.isLoadingInfo">
+                        <template #icon>
+                            <SaveOutlined />
+                        </template>
+                        Save Available Root Directories to Info File
+                    </a-button>
+                </template>
+            </a-space>
+        </a-collapse-panel>
+
         <a-collapse-panel key="1" header="Source File Root Directory Editor">
             <a-space direction="vertical" style="width: 100%">
                 <!-- 未加载 info 文件警告 -->
@@ -220,8 +255,7 @@ const handleSaveAvailableRootDirs = async () => {
                 <template v-if="coverageStore.originalInfoFilePath">
                     <a-row :gutter="16" align="bottom">
                         <a-col flex="auto">
-                            <a-tooltip
-                                title="Enter the new root directory for the selected source file(s).">
+                            <a-tooltip title="Enter the new root directory for the selected source file(s).">
                                 <a-input v-model:value="newRootDir" placeholder="Enter New Root Directory Path"
                                     style="width: 100%" />
                             </a-tooltip>
@@ -238,7 +272,7 @@ const handleSaveAvailableRootDirs = async () => {
                         </a-col>
                         <a-col flex="none">
                             <!-- 应用按钮 -->
-                            <a-button type="primary" @click="applyNewRootDir" :loading="isApplying"
+                            <a-button type="primary" @click="handleApplyRootDir" :loading="isApplying"
                                 :disabled="selectedRowKeys.length === 0 || !newRootDir">
                                 <template #icon>
                                     <SaveOutlined />
@@ -252,7 +286,8 @@ const handleSaveAvailableRootDirs = async () => {
                         bordered :pagination="paginationConfig" :scroll="{ y: 300 }">
                         <template #bodyCell="{ column, text }">
                             <!-- 自定义渲染省略号列 -->
-                            <template v-if="column.key === 'moduleName' || column.key === 'relativePath' || column.key === 'root_dir'">
+                            <template
+                                v-if="column.key === 'moduleName' || column.key === 'relativePath' || column.key === 'root_dir'">
                                 <a-tooltip :title="text">
                                     <span>{{ text || 'N/A' }}</span>
                                 </a-tooltip>
@@ -263,52 +298,6 @@ const handleSaveAvailableRootDirs = async () => {
                             </template>
                         </template>
                     </a-table>
-                </template>
-            </a-space>
-        </a-collapse-panel>
-
-        <a-collapse-panel key="2" header="Manage Available Root Directories for Source File Discovery">
-            <a-space direction="vertical" style="width: 100%">
-                <a-alert v-if="!coverageStore.originalInfoFilePath" type="warning"
-                    message="Load a Coverage Info file to manage its available root directories." show-icon />
-                <template v-if="coverageStore.originalInfoFilePath && coverageStore.coverageInfo">
-                    <a-row :gutter="16" align="middle">
-                        <a-col flex="auto">
-                            <a-input v-model:value="newAvailableRootDirInput"
-                                placeholder="Enter or browse for a new available root directory path"
-                                @keyup.enter="handleAddAvailableRootDir" />
-                        </a-col>
-                        <a-col flex="none">
-                            <a-button @click="selectDirectory('newAvailableRootDir')">
-                                <template #icon><FolderOpenOutlined /></template>
-                                Browse
-                            </a-button>
-                        </a-col>
-                        <a-col flex="none">
-                            <a-button type="dashed" @click="handleAddAvailableRootDir" :disabled="!newAvailableRootDirInput.trim()">
-                                <template #icon><PlusOutlined /></template>
-                                Add Directory
-                            </a-button>
-                        </a-col>
-                    </a-row>
-
-                    <div style="margin-top: 10px; margin-bottom: 10px; max-height: 150px; overflow-y: auto; border: 1px solid #d9d9d9; padding: 8px; border-radius: 4px;">
-                        <span v-if="editableAvailableRootDirs.length === 0" style="color: #888;">
-                            No available root directories defined. Add directories that might contain your source files.
-                        </span>
-                        <a-tag v-for="dir in editableAvailableRootDirs" :key="dir" closable
-                            @close="handleRemoveAvailableRootDir(dir)" 
-                            style="margin-bottom: 4px; white-space: normal; height: auto; padding: 4px 8px; line-height: 1.5; display: block; background-color: #f0f0f0; border-color: #d9d9d9;">
-                            <template #closeIcon><DeleteOutlined style="color: #888;"/></template>
-                            {{ dir }}
-                        </a-tag>
-                    </div>
-
-                    <a-button type="primary" @click="handleSaveAvailableRootDirs" :loading="isSavingAvailableDirs || coverageStore.isLoadingInfo">
-                        <template #icon><SaveOutlined /></template>
-                        Save Available Root Directories to Info File
-                    </a-button>
-                     <a-alert message="Saving will update the list of directories the tool searches for source files within the loaded .json info file. This is useful if source files are not found or their locations change." type="info" show-icon style="margin-top: 10px;"/>
                 </template>
             </a-space>
         </a-collapse-panel>
