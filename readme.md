@@ -49,74 +49,76 @@
 以下是 `src/main/scala/main.scala` 中的示例，展示了如何使用 `CoverageUtil` 处理多个模块：
 
 ```scala
-// filepath: src/main/scala/main.scala
-package firrtl.ir
+package main
 
 import circt.stage.CustomStage
 import file_util.FileUtil
 import java.io.File
 import circt.stage.ChiselStage
 import chisel3.RawModule
-import modules.WaveformGenerator // 导入你的 Chisel 模块
-import modules.UART_rx         // 导入你的 Chisel 模块
-import modules.UART_tx         // 导入你的 Chisel 模块
+import modules.WaveformGenerator
+import modules.UART_rx
+import modules.UART_tx
+import chisel3.Reg
+import modules.RegModule
+import modules.ComplexExample
+import firrtl.ir.CoverageTool
+import org.chipsalliance.cde.config.{Parameters, Config, Field}
+import freechips.rocketchip.rocket._
+import freechips.rocketchip.rocket.ALU._
+import freechips.rocketchip.util._
+import _root_.circt.stage.ChiselStage
+import freechips.rocketchip.system.DefaultConfig
+import freechips.rocketchip.tile.{RocketTileParams, TileKey, LookupByHartIdImpl}
+import freechips.rocketchip.tile.RocketTile
+import org.chipsalliance.diplomacy.lazymodule.LazyModule
+import freechips.rocketchip.system.ExampleRocketSystem
+import freechips.rocketchip.system.TestHarness
 
-object ExampleMain extends App {
-  // 定义所有输出的基础目录
-  val baseOutputDir = "output_generated"
+object Main {
+  def main(args: Array[String]): Unit = {
+    implicit val p: Parameters = new DefaultConfig()
+    val baseOutputDir = "output_generated"
 
-  // 定义要处理的模块列表
-  // 每个元素是一个元组: (模块生成器函数, 输出子目录名)
-  val modulesToProcess: Seq[(() => RawModule, String)] = Seq(
-    (
-      () => new WaveformGenerator,
-      "waveform_generator"
-    ),
-    (
-      () => new UART_rx(),
-      "uart_rx"
-    ),
-    (
-      () => new UART_tx(),
-      "uart_tx"
-    ),
-    (() => new RegModule(), "reg_module"),
-    (() => new ComplexExample(), "complex_example"),
-    (() => new ALU(), "rocket_alu"),
-    (() => new MulDiv(MulDivParams(), width = 64), "rocket_muldiv"),
-    (
-      () => {
-        val ldut = LazyModule(new ExampleRocketSystem)
-        ldut.module
-      },
-      "example_rocket_system"
+    val modulesToProcess: Seq[(() => RawModule, String)] = Seq(
+      (
+        () => new WaveformGenerator,
+        "waveform_generator"
+      ),
+      (
+        () => new UART_rx(),
+        "uart_rx"
+      ),
+      (
+        () => new UART_tx(),
+        "uart_tx"
+      ),
+      (() => new RegModule(), "reg_module"),
+      (() => new ComplexExample(), "complex_example"),
+      // RocketChip
+      (
+        () => new TestHarness(),
+        "rocket_test_harness"
+      )
     )
-    // 可以继续添加更多模块...
-  )
 
-  // 遍历列表，处理每个模块
-  modulesToProcess.foreach { case (moduleGenerator, outputSubDir) =>
-    // 构建完整的输出路径
-    val outputDir = s"$baseOutputDir/$outputSubDir"
-    println(s"--- 开始处理模块: ($outputDir) ---") // 添加日志区分模块
+    modulesToProcess.foreach { case (moduleGenerator, outputSubDir) =>
+      val outputDir = s"$baseOutputDir/$outputSubDir"
+      CoverageTool.processModule(
+        moduleGenerator = moduleGenerator,
+        outputDir = outputDir,
+        enableDevOutput = true
+      )
+    }
+    println("所有模块处理完毕.")
 
-    // 调用核心处理函数
-    CoverageUtil.processModule(
-      moduleGenerator = moduleGenerator, // 传递模块生成器
-      outputDir = outputDir,             // 传递输出目录
-      enableDevOutput = true             // 启用开发调试文件生成
-      // firtoolOpts = Array("-disable-all-randomization", "-strip-debug-info") // 可以自定义 firtool 选项
-    )
-    println(s"--- 完成处理模块: ($outputDir) ---\n") // 添加日志区分模块
   }
-  println("所有模块处理完毕.")
 }
-
 ```
 
 ## 覆盖率结果分析工具 (Tauri + Vue3)
 
-项目包含一个简单的桌面应用程序 (`analysis_app` 目录)，用于可视化`coverage_info.json` 和 `coverage_report.json` 文件中的覆盖率结果。
+项目包含一个简单的桌面应用程序 (`analysis_app` 目录)，用于可视化`coverage_info.json` 和 `coverage_report.json` 文件中的覆盖率结果, 可以以实例树的层次查看所有的覆盖点和源代码, 快速导航和分析覆盖率问题。
 
 ### 运行
 
@@ -127,3 +129,24 @@ object ExampleMain extends App {
 5.  应用程序启动后，上传你的`coverage_info.json` 和 `coverage_report.json` 文件即可查看。
 
 ![app_shot.png](assets/app-shot.png)
+
+## Rocket Chip集成
+通过将 `CoverageTool` 集成到 Rocket Chip 的 `TestHarness` 中，可以实现对整个 SoC 设计的覆盖率分析, 并且使用elf作为测试激励。
+
+`output_generated/rocket_test_harness/emulator` 目录下包含了一个继承了chisel coverage tool完整的 Rocket chip TestHarness emulator的源代码、CmakeLists文件和一个在ubuntu24 wsl2上构建的emulator程序。
+
+emulator是一个命令行工具:
+
+```text
+Usage: ./emulator [EMULATOR OPTION]... [VERILOG PLUSARG]... [HOST OPTION]... BINARY [TARGET OPTION]...
+Run a BINARY on the Rocket Chip emulator.
+
+Mandatory arguments to long options are mandatory for short options too.
+
+EMULATOR OPTIONS
+  -c, --cycle-count        Print the cycle count before exiting
+       +cycle-count
+......
+```
+
+同时运行elf结束后, 将会打印覆盖率信息, 并导出`coverage_report.json`文件来用于分析使用。
