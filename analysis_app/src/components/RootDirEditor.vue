@@ -5,13 +5,12 @@ import type { Key } from 'ant-design-vue/es/table/interface';
 import { FolderOpenOutlined, SaveOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons-vue';
 import { useCoverageStore } from "../stores/coverageStore";
 import { selectSingleDirectory } from '../utils/dialogUtils'; // IMPORT new utility
-import type { SourceFileIdentifier, SourceFileInfo } from '../types/CoverageInfo';
+import type { SourceFileIdentifier } from '../types/CoverageInfo';
 
 const coverageStore = useCoverageStore();
 
 interface SourceFileTableItem {
-    key: string; // 唯一键
-    moduleName: string;
+    key: string; // 唯一键 (将是 relativePath)
     relativePath: string;
     root_dir: string | null;
 }
@@ -37,46 +36,28 @@ watch(() => coverageStore.coverageInfo?.available_root_dirs, (newDirs) => {
 
 const tableData = computed((): SourceFileTableItem[] => {
     const items: SourceFileTableItem[] = [];
-    // Use module_source_files and source_file_info_map instead of module_info_map
-    if (!coverageStore.coverageInfo?.module_source_files || !coverageStore.coverageInfo?.source_file_info_map) {
+    if (!coverageStore.coverageInfo?.source_file_info_map) {
         return items;
     }
 
     const sourceMap = coverageStore.coverageInfo.source_file_info_map;
 
-    // Iterate through modules and their source file paths
-    Object.entries(coverageStore.coverageInfo.module_source_files).forEach(([moduleName, relativePaths]) => {
-        relativePaths.forEach(relativePath => {
-            // Get SourceFileInfo using the relative path as key in source_file_info_map
-            const sourceFileInfo: SourceFileInfo | undefined = sourceMap[relativePath];
-            items.push({
-                key: `${moduleName}::${relativePath}`, // Unique key
-                moduleName: moduleName,
-                relativePath: relativePath,
-                // Access root_dir from the retrieved sourceFileInfo
-                root_dir: sourceFileInfo?.root_dir ?? null,
-            });
+    Object.entries(sourceMap).forEach(([relativePath, sfi]) => {
+        items.push({
+            key: relativePath, // 使用 relativePath 作为 key
+            relativePath: relativePath,
+            root_dir: sfi.root_dir ?? null,
         });
     });
 
-    // Sort items
+    // Sort items by relativePath
     items.sort((a, b) => {
-        if (a.moduleName !== b.moduleName) {
-            return a.moduleName.localeCompare(b.moduleName);
-        }
         return a.relativePath.localeCompare(b.relativePath);
     });
     return items;
 });
 
 const columns: TableColumnsType<SourceFileTableItem> = [
-    {
-        title: 'Module Name',
-        dataIndex: 'moduleName',
-        key: 'moduleName',
-        ellipsis: true, // 省略号
-        width: 200,
-    },
     {
         title: 'Relative Path',
         dataIndex: 'relativePath',
@@ -141,10 +122,21 @@ const handleApplyRootDir = async () => {
     }
     isApplying.value = true;
     try {
-        const identifiersToUpdate: SourceFileIdentifier[] = selectedRowKeys.value.map(key => {
-            const item = tableData.value.find(d => d.key === key);
-            return { module_name: item!.moduleName, relative_path: item!.relativePath };
-        });
+        // Directly map selected relativePaths to SourceFileIdentifier objects
+        // using a placeholder for module_name, as it's not critical for this specific backend operation.
+        const identifiersToUpdate: SourceFileIdentifier[] = (selectedRowKeys.value as string[]).map(relativePath => ({
+            module_name: "_", // Placeholder module name
+            relative_path: relativePath
+        }));
+
+        if (identifiersToUpdate.length === 0) {
+            // This case should ideally not be hit if selectedRowKeys is not empty,
+            // but as a safeguard:
+            message.error("No valid identifiers could be constructed for the selected files.");
+            isApplying.value = false;
+            return;
+        }
+
         await coverageStore.updateCoverageInfoWithNewRoots(identifiersToUpdate, newRootDir.value);
         message.success("Root directory updated and files reread successfully.");
         // 清空选择和输入
@@ -286,8 +278,7 @@ const handleSaveAvailableRootDirs = async () => {
                         bordered :pagination="paginationConfig" :scroll="{ y: 300 }">
                         <template #bodyCell="{ column, text }">
                             <!-- 自定义渲染省略号列 -->
-                            <template
-                                v-if="column.key === 'moduleName' || column.key === 'relativePath' || column.key === 'root_dir'">
+                            <template v-if="column.key === 'relativePath' || column.key === 'root_dir'">
                                 <a-tooltip :title="text">
                                     <span>{{ text || 'N/A' }}</span>
                                 </a-tooltip>

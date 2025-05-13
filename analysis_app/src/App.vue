@@ -5,7 +5,7 @@ import { useCoverageStore } from "./stores/coverageStore";
 import FileUpload from './components/FileUpload.vue';
 import CoverageSummary from './components/CoverageSummary.vue';
 import CoverageDetails from './components/CoverageDetails.vue';
-import ModuleRootDirEditor from './components/ModuleRootDirEditor.vue'; // 导入组件
+import ModuleRootDirEditor from './components/RootDirEditor.vue'; // 导入组件
 import SourceViewer from "./components/SourceViewer.vue";
 
 // 使用 Pinia Store
